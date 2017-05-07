@@ -1,0 +1,7 @@
+<resources>
+    <string name="hello">Hello World!!</string>
+    <string name="app_name">SmallLittleAppViewer</string>
+    <string name="switch_to_window">Switch to Window!</string>
+    <string name="switch_to_full">Switch to Full Screen!</string>
+    <string name="edit_text_hint">Type here</string>
+</resources>
