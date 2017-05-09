@@ -23,16 +23,17 @@ class PopupMainActivity : MainActivity() {
 	override fun setUpWindow() {
 // Creates the layout for the window and the look of it
 		requestWindowFeature(Window.FEATURE_ACTION_BAR)
+
 		//window.setFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND,
 		//		WindowManager.LayoutParams.FLAG_DIM_BEHIND)
-		window.addFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND) // 背景を暗くする
-		window.addFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE)
+		//window.addFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND) // 背景を暗くする
+		//window.addFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE)
 		//window.addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN)
 		//window.addFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL)
-		window.addFlags(WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH)
+		//window.addFlags(WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH)
 		//window.setType(WindowManager.LayoutParams.TYPE_SYSTEM_ALERT)
-		window.setType(WindowManager.LayoutParams.TYPE_SYSTEM_OVERLAY)
-		window.setFormat(PixelFormat.TRANSLUCENT)
+		//window.setType(WindowManager.LayoutParams.TYPE_SYSTEM_OVERLAY)
+		//window.setFormat(PixelFormat.TRANSLUCENT)
 
 // Params for the window.
 // You can easily set the alpha and the dim behind the window from here

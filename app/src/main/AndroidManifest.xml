@@ -1,49 +1,68 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-      xmlns:tools="http://schemas.android.com/tools"
-      package="jp.kght6123.smalllittleappviewer">
+    xmlns:tools="http://schemas.android.com/tools"
+    package="jp.kght6123.smalllittleappviewer">
 
-    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
-    
-    <application android:icon="@mipmap/ic_launcher"
-                 android:label="@string/app_name"
-                 android:allowBackup="false"
-                 android:largeHeap="true"
-                 android:resizeableActivity="true"
-                 android:roundIcon="@mipmap/ic_launcher_round"
-                 tools:ignore="GoogleAppIndexingWarning">
-        
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+
+    <application
+        android:allowBackup="false"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:largeHeap="true"
+        android:resizeableActivity="true"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        tools:ignore="GoogleAppIndexingWarning">
+
         <!-- android:configChangesは、自動のActivity破棄を停止し、自分で処理を記載可能にする（onConfigurationChangedメソッドをオーバーライド） -->
         <!-- android:windowSoftInputMode="adjustResize" キーボードが表示されたらアクティビティのサイズがキーボード分小さくなる -->
         <!-- android:windowSoftInputMode="stateAlwaysHidden" Activityのメインウィンドウに初期入力フォーカス時、ソフトウェアキーボードが常に隠れる -->
         <!-- android:noHistory -->
-        <activity android:name=".MainActivity"
-                  android:theme="@android:style/Theme.DeviceDefault.Light"
-                  android:label="@string/app_name"
-                  android:configChanges="orientation|screenSize"
-                  android:windowSoftInputMode="adjustResize|stateAlwaysHidden"
-                  android:noHistory="true">
+        <activity
+            android:name=".MainActivity"
+            android:configChanges="orientation|screenSize"
+            android:label="@string/app_name1"
+            android:noHistory="true"
+            android:theme="@android:style/Theme.DeviceDefault.Light"
+            android:windowSoftInputMode="adjustResize|stateAlwaysHidden">
+            <intent-filter>
+                <!--action android:name="android.intent.action.MAIN" /-->
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <!--
+              The style for the theme is very important here.
+             Check the styles xml and use what is given there.
+             That is what sets up the actual windowed functionality
+        -->
+
+        <!-- tools:ignoreは指定された lint の issue が無視 -->
+        <activity
+            android:name=".PopupMainActivity"
+            android:clearTaskOnLaunch="true"
+            android:configChanges="orientation|screenSize"
+            android:exported="true"
+            android:label="@string/app_name"
+            android:noHistory="true"
+            android:theme="@style/Theme.FloatingWindow.Popup"
+            android:windowSoftInputMode="adjustResize|stateAlwaysHidden"
+            tools:ignore="ExportedActivity" />
+
+        <activity
+            android:name=".SystemOverlayLayerActivity"
+            android:configChanges="orientation|screenSize"
+            android:label="@string/app_name2"
+            android:noHistory="true"
+            android:theme="@android:style/Theme.DeviceDefault.Light"
+            android:windowSoftInputMode="adjustResize|stateAlwaysHidden">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        
-         <!-- The style for the theme is very important here.
-             Check the styles xml and use what is given there.
-             That is what sets up the actual windowed functionality -->
-        
-        <!-- tools:ignoreは指定された lint の issue が無視 -->
-        <activity
-                android:name=".PopupMainActivity"
-                android:label="@string/app_name"
-                android:theme="@style/Theme.FloatingWindow.Popup"
-                android:configChanges="orientation|screenSize"
-                android:windowSoftInputMode="adjustResize|stateAlwaysHidden"
-                android:noHistory="true"
-                android:clearTaskOnLaunch="true"
-                android:exported="true"
-                tools:ignore="ExportedActivity" />
 
+        <service android:name=".SystemOverlayLayerService" />
     </application>
+
 </manifest>
