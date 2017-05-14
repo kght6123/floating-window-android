@@ -4,6 +4,7 @@
     package="jp.kght6123.smalllittleappviewer">
 
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <uses-permission android:name="android.permission.INTERNET" />
 
     <application
         android:allowBackup="false"

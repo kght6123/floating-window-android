@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent">
+
+    <!--LinearLayout
+        android:orientation="vertical"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:minWidth="60dp"
+        android:minHeight="60dp"
+        android:background="@android:color/darker_gray"
+        android:id="@+id/miniIcon">
+    </LinearLayout-->
+
+   <jp.kght6123.smalllittleappviewer.custom.view.CircleView
+       xmlns:circle="http://schemas.android.com/apk/res-auto"
+       android:id="@+id/miniIcon"
+       android:background="@android:color/transparent"
+       android:layout_width="75dp"
+       android:layout_height="75dp"
+       circle:color="@android:color/white"/>
+
+</LinearLayout>
