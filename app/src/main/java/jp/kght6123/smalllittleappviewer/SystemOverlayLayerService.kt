@@ -28,7 +28,16 @@ class SystemOverlayLayerService : Service() {
     private val TAG = this.javaClass.simpleName
 
     // オーバーレイ表示させるビュー
-    val overlayView: ViewGroup by lazy { LayoutInflater.from(this).inflate(R.layout.service_system_overlay_layer, null) as ViewGroup }
+    val overlayView: ViewGroup by lazy {
+        val viewGroup: ViewGroup = LayoutInflater.from(this).inflate(R.layout.service_system_overlay_layer, null) as ViewGroup
+        viewGroup.setOnFocusChangeListener({view: View, hasFocus: Boolean ->
+            Log.d(TAG, "hasFocus=$hasFocus")
+        })
+//        viewGroup.dispatchWindowFocusChanged({view: View, hasFocus: Boolean ->
+//            Log.d(TAG, "hasFocus=$hasFocus")
+//        })
+        viewGroup
+    }
     val titleBar: LinearLayout by lazy { overlayView.findViewById(R.id.titleBar) as LinearLayout }
     val bodyArea: LinearLayout by lazy { overlayView.findViewById(R.id.bodyArea) as LinearLayout }
     val webView: WebView by lazy { overlayView.findViewById(R.id.webView) as WebView }
@@ -40,17 +49,16 @@ class SystemOverlayLayerService : Service() {
 
     // WindowManagerに設定するレイアウトパラメータ、オーバーレイViewの設定をする
     val params: WindowManager.LayoutParams by lazy { WindowManager.LayoutParams(
-            WindowManager.LayoutParams.WRAP_CONTENT,
-            WindowManager.LayoutParams.WRAP_CONTENT,
-            //WindowManager.LayoutParams.TYPE_SYSTEM_OVERLAY,
-            //WindowManager.LayoutParams.TYPE_SYSTEM_ALERT,
-            WindowManager.LayoutParams.TYPE_PHONE,
-            WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN
-                    or WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
+            WindowManager.LayoutParams.WRAP_CONTENT,//MATCH_PARENT,
+            WindowManager.LayoutParams.WRAP_CONTENT,//MATCH_PARENT,
+            //WindowManager.LayoutParams.TYPE_SYSTEM_OVERLAY,   // ロック画面より上にくる
+            WindowManager.LayoutParams.TYPE_SYSTEM_ALERT,   //なるべく上の階層で表示
+            //WindowManager.LayoutParams.TYPE_PHONE,
+            WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN    //座標系をスクリーンに合わせる
+                    or WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL  // タッチイベントを拾わない。ロック画面を邪魔しない
                     or WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE  // ウィンドウにフォーカスが当たった時だけ、無効にしたい
-                    or WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH,
+                    or WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH, // Viewの外のタッチイベントにも反応する？（端末ボタンが無効になる？）
             PixelFormat.TRANSLUCENT) }
-
 
     // ディスプレイのサイズを格納する
     val displaySize: Point by lazy {
@@ -181,8 +189,11 @@ class SystemOverlayLayerService : Service() {
 
                                 windowManager.updateViewLayout(overlayView, params)
                             }
+                            MotionEvent.ACTION_OUTSIDE -> {
+                                Log.d(TAG, "ACTION_OUTSIDE event.x, y = ${event.x}, ${event.y}")
+                                Log.d(TAG, "ACTION_OUTSIDE event.rawX, rawY = ${event.rawX}, ${event.rawY}")
+                            }
                         }
-
                         return false
                     }
                 })
