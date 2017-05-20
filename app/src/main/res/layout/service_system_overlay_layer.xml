@@ -1,55 +1,47 @@
 <?xml version="1.0" encoding="utf-8"?>
-<jp.kght6123.smalllittleappviewer.custom.view.ExLinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:focusable="true"
-    android:focusableInTouchMode="true">
+<jp.kght6123.smalllittleappviewer.custom.view.ExTouchFocusLinearLayout
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	android:orientation="vertical"
+	android:layout_width="wrap_content"
+	android:layout_height="wrap_content"
+	android:focusable="true"
+	android:focusableInTouchMode="true"
+	android:background="@android:color/transparent"
+	android:id="@+id/windowFrameTop">
+	
+	<LinearLayout
+		android:orientation="vertical"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:focusable="true"
+		android:focusableInTouchMode="true"
+		android:background="@drawable/layer_list"
+		android:padding="3dp"
+		android:id="@+id/windowFrame">
+		<LinearLayout
+			android:orientation="vertical"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:minWidth="300dp"
+			android:minHeight="60dp"
+			android:background="@android:color/darker_gray"
+			android:id="@+id/titleBar">
+		</LinearLayout>
+		<LinearLayout
+			android:orientation="vertical"
+			android:layout_width="match_parent"
+			android:layout_height="match_parent"
+			android:minWidth="300dp"
+			android:minHeight="300dp"
+			android:background="@android:color/holo_orange_dark"
+			android:id="@+id/bodyArea">
+			
+			<WebView
+				android:layout_width="300dp"
+				android:layout_height="300dp"
+				android:id="@+id/webView"/>
+			
+		</LinearLayout>
+	</LinearLayout>
 
-    <LinearLayout
-        android:orientation="vertical"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:background="@drawable/layer_list"
-        android:padding="3dp">
-        <LinearLayout
-            android:orientation="vertical"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:minWidth="300dp"
-            android:minHeight="60dp"
-            android:background="@android:color/darker_gray"
-            android:id="@+id/titleBar">
-        </LinearLayout>
-        <LinearLayout
-            android:orientation="vertical"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:minWidth="300dp"
-            android:minHeight="300dp"
-            android:background="@android:color/holo_orange_dark"
-            android:id="@+id/bodyArea">
-
-            <WebView
-                android:layout_width="300dp"
-                android:layout_height="300dp"
-                android:id="@+id/webView"/>
-
-            <!--LinearLayout
-                android:layout_width="fill_parent"
-                android:layout_height="0dp"
-                android:layout_weight="1"
-                android:gravity="center"
-                android:orientation="vertical">
-
-                <ProgressBar
-                    android:id="@+id/progressBar"
-                    style="?android:attr/progressBarStyle"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
-
-            </LinearLayout-->
-        </LinearLayout>
-    </LinearLayout>
-
-</jp.kght6123.smalllittleappviewer.custom.view.ExLinearLayout>
+</jp.kght6123.smalllittleappviewer.custom.view.ExTouchFocusLinearLayout>

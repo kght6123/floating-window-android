@@ -1,11 +1,11 @@
 <resources>
-    <string name="hello">Hello World!!</string>
-    <string name="app_name">SmallLittleAppViewer</string>
-    <string name="app_name1">Popup</string>
-    <string name="app_name2">Overlay</string>
-    <string name="switch_to_window">Switch to Window!</string>
-    <string name="switch_to_full">Switch to Full Screen!</string>
-    <string name="edit_text_hint">Type here</string>
-    <string name="start_button_text">Start</string>
-    <string name="stop_button_text">Stop</string>
+	<string name="hello">Hello World!!</string>
+	<string name="app_name">SmallLittleAppViewer</string>
+	<string name="app_name1">Popup</string>
+	<string name="app_name2">Overlay</string>
+	<string name="switch_to_window">Switch to Window!</string>
+	<string name="switch_to_full">Switch to Full Screen!</string>
+	<string name="edit_text_hint">Type here</string>
+	<string name="start_button_text">Start</string>
+	<string name="stop_button_text">Stop</string>
 </resources>
