@@ -70,6 +70,8 @@ class SystemOverlayLayerService : Service() {
 				params.flags = WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN or
 						WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH
 				windowManager.updateViewLayout(overlayView, params)
+				
+				// TODO コントロール用のActivity起動予定
 			}
 		}
 		view.onInterceptOutTouchEventListener = object: OnInterceptTouchEventListener {
@@ -80,6 +82,8 @@ class SystemOverlayLayerService : Service() {
 						WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
 						WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH
 				windowManager.updateViewLayout(overlayView, params)
+				
+				// TODO コントロール用のActivity停止予定
 			}
 		}
 		view

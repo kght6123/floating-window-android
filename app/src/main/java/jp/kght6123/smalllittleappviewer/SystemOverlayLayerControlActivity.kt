@@ -80,6 +80,8 @@ class SystemOverlayLayerControlActivity : Activity() {
 				msg.replyTo = mSelfMessenger// 返信はこのMessangerによろしく？
 				mServiceMessenger?.send(msg)// サービスにメッセージを送信
 				
+				
+				// オーバーレイウィンドウの最小化、もしくは停止処理予定
 				return false
 			}
 			KeyEvent.KEYCODE_APP_SWITCH -> {
