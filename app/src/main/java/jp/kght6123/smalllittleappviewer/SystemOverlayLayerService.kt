@@ -5,7 +5,11 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.PixelFormat
 import android.graphics.Point
+import android.os.Handler
 import android.os.IBinder
+import android.os.Message
+import android.os.Messenger
+import android.os.RemoteException
 import android.util.Log
 import android.view.*
 import android.webkit.WebView
@@ -23,7 +27,38 @@ import jp.kght6123.smalllittleappviewer.custom.view.OnInterceptTouchEventListene
 class SystemOverlayLayerService : Service() {
 
 	private val TAG = this.javaClass.simpleName
-
+	
+	val mServiceMessenger: Messenger by lazy {
+		Messenger(object: Handler() {
+			override fun handleMessage(msg: Message?) {
+				Log.e(TAG, "handle request=" + msg)
+				// objでobtainの第三引数で受け渡された値が取得可能
+				
+				try {
+					// Activityから指定されたMessangerへ返信する
+					msg?.replyTo?.send(Message.obtain(null, 1))// Activityへの送信はreplyToのMessangerを使用
+					// 第二引数のIntがwhat?（どの処理か判別するフラグ）になる
+					// 第三引数のObjectが受けわたす値になる
+					//   他にもBundleのsetter / getter（msg.setData(Bundle)）があるので、それを使っても良い、
+					//     BundleのParcelableを実装すれば他アプリにも
+				} catch (e: RemoteException) {
+					e.printStackTrace()
+				}
+			}
+		})
+	}
+	
+	// オーバーレイのコントロールActivity
+	val intent: Intent by lazy {
+		val it = Intent(this, SystemOverlayLayerControlActivity::class.java)
+		it.flags = Intent.FLAG_ACTIVITY_SINGLE_TOP or
+				Intent.FLAG_ACTIVITY_NEW_TASK or
+				Intent.FLAG_ACTIVITY_CLEAR_TASK or
+				Intent.FLAG_ACTIVITY_NO_HISTORY or
+				Intent.FLAG_ACTIVITY_NO_ANIMATION or
+				Intent.FLAG_ACTIVITY_NO_USER_ACTION
+		it
+	}
 	// オーバーレイ表示させるビュー
 	val overlayView: ExTouchFocusLinearLayout by lazy {
 		val view: ExTouchFocusLinearLayout =
@@ -54,12 +89,12 @@ class SystemOverlayLayerService : Service() {
 	val titleBar: LinearLayout by lazy { overlayView.findViewById(R.id.titleBar) as LinearLayout }
 	val bodyArea: LinearLayout by lazy { overlayView.findViewById(R.id.bodyArea) as LinearLayout }
 	val webView: WebView by lazy { overlayView.findViewById(R.id.webView) as WebView }
-
+	
 	val overlayMiniView: ViewGroup by lazy { LayoutInflater.from(this).inflate(R.layout.service_system_overlay_mini_layer, null) as ViewGroup }
-
+	
 	// WindowManager
 	val windowManager: WindowManager by lazy { applicationContext.getSystemService(Context.WINDOW_SERVICE) as WindowManager }
-
+	
 	// WindowManagerに設定するレイアウトパラメータ、オーバーレイViewの設定をする
 	val params: WindowManager.LayoutParams by lazy { WindowManager.LayoutParams(
 			WindowManager.LayoutParams.WRAP_CONTENT,//MATCH_PARENT,
@@ -75,43 +110,48 @@ class SystemOverlayLayerService : Service() {
 					or WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH, // Viewの外のタッチイベントにも反応する？（端末ボタンが無効になる？）
 			PixelFormat.TRANSLUCENT)
 	}
-
+	
 	// ディスプレイのサイズを格納する
 	val displaySize: Point by lazy {
 		val display = windowManager.defaultDisplay
 		val size = Point()
 		display.getSize(size)
-
+		
 		//Log.d(TAG, "bodyArea.layoutParams.height="+bodyArea.layoutParams.height)
 		//size.x -= bodyArea.width
 		//size.y -= bodyArea.height
 		size
 	}
-
+	
 	// ロングタップ判定用
 	//var isLongClick: Boolean = false
-
+	
 	override fun onBind(intent: Intent?): IBinder {
-		TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+		return mServiceMessenger.binder// ActivityのServiceConnection#onServiceConnectedに渡されるIBinderを返す（Messangerでラップして簡易化）
 	}
-
+	
 	override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-
+		
+		// コントロール用Activity起動
+		startActivity(this.intent)
+		
 		params.gravity = Gravity.TOP or Gravity.START// or Gravity.LEFT
-
+		
 		windowFrameTop.setOnFocusChangeListener({view: View, hasFocus: Boolean ->
 			Log.d(TAG, "setOnFocusChangeListener hasFocus=$hasFocus")
+			
 		})
-
+		
 		windowFrame.setOnFocusChangeListener({view: View, hasFocus: Boolean ->
 			Log.d(TAG, "setOnFocusChangeListener hasFocus=$hasFocus")
+			
 		})
-
+		
 		// applyを共通関数？で実行、apply()の戻り値はレシーバオブジェクト本体、つまり呼び出したインスタンスそのもの
 		titleBar.apply(clickListener())
-
+		
 		overlayMiniView.setOnTouchListener({ view, motionEvent ->
-
+			
 			when (motionEvent.action) {
 				MotionEvent.ACTION_UP -> {
 					windowManager.removeView(overlayMiniView)
@@ -120,20 +160,20 @@ class SystemOverlayLayerService : Service() {
 			}
 			false
 		})
-
+		
 		webView.setWebViewClient(object : WebViewClient() {
 			override fun shouldOverrideUrlLoading(view: WebView, url: String): Boolean {
 				return false
 			}
 		})
 		webView.loadUrl("http://www.google.com");
-
+		
 		// ここでビューをオーバーレイ領域に追加する
 		windowManager.addView(overlayView, params)
-
+		
 		return START_STICKY
 	}
-
+	
 	override fun onDestroy() {
 		super.onDestroy()
 		windowManager.removeView(overlayView)
@@ -141,7 +181,7 @@ class SystemOverlayLayerService : Service() {
 
 //    var oldX: Int? = null
 //    var oldY: Int? = null
-
+	
 	// レシーバはView型で引数はなし、戻り値はUnit型（voidと同等）
 	//  => あたかも、View.clickListener()の様に呼び出せる
 	//  => clickListener()はapplyの引数を共通関数化？した関数
@@ -153,26 +193,26 @@ class SystemOverlayLayerService : Service() {
 				// ロングタップ状態が分かりやすいように背景色を変える
 				view.setBackgroundResource(android.R.color.holo_red_light)
 				false
-
+				
 			}.apply {// Unit型にapply？？、以前のapplyのスコープが引き継がれるっぽい？
-
+				
 				setOnTouchListener (object: View.OnTouchListener {
-
+					
 					private var initialX: Int = 0
 					private var initialY: Int = 0
 					private var initialTouchX: Float = 0f
 					private var initialTouchY: Float = 0f
-
+					
 					override fun onTouch(v: View, event: MotionEvent): Boolean {
-
+						
 						val touchAreaX: Float = displaySize.x.toFloat() - (bodyArea.width.toFloat() - event.x)
 						val touchAreaY: Float = displaySize.y.toFloat() - (bodyArea.height.toFloat() - event.y)
-
+						
 						val rx: Float =
 								if(event.rawX > touchAreaX) touchAreaX else event.rawX
 						val ry: Float =
 								if(event.rawY > touchAreaY) touchAreaY else event.rawY
-
+						
 						when (event.action) {
 							MotionEvent.ACTION_DOWN -> {
 								// Get current time in nano seconds.
@@ -188,7 +228,7 @@ class SystemOverlayLayerService : Service() {
 								Log.d(TAG, "touchArea.x, y = $touchAreaX, $touchAreaY")
 								Log.d(TAG, "bodyArea.width, height=${bodyArea.width}, ${bodyArea.height}")
 								Log.d(TAG, "(touchAreaX - rx), (touchAreaY - ry)=${(touchAreaX - rx)}, ${(touchAreaY - ry)}")
-
+								
 								if((touchAreaX - rx) in 0..10 || params.x in 0..10 || params.y in 0..10 || (touchAreaY - ry) in 0..(161+10) ) {
 									// 両端に移動したら小さくする
 									windowManager.removeView(overlayView)
@@ -198,19 +238,19 @@ class SystemOverlayLayerService : Service() {
 							MotionEvent.ACTION_MOVE -> {
 								params.x = initialX + (rx - initialTouchX).toInt()
 								params.y = initialY + (ry - initialTouchY).toInt()
-
+								
 								if(params.x > displaySize.x - bodyArea.width)
 									params.x = displaySize.x - bodyArea.width
 								else if(params.x < 0)
 									params.x = 0
-
+								
 								if(params.y > displaySize.y - bodyArea.height - titleBar.height)
 									params.y = displaySize.y - bodyArea.height - titleBar.height
 								else if(params.y < 0)
 									params.y = 0
-
+								
 								Log.d(TAG, "params.x, y = ${params.x}, ${params.y}")
-
+								
 								windowManager.updateViewLayout(overlayView, params)
 							}
 							MotionEvent.ACTION_OUTSIDE -> {
