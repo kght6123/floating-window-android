@@ -15,24 +15,38 @@ import android.provider.Settings
 class SystemOverlayLayerActivity : Activity() {
 	val REQUEST_SYSTEM_OVERLAY :Int = 1234
 	
-	val start_button: Button by lazy {
-		findViewById(R.id.start_button) as Button
+	val overlay_start_button: Button by lazy {
+		findViewById(R.id.overlay_start_button) as Button
 	}
-
-	val stop_button: Button by lazy {
-		findViewById(R.id.stop_button) as Button
+	val overlay_stop_button: Button by lazy {
+		findViewById(R.id.overlay_stop_button) as Button
+	}
+	
+	val control_start_button: Button by lazy {
+		findViewById(R.id.control_start_button) as Button
+	}
+	val control_stop_button: Button by lazy {
+		findViewById(R.id.control_stop_button) as Button
 	}
 
 	private fun init() {
 		if (checkOverlayPermission()) {
 			this.setContentView(R.layout.activity_system_overlay_layer)
 			
-			start_button.setOnClickListener({
+			overlay_start_button.setOnClickListener({
 				startService(Intent(this@SystemOverlayLayerActivity, SystemOverlayLayerService::class.java))
 			})
-			stop_button.setOnClickListener({
+			overlay_stop_button.setOnClickListener({
 				stopService(Intent(this@SystemOverlayLayerActivity, SystemOverlayLayerService::class.java))
 			})
+			
+			control_start_button.setOnClickListener({
+				startService(Intent(this@SystemOverlayLayerActivity, SystemOverlayLayerControlService::class.java))
+			})
+			control_stop_button.setOnClickListener({
+				stopService(Intent(this@SystemOverlayLayerActivity, SystemOverlayLayerControlService::class.java))
+			})
+			
 		} else {
 			requestOverlayPermission()
 		}
