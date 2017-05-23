@@ -2,22 +2,21 @@ package jp.kght6123.smalllittleappviewer
 
 import android.app.Activity
 import android.app.Service
-import android.content.AsyncQueryHandler
 import android.content.BroadcastReceiver
 import android.content.ComponentName
 import android.content.Context
-import android.os.Bundle
-import android.os.PersistableBundle
-import android.util.Log
-import android.view.KeyEvent
-import android.widget.Toast
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.ServiceConnection
+import android.os.Bundle
 import android.os.Handler
 import android.os.IBinder
 import android.os.Message
 import android.os.Messenger
+import android.os.PersistableBundle
+import android.util.Log
+import android.view.KeyEvent
+import android.widget.Toast
 
 class SystemOverlayLayerControlActivity : Activity() {
 	
@@ -58,12 +57,16 @@ class SystemOverlayLayerControlActivity : Activity() {
 		setContentView(R.layout.activity_system_overlay_layer_control)
 		
 		// サービスに接続する（サービスは自動生成）
-		bindService(Intent(this, SystemOverlayLayerService::class.java),
+		bindService(Intent(this, SystemOverlayLayerControlService::class.java),
 				mConnection, Service.BIND_AUTO_CREATE)
 		
 		val iFilter: IntentFilter = IntentFilter()
 		iFilter.addAction(Intent.ACTION_CLOSE_SYSTEM_DIALOGS)
 		this.registerReceiver(receiver, iFilter)
+	}
+	
+	override fun onBackPressed() {
+		Log.d(TAG, "onBackPressed")
 	}
 	
 	override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {

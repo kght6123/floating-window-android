@@ -5,18 +5,21 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.PixelFormat
 import android.graphics.Point
-import android.os.Handler
 import android.os.IBinder
-import android.os.Message
-import android.os.Messenger
-import android.os.RemoteException
 import android.util.Log
-import android.view.*
-import android.webkit.WebView
-import android.widget.LinearLayout
-import android.webkit.WebViewClient
 import android.view.Gravity
+import android.view.LayoutInflater
+import android.view.MotionEvent
+import android.view.View
+import android.view.ViewGroup
 import android.view.WindowManager
+import android.view.WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM
+import android.view.WindowManager.LayoutParams.FLAG_DIM_BEHIND
+import android.view.WindowManager.LayoutParams.FLAG_SPLIT_TOUCH
+import android.view.WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION
+import android.webkit.WebView
+import android.webkit.WebViewClient
+import android.widget.LinearLayout
 import jp.kght6123.smalllittleappviewer.custom.view.ExTouchFocusLinearLayout
 import jp.kght6123.smalllittleappviewer.custom.view.OnInterceptTouchEventListener
 
@@ -28,37 +31,27 @@ class SystemOverlayLayerService : Service() {
 
 	private val TAG = this.javaClass.simpleName
 	
-	val mServiceMessenger: Messenger by lazy {
-		Messenger(object: Handler() {
-			override fun handleMessage(msg: Message?) {
-				Log.e(TAG, "handle request=" + msg)
-				// objでobtainの第三引数で受け渡された値が取得可能
-				
-				try {
-					// Activityから指定されたMessangerへ返信する
-					msg?.replyTo?.send(Message.obtain(null, 1))// Activityへの送信はreplyToのMessangerを使用
-					// 第二引数のIntがwhat?（どの処理か判別するフラグ）になる
-					// 第三引数のObjectが受けわたす値になる
-					//   他にもBundleのsetter / getter（msg.setData(Bundle)）があるので、それを使っても良い、
-					//     BundleのParcelableを実装すれば他アプリにも
-				} catch (e: RemoteException) {
-					e.printStackTrace()
-				}
-			}
-		})
-	}
+	val activeFlags = WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN or //座標系をスクリーンに合わせる
+			WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH or // Viewの外のタッチイベントにも反応する？
+			//WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or  // タッチイベントを拾わない。ロック画面を邪魔しない
+			//WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or  // ウィンドウにフォーカスが当たった時だけ、無効にしたい
+			//WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM  // ウィンドウがどのように対話するかに関して、FLAG_NOT_FOCUSABLEの状態を反転させる？？
+			WindowManager.LayoutParams.FLAG_DIM_BEHIND or  // 後ろのすべてが淡色表示されます。
+			WindowManager.LayoutParams.FLAG_SPLIT_TOUCH  // 境界外のタッチイベントが受け付けられ、サポートする他ウィンドウにも送信
+			//WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION or   // 半透明のナビゲーションバー？
+			//WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS   // 半透明のステータスバー？
 	
-	// オーバーレイのコントロールActivity
-	val intent: Intent by lazy {
-		val it = Intent(this, SystemOverlayLayerControlActivity::class.java)
-		it.flags = Intent.FLAG_ACTIVITY_SINGLE_TOP or
-				Intent.FLAG_ACTIVITY_NEW_TASK or
-				Intent.FLAG_ACTIVITY_CLEAR_TASK or
-				Intent.FLAG_ACTIVITY_NO_HISTORY or
-				Intent.FLAG_ACTIVITY_NO_ANIMATION or
-				Intent.FLAG_ACTIVITY_NO_USER_ACTION
-		it
-	}
+	val activeDimAmount = 0.09f
+	val activeAlpha = 0.95f
+	
+	val inactiveFlags = WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN or
+			WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH or
+			WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or
+			WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
+			WindowManager.LayoutParams.FLAG_SPLIT_TOUCH
+	
+	val inactiveAlpha = 0.5f
+	
 	// オーバーレイ表示させるビュー
 	val overlayView: ExTouchFocusLinearLayout by lazy {
 		val view: ExTouchFocusLinearLayout =
@@ -67,8 +60,9 @@ class SystemOverlayLayerService : Service() {
 			override fun onTouch(event: MotionEvent) {
 				Log.d(TAG, "InTouch motionEvent.x, y = ${event.x}, ${event.y}")
 				
-				params.flags = WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN or
-						WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH
+				params.flags = activeFlags
+				params.dimAmount = activeDimAmount
+				params.alpha = activeAlpha
 				windowManager.updateViewLayout(overlayView, params)
 				
 				// TODO コントロール用のActivity起動予定
@@ -77,15 +71,16 @@ class SystemOverlayLayerService : Service() {
 		view.onInterceptOutTouchEventListener = object: OnInterceptTouchEventListener {
 			override fun onTouch(event: MotionEvent) {
 				Log.d(TAG, "OutTouch motionEvent.x, y = ${event.x}, ${event.y}")
-				params.flags = WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN or
-						WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or
-						WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
-						WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH
+				
+				params.flags = inactiveFlags
+				params.dimAmount = 0.0f
+				params.alpha = inactiveAlpha
 				windowManager.updateViewLayout(overlayView, params)
 				
 				// TODO コントロール用のActivity停止予定
 			}
 		}
+		//view.elevation = 1000F
 		view
 	}
 	val windowFrameTop: LinearLayout by lazy { overlayView.findViewById(R.id.windowFrameTop) as LinearLayout }
@@ -106,12 +101,9 @@ class SystemOverlayLayerService : Service() {
 			100,// X
 			100,// Y
 			//WindowManager.LayoutParams.TYPE_SYSTEM_OVERLAY,   // ロック画面より上にくる
-			WindowManager.LayoutParams.TYPE_SYSTEM_ALERT,   //なるべく上の階層で表示
-			//WindowManager.LayoutParams.TYPE_PHONE,
-			WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN	//座標系をスクリーンに合わせる
-					//or WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL  // タッチイベントを拾わない。ロック画面を邪魔しない
-					//or WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE  // ウィンドウにフォーカスが当たった時だけ、無効にしたい
-					or WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH, // Viewの外のタッチイベントにも反応する？（端末ボタンが無効になる？）
+			WindowManager.LayoutParams.TYPE_SYSTEM_ALERT,     // なるべく上の階層で表示
+			//WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY // Android-O以降
+			activeFlags,
 			PixelFormat.TRANSLUCENT)
 	}
 	
@@ -131,16 +123,15 @@ class SystemOverlayLayerService : Service() {
 	//var isLongClick: Boolean = false
 	
 	override fun onBind(intent: Intent?): IBinder {
-		return mServiceMessenger.binder// ActivityのServiceConnection#onServiceConnectedに渡されるIBinderを返す（Messangerでラップして簡易化）
+		throw UnsupportedOperationException("Not yet implemented")
 	}
 	
 	override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
 		
-		// コントロール用Activity起動
-		startActivity(this.intent)
-		
 		params.gravity = Gravity.TOP or Gravity.START// or Gravity.LEFT
-		
+		params.dimAmount = activeDimAmount
+		params.windowAnimations = android.R.style.Animation_Dialog//Animation_Activity//Animation_Toast
+		params.alpha = activeAlpha
 		windowFrameTop.setOnFocusChangeListener({view: View, hasFocus: Boolean ->
 			Log.d(TAG, "setOnFocusChangeListener hasFocus=$hasFocus")
 			
