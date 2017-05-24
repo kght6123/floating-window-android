@@ -13,10 +13,6 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
-import android.view.WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM
-import android.view.WindowManager.LayoutParams.FLAG_DIM_BEHIND
-import android.view.WindowManager.LayoutParams.FLAG_SPLIT_TOUCH
-import android.view.WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.LinearLayout
@@ -142,8 +138,113 @@ class SystemOverlayLayerService : Service() {
 			
 		})
 		
-		// applyを共通関数？で実行、apply()の戻り値はレシーバオブジェクト本体、つまり呼び出したインスタンスそのもの
-		titleBar.apply(clickListener())
+		windowFrame.setOnTouchListener(object: View.OnTouchListener {
+			
+			private var initialX: Int = 0
+			private var initialY: Int = 0
+			private var initialTouchX: Float = 0f
+			private var initialTouchY: Float = 0f
+			
+			override fun onTouch(v: View, event: MotionEvent): Boolean {
+				Log.d(TAG, "windowFrame motionEvent.rawX, rawY = ${event.rawX}, ${event.rawY}")
+				Log.d(TAG, "windowFrame motionEvent.x, y = ${event.x}, ${event.y}")
+				
+				when (event.action) {
+					
+					MotionEvent.ACTION_DOWN -> {
+						initialX = bodyArea.layoutParams.width
+						initialY = bodyArea.layoutParams.height
+						initialTouchX = event.rawX
+						initialTouchY = event.rawY
+					}
+					MotionEvent.ACTION_UP -> {
+						
+					}
+					MotionEvent.ACTION_MOVE -> {
+						titleBar.layoutParams.width = initialX + (event.rawX - initialTouchX).toInt()
+						bodyArea.layoutParams.width = initialX + (event.rawX - initialTouchX).toInt()
+						bodyArea.layoutParams.height = initialY + (event.rawY - initialTouchY).toInt()
+					}
+				}
+				return false
+			}
+		})
+		
+		titleBar.setOnLongClickListener { view ->
+			// ロングタップ状態が分かりやすいように背景色を変える
+			view.setBackgroundResource(android.R.color.holo_red_light)
+			false
+			
+		}
+		titleBar.setOnTouchListener (object: View.OnTouchListener {
+			
+			private var initialX: Int = 0
+			private var initialY: Int = 0
+			private var initialTouchX: Float = 0f
+			private var initialTouchY: Float = 0f
+			
+			override fun onTouch(v: View, event: MotionEvent): Boolean {
+				
+				val touchAreaX: Float = displaySize.x.toFloat() - (bodyArea.width.toFloat() - event.x)
+				val touchAreaY: Float = displaySize.y.toFloat() - (bodyArea.height.toFloat() - event.y)
+				
+				val rx: Float =
+						if(event.rawX > touchAreaX) touchAreaX else event.rawX
+				val ry: Float =
+						if(event.rawY > touchAreaY) touchAreaY else event.rawY
+				
+				when (event.action) {
+					MotionEvent.ACTION_DOWN -> {
+						// Get current time in nano seconds.
+						initialX = params.x
+						initialY = params.y
+						initialTouchX = rx
+						initialTouchY = ry
+					}
+					MotionEvent.ACTION_UP -> {
+						Log.d(TAG, "displaySize.x, y = ${displaySize.x}, ${displaySize.y}")
+						Log.d(TAG, "motionEvent.rawX, rawY = $rx, $ry")
+						Log.d(TAG, "motionEvent.x, y = ${event.x}, ${event.y}")
+						Log.d(TAG, "touchArea.x, y = $touchAreaX, $touchAreaY")
+						Log.d(TAG, "bodyArea.width, height=${bodyArea.width}, ${bodyArea.height}")
+						Log.d(TAG, "(touchAreaX - rx), (touchAreaY - ry)=${(touchAreaX - rx)}, ${(touchAreaY - ry)}")
+						Log.d(TAG, "params.x, y = ${params.x}, ${params.y}")
+						
+						if((touchAreaX - rx) in 0..10
+								|| params.x - (displaySize.x - bodyArea.width) in 0..10
+								|| params.y - (displaySize.y - bodyArea.height - titleBar.height) in 0..10
+								|| (touchAreaY - ry) in 0..(161+10) ) {
+							// 両端に移動したら小さくする
+							windowManager.removeView(overlayView)
+							windowManager.addView(overlayMiniView, params)
+						}
+					}
+					MotionEvent.ACTION_MOVE -> {
+						params.x = initialX + (rx - initialTouchX).toInt()
+						params.y = initialY + (ry - initialTouchY).toInt()
+						
+						if(params.x > displaySize.x - bodyArea.width)
+							params.x = displaySize.x - bodyArea.width
+						else if(params.x < 0)
+							params.x = 0
+						
+						if(params.y > displaySize.y - bodyArea.height - titleBar.height)
+							params.y = displaySize.y - bodyArea.height - titleBar.height
+						else if(params.y < 0)
+							params.y = 0
+						
+						Log.d(TAG, "params.x, y = ${params.x}, ${params.y}")
+						
+						windowManager.updateViewLayout(overlayView, params)
+					}
+					MotionEvent.ACTION_OUTSIDE -> {
+						Log.d(TAG, "ACTION_OUTSIDE event.x, y = ${event.x}, ${event.y}")
+						Log.d(TAG, "ACTION_OUTSIDE event.rawX, rawY = ${event.rawX}, ${event.rawY}")
+					}
+				}
+				return false
+			}
+		})
 		
 		overlayMiniView.setOnTouchListener({ view, motionEvent ->
 			
@@ -172,92 +273,5 @@ class SystemOverlayLayerService : Service() {
 	override fun onDestroy() {
 		super.onDestroy()
 		windowManager.removeView(overlayView)
-	}
-
-//    var oldX: Int? = null
-//    var oldY: Int? = null
-	
-	// レシーバはView型で引数はなし、戻り値はUnit型（voidと同等）
-	//  => あたかも、View.clickListener()の様に呼び出せる
-	//  => clickListener()はapplyの引数を共通関数化？した関数
-	private fun clickListener(): View.() -> Unit {
-		return {
-			setOnLongClickListener { view ->
-				// ロングタップ状態にする
-				//isLongClick = true
-				// ロングタップ状態が分かりやすいように背景色を変える
-				view.setBackgroundResource(android.R.color.holo_red_light)
-				false
-				
-			}.apply {// Unit型にapply？？、以前のapplyのスコープが引き継がれるっぽい？
-				
-				setOnTouchListener (object: View.OnTouchListener {
-					
-					private var initialX: Int = 0
-					private var initialY: Int = 0
-					private var initialTouchX: Float = 0f
-					private var initialTouchY: Float = 0f
-					
-					override fun onTouch(v: View, event: MotionEvent): Boolean {
-						
-						val touchAreaX: Float = displaySize.x.toFloat() - (bodyArea.width.toFloat() - event.x)
-						val touchAreaY: Float = displaySize.y.toFloat() - (bodyArea.height.toFloat() - event.y)
-						
-						val rx: Float =
-								if(event.rawX > touchAreaX) touchAreaX else event.rawX
-						val ry: Float =
-								if(event.rawY > touchAreaY) touchAreaY else event.rawY
-						
-						when (event.action) {
-							MotionEvent.ACTION_DOWN -> {
-								// Get current time in nano seconds.
-								initialX = params.x
-								initialY = params.y
-								initialTouchX = rx
-								initialTouchY = ry
-							}
-							MotionEvent.ACTION_UP -> {
-								Log.d(TAG, "displaySize.x, y = ${displaySize.x}, ${displaySize.y}")
-								Log.d(TAG, "motionEvent.rawX, rawY = $rx, $ry")
-								Log.d(TAG, "motionEvent.x, y = ${event.x}, ${event.y}")
-								Log.d(TAG, "touchArea.x, y = $touchAreaX, $touchAreaY")
-								Log.d(TAG, "bodyArea.width, height=${bodyArea.width}, ${bodyArea.height}")
-								Log.d(TAG, "(touchAreaX - rx), (touchAreaY - ry)=${(touchAreaX - rx)}, ${(touchAreaY - ry)}")
-								
-								if((touchAreaX - rx) in 0..10 || params.x in 0..10 || params.y in 0..10 || (touchAreaY - ry) in 0..(161+10) ) {
-									// 両端に移動したら小さくする
-									windowManager.removeView(overlayView)
-									windowManager.addView(overlayMiniView, params)
-								}
-							}
-							MotionEvent.ACTION_MOVE -> {
-								params.x = initialX + (rx - initialTouchX).toInt()
-								params.y = initialY + (ry - initialTouchY).toInt()
-								
-								if(params.x > displaySize.x - bodyArea.width)
-									params.x = displaySize.x - bodyArea.width
-								else if(params.x < 0)
-									params.x = 0
-								
-								if(params.y > displaySize.y - bodyArea.height - titleBar.height)
-									params.y = displaySize.y - bodyArea.height - titleBar.height
-								else if(params.y < 0)
-									params.y = 0
-								
-								Log.d(TAG, "params.x, y = ${params.x}, ${params.y}")
-								
-								windowManager.updateViewLayout(overlayView, params)
-							}
-							MotionEvent.ACTION_OUTSIDE -> {
-								Log.d(TAG, "ACTION_OUTSIDE event.x, y = ${event.x}, ${event.y}")
-								Log.d(TAG, "ACTION_OUTSIDE event.rawX, rawY = ${event.rawX}, ${event.rawY}")
-							}
-						}
-						return false
-					}
-				})
-				
-			}
-		}
 	}
 }

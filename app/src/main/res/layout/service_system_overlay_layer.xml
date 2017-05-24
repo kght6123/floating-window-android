@@ -6,9 +6,9 @@
 	android:layout_height="wrap_content"
 	android:focusable="true"
 	android:focusableInTouchMode="true"
-	android:background="@android:color/transparent"
+	android:background="@drawable/shadow_233622"
 	android:id="@+id/windowFrameTop">
-	
+	<!-- http://inloop.github.io/shadow4android/ 0;10;rgba(0,0,0,0.5) -->
 	<LinearLayout
 		android:orientation="vertical"
 		android:layout_width="wrap_content"
@@ -33,9 +33,7 @@
 			android:layout_height="match_parent"
 			android:minWidth="300dp"
 			android:minHeight="300dp"
-			android:background="@android:color/holo_orange_dark"
 			android:id="@+id/bodyArea">
-			
 			<WebView
 				android:layout_width="300dp"
 				android:layout_height="300dp"
