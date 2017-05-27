@@ -89,7 +89,7 @@ class SystemOverlayLayerService : Service() {
 		view.setOnLongClickListener {
 			if(strokeMode != Stroke.UNKNOWN && windowMode == Mode.UNKNOWN) {
 				// リサイズモードの背景色に変える
-				windowFrame.setBackgroundResource(android.R.color.holo_red_dark)
+				windowFrame.setBackgroundResource(R.color.colorAccent)
 				windowMode = Mode.RESIZE
 			}
 			return@setOnLongClickListener false
@@ -98,13 +98,10 @@ class SystemOverlayLayerService : Service() {
 			
 			private val strokeWidth: Int = UnitUtils.convertDp2Px(3f, this@SystemOverlayLayerService).toInt() + 40/*ぼかしの分*/
 			
-//			private var initialX: Int = 0
-//			private var initialY: Int = 0
-//			private var initialTouchX: Float = 0f
-//			private var initialTouchY: Float = 0f
-			
 			private var initialX: Int = 0
 			private var initialY: Int = 0
+			private var initialWidth: Int = 0
+			private var initialHeight: Int = 0
 			private var initialTouchX: Float = 0f
 			private var initialTouchY: Float = 0f
 			
@@ -125,12 +122,11 @@ class SystemOverlayLayerService : Service() {
 				when (event.action) {
 					
 					MotionEvent.ACTION_DOWN -> {
-//						initialX = params.width
-//						initialY = params.height
-//						initialTouchX = event.rawX
-//						initialTouchY = event.rawY
 						
+						// モードのリセット
+						windowMode = Mode.UNKNOWN
 						strokeMode = Stroke.UNKNOWN
+						
 						if(event.x in 0..this.strokeWidth){
 							strokeMode = Stroke.LEFT
 							Log.d(TAG, "dispatchTouchEvent $strokeMode strokeWidth=$strokeWidth")
@@ -152,16 +148,18 @@ class SystemOverlayLayerService : Service() {
 							
 						}
 						if(strokeMode != Stroke.UNKNOWN) {
-							// 移動のための初期値設定
+							// 移動・拡大縮小のための初期値設定
 							initialX = params.x
 							initialY = params.y
+							initialWidth = params.width
+							initialHeight = params.height
 							initialTouchX = rx
 							initialTouchY = ry
 						}
 					}
 					MotionEvent.ACTION_UP -> {
 						
-						if(strokeMode != Stroke.UNKNOWN) {
+						if(windowMode == Mode.MOVE && strokeMode != Stroke.UNKNOWN) {
 							// 移動完了
 							Log.d(TAG, "displaySize.x, y = ${displaySize.x}, ${displaySize.y}")
 							Log.d(TAG, "motionEvent.rawX, rawY = $rx, $ry")
@@ -181,14 +179,15 @@ class SystemOverlayLayerService : Service() {
 							}
 							windowMode = Mode.UNKNOWN
 						}
+						if(windowMode == Mode.RESIZE && strokeMode != Stroke.UNKNOWN) {
+							windowMode = Mode.UNKNOWN
+							
+							windowFrame.setBackgroundResource(android.R.color.background_light)
+						}
 					}
 					MotionEvent.ACTION_MOVE -> {
-//						params.width = initialX + (event.rawX - initialTouchX).toInt()
-//						params.height = initialY + (event.rawY - initialTouchY).toInt()
-//
-//						windowManager.updateViewLayout(overlayView, params)
 						
-						if(strokeMode != Stroke.UNKNOWN) {
+						if(windowMode != Mode.RESIZE && strokeMode != Stroke.UNKNOWN) {
 							// 移動中の処理
 							params.x = initialX + (rx - initialTouchX).toInt()
 							params.y = initialY + (ry - initialTouchY).toInt()
@@ -209,6 +208,32 @@ class SystemOverlayLayerService : Service() {
 							
 							windowMode = Mode.MOVE
 						}
+						if(windowMode == Mode.RESIZE && strokeMode != Stroke.UNKNOWN) {
+							
+							when(strokeMode){
+								Stroke.TOP -> {
+									params.height = (initialHeight - (ry - initialTouchY).toInt())
+									params.y = initialY + (ry - initialTouchY).toInt()
+									windowManager.updateViewLayout(overlayView, params)
+								}
+								Stroke.BOTTOM -> {
+									params.height = (initialHeight + (ry - initialTouchY).toInt())
+									windowManager.updateViewLayout(overlayView, params)
+								}
+								Stroke.LEFT -> {
+									params.width = (initialWidth - (rx - initialTouchX).toInt())
+									params.x = initialX + (rx - initialTouchX).toInt()
+									windowManager.updateViewLayout(overlayView, params)
+								}
+								Stroke.RIGHT -> {
+									params.width = (initialWidth + (rx - initialTouchX).toInt())
+									windowManager.updateViewLayout(overlayView, params)
+								}
+								else -> {
+									
+								}
+							}
+						}
 					}
 					MotionEvent.ACTION_OUTSIDE -> {
 						Log.d(TAG, "ACTION_OUTSIDE event.x, y = ${event.x}, ${event.y}")
@@ -218,7 +243,6 @@ class SystemOverlayLayerService : Service() {
 				
 			}
 		}
-		//view.elevation = 1000F
 		view
 	}
 	//val windowFrameTop: LinearLayout by lazy { overlayView.findViewById(R.id.windowFrameTop) as LinearLayout }
@@ -250,15 +274,8 @@ class SystemOverlayLayerService : Service() {
 		val display = windowManager.defaultDisplay
 		val size = Point()
 		display.getSize(size)
-		
-		//Log.d(TAG, "bodyArea.layoutParams.height="+bodyArea.layoutParams.height)
-		//size.x -= bodyArea.width
-		//size.y -= bodyArea.height
 		size
 	}
-	
-	// ロングタップ判定用
-	//var isLongClick: Boolean = false
 	
 	override fun onBind(intent: Intent?): IBinder {
 		throw UnsupportedOperationException("Not yet implemented")
@@ -270,125 +287,6 @@ class SystemOverlayLayerService : Service() {
 		params.dimAmount = activeDimAmount
 		params.windowAnimations = android.R.style.Animation_Dialog//Animation_Activity//Animation_Toast
 		params.alpha = activeAlpha
-		
-//		overlayView.setOnFocusChangeListener({view: View, hasFocus: Boolean ->
-//			Log.d(TAG, "setOnFocusChangeListener hasFocus=$hasFocus")
-//
-//		})
-		//overlayView.requestDisallowInterceptTouchEvent(true)
-		
-//		windowFrame.setOnFocusChangeListener({view: View, hasFocus: Boolean ->
-//			Log.d(TAG, "setOnFocusChangeListener hasFocus=$hasFocus")
-//
-//		})
-		
-//		windowFrame.setOnTouchListener(object: View.OnTouchListener {
-//
-//			private var initialX: Int = 0
-//			private var initialY: Int = 0
-//			private var initialTouchX: Float = 0f
-//			private var initialTouchY: Float = 0f
-//
-//			override fun onTouch(v: View, event: MotionEvent): Boolean {
-//				Log.d(TAG, "windowFrame motionEvent.rawX, rawY = ${event.rawX}, ${event.rawY}")
-//				Log.d(TAG, "windowFrame motionEvent.x, y = ${event.x}, ${event.y}")
-//
-//				when (event.action) {
-//
-//					MotionEvent.ACTION_DOWN -> {
-//						initialX = bodyArea.layoutParams.width
-//						initialY = bodyArea.layoutParams.height
-//						initialTouchX = event.rawX
-//						initialTouchY = event.rawY
-//					}
-//					MotionEvent.ACTION_UP -> {
-//
-//					}
-//					MotionEvent.ACTION_MOVE -> {
-//						titleBar.layoutParams.width = initialX + (event.rawX - initialTouchX).toInt()
-//						bodyArea.layoutParams.width = initialX + (event.rawX - initialTouchX).toInt()
-//						bodyArea.layoutParams.height = initialY + (event.rawY - initialTouchY).toInt()
-//					}
-//				}
-//				return false
-//			}
-//		})
-		
-//		titleBar.setOnLongClickListener { view ->
-//			// ロングタップ状態が分かりやすいように背景色を変える
-//			view.setBackgroundResource(android.R.color.holo_red_light)
-//			return@setOnLongClickListener false
-//
-//		}
-//		titleBar.setOnTouchListener (object: View.OnTouchListener {
-//
-////			private var initialX: Int = 0
-////			private var initialY: Int = 0
-////			private var initialTouchX: Float = 0f
-////			private var initialTouchY: Float = 0f
-//
-//			override fun onTouch(v: View, event: MotionEvent): Boolean {
-//
-////				val touchAreaX: Float = displaySize.x.toFloat() - (bodyArea.width.toFloat() - event.x)
-////				val touchAreaY: Float = displaySize.y.toFloat() - (bodyArea.height.toFloat() - event.y)
-////
-////				val rx: Float =
-////						if(event.rawX > touchAreaX) touchAreaX else event.rawX
-////				val ry: Float =
-////						if(event.rawY > touchAreaY) touchAreaY else event.rawY
-//
-//				when (event.action) {
-//					MotionEvent.ACTION_DOWN -> {
-//						// Get current time in nano seconds.
-////						initialX = params.x
-////						initialY = params.y
-////						initialTouchX = rx
-////						initialTouchY = ry
-//					}
-//					MotionEvent.ACTION_UP -> {
-////						Log.d(TAG, "displaySize.x, y = ${displaySize.x}, ${displaySize.y}")
-////						Log.d(TAG, "motionEvent.rawX, rawY = $rx, $ry")
-////						Log.d(TAG, "motionEvent.x, y = ${event.x}, ${event.y}")
-////						Log.d(TAG, "touchArea.x, y = $touchAreaX, $touchAreaY")
-////						Log.d(TAG, "bodyArea.width, height=${bodyArea.width}, ${bodyArea.height}")
-////						Log.d(TAG, "(touchAreaX - rx), (touchAreaY - ry)=${(touchAreaX - rx)}, ${(touchAreaY - ry)}")
-////						Log.d(TAG, "params.x, y = ${params.x}, ${params.y}")
-////
-////						if((touchAreaX - rx) in 0..10
-////								|| params.x - (displaySize.x - bodyArea.width) in 0..10
-////								|| params.y - (displaySize.y - bodyArea.height - titleBar.height) in 0..10
-////								|| (touchAreaY - ry) in 0..(161+10) ) {
-////							// 両端に移動したら小さくする
-////							windowManager.removeView(overlayView)
-////							windowManager.addView(overlayMiniView, params)
-////						}
-//					}
-//					MotionEvent.ACTION_MOVE -> {
-////						params.x = initialX + (rx - initialTouchX).toInt()
-////						params.y = initialY + (ry - initialTouchY).toInt()
-////
-////						if(params.x > displaySize.x - bodyArea.width)
-////							params.x = displaySize.x - bodyArea.width
-////						else if(params.x < 0)
-////							params.x = 0
-////
-////						if(params.y > displaySize.y - bodyArea.height - titleBar.height)
-////							params.y = displaySize.y - bodyArea.height - titleBar.height
-////						else if(params.y < 0)
-////							params.y = 0
-////
-////						Log.d(TAG, "params.x, y = ${params.x}, ${params.y}")
-////
-////						windowManager.updateViewLayout(overlayView, params)
-//					}
-//					MotionEvent.ACTION_OUTSIDE -> {
-////						Log.d(TAG, "ACTION_OUTSIDE event.x, y = ${event.x}, ${event.y}")
-////						Log.d(TAG, "ACTION_OUTSIDE event.rawX, rawY = ${event.rawX}, ${event.rawY}")
-//					}
-//				}
-//				return false
-//			}
-//		})
 		
 		overlayMiniView.setOnTouchListener({ view, motionEvent ->
 			
