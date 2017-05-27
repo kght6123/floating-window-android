@@ -2,8 +2,8 @@
 <jp.kght6123.smalllittleappviewer.custom.view.ExTouchFocusLinearLayout
 	xmlns:android="http://schemas.android.com/apk/res/android"
 	android:orientation="vertical"
-	android:layout_width="wrap_content"
-	android:layout_height="wrap_content"
+	android:layout_width="match_parent"
+	android:layout_height="match_parent"
 	android:focusable="true"
 	android:focusableInTouchMode="true"
 	android:background="@drawable/shadow_233622"
@@ -11,35 +11,17 @@
 	<!-- http://inloop.github.io/shadow4android/ 0;10;rgba(0,0,0,0.5) -->
 	<LinearLayout
 		android:orientation="vertical"
-		android:layout_width="wrap_content"
-		android:layout_height="wrap_content"
+		android:layout_width="match_parent"
+		android:layout_height="match_parent"
 		android:focusable="true"
 		android:focusableInTouchMode="true"
-		android:background="@drawable/layer_list"
+		android:background="@android:color/background_light"
 		android:padding="3dp"
 		android:id="@+id/windowFrame">
-		<LinearLayout
-			android:orientation="vertical"
-			android:layout_width="wrap_content"
-			android:layout_height="wrap_content"
-			android:minWidth="300dp"
-			android:minHeight="60dp"
-			android:background="@android:color/darker_gray"
-			android:id="@+id/titleBar">
-		</LinearLayout>
-		<LinearLayout
-			android:orientation="vertical"
+		<WebView
 			android:layout_width="match_parent"
 			android:layout_height="match_parent"
-			android:minWidth="300dp"
-			android:minHeight="300dp"
-			android:id="@+id/bodyArea">
-			<WebView
-				android:layout_width="300dp"
-				android:layout_height="300dp"
-				android:id="@+id/webView"/>
-			
-		</LinearLayout>
+			android:id="@+id/webView"/>
 	</LinearLayout>
 
 </jp.kght6123.smalllittleappviewer.custom.view.ExTouchFocusLinearLayout>

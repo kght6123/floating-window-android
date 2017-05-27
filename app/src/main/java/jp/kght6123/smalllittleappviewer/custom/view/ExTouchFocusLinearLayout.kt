@@ -7,6 +7,7 @@ import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.View
 import android.widget.LinearLayout
+import jp.kght6123.smalllittleappviewer.utils.UnitUtils
 
 /**
  * Created by kogahirotaka on 2017/05/16.
@@ -19,29 +20,32 @@ class ExTouchFocusLinearLayout : LinearLayout {
 	
 	private val TAG = this.javaClass.simpleName
 	
-	var onInterceptInTouchEventListener: OnInterceptTouchEventListener? = null
-	var onInterceptOutTouchEventListener: OnInterceptTouchEventListener? = null
+	var onInTouchEventListener: OnTouchEventListener? = null
+	var onOutTouchEventListener: OnTouchEventListener? = null
+	var onDispatchTouchEventListener: OnTouchEventListener? = null
 	
-	var onDispatchKeyEventListener: OnDispatchKeyEventListener? = null
+	var onKeyEventListener: OnKeyEventListener? = null
 	
 	override fun onInterceptTouchEvent(event: MotionEvent): Boolean {
 		Log.d(TAG, "onInterceptTouchEvent event.rawX,Y=${event.rawX},${event.rawY} event.x,y=${event.x},${event.y} this.width,height=${this.width},${this.height}")
 
 		if(event.x in 0..this.width && event.y in 0..this.height) {
 			Log.d(TAG, "on View")
-			this.onInterceptInTouchEventListener?.onTouch(event)
+			this.onInTouchEventListener?.onTouch(event)
 		} else {
 			Log.d(TAG, "out View")
-			this.onInterceptOutTouchEventListener?.onTouch(event)
+			this.onOutTouchEventListener?.onTouch(event)
 		}
-		//return super.onInterceptTouchEvent(event)
-		return false
+		val flag = super.onInterceptTouchEvent(event)
+		Log.d(TAG, "onInterceptTouchEvent flag=$flag")
+		return flag
+		//return false
 	}
 
 	override fun onInterceptHoverEvent(event: MotionEvent): Boolean {
 		Log.d(TAG, "onInterceptHoverEvent event.rawX,Y=${event.rawX},${event.rawY} event.x,y=${event.x},${event.y}")
-		//return super.onInterceptHoverEvent(event)er
-		return false
+		return super.onInterceptHoverEvent(event)
+		//return false
 	}
 
 	override fun dispatchWindowFocusChanged(hasFocus: Boolean) {
@@ -59,9 +63,14 @@ class ExTouchFocusLinearLayout : LinearLayout {
 		return super.dispatchGenericPointerEvent(event)
 	}
 	
-	override fun dispatchTouchEvent(ev: MotionEvent?): Boolean {
-		Log.d(TAG, "dispatchTouchEvent")
-		return super.dispatchTouchEvent(ev)
+	override fun dispatchTouchEvent(event: MotionEvent?): Boolean {
+		val flag = super.dispatchTouchEvent(event)
+		Log.d(TAG, "dispatchTouchEvent flag=$flag event.rawX,rawY=${event?.rawX},${event?.rawY} event.x,y=${event?.x},${event?.y}")
+		
+		if(event != null) {
+			this.onDispatchTouchEventListener?.onTouch(event)
+		}
+		return flag
 	}
 	
 	override fun dispatchDisplayHint(hint: Int) {
@@ -96,14 +105,20 @@ class ExTouchFocusLinearLayout : LinearLayout {
 	
 	override fun dispatchKeyEvent(event: KeyEvent?): Boolean {
 		Log.d(TAG, "dispatchKeyEvent ${event?.keyCode}")
-		onDispatchKeyEventListener?.onKey(event)
+		this.onKeyEventListener?.onKey(event)
 		
 		return super.dispatchKeyEvent(event)
 	}
+	
+	override fun onTouchEvent(event: MotionEvent?): Boolean {
+		val flag = super.onTouchEvent(event)
+		Log.d(TAG, "onTouchEvent flag=$flag")
+		return flag
+	}
 }
-interface OnInterceptTouchEventListener {
+interface OnTouchEventListener {
 	fun onTouch(event: MotionEvent): Unit
 }
-interface OnDispatchKeyEventListener {
+interface OnKeyEventListener {
 	fun onKey(event: KeyEvent?): Unit
 }
