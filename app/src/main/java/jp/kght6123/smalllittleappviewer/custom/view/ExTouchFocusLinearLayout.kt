@@ -3,6 +3,8 @@ package jp.kght6123.smalllittleappviewer.custom.view
 import android.content.Context
 import android.util.AttributeSet
 import android.util.Log
+import android.view.GestureDetector
+import android.view.GestureDetector.SimpleOnGestureListener
 import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.View
@@ -26,6 +28,11 @@ class ExTouchFocusLinearLayout : LinearLayout {
 	
 	var onKeyEventListener: OnKeyEventListener? = null
 	
+	var onGestureListener: GestureDetector.OnGestureListener = SimpleOnGestureListener()
+	val gestureDetector: GestureDetector by lazy {
+		GestureDetector(context, onGestureListener)
+	}
+	
 	override fun onInterceptTouchEvent(event: MotionEvent): Boolean {
 		Log.d(TAG, "onInterceptTouchEvent event.rawX,Y=${event.rawX},${event.rawY} event.x,y=${event.x},${event.y} this.width,height=${this.width},${this.height}")
 
@@ -36,6 +43,7 @@ class ExTouchFocusLinearLayout : LinearLayout {
 			Log.d(TAG, "out View")
 			this.onOutTouchEventListener?.onTouch(event)
 		}
+		
 		val flag = super.onInterceptTouchEvent(event)
 		Log.d(TAG, "onInterceptTouchEvent flag=$flag")
 		return flag
@@ -70,6 +78,8 @@ class ExTouchFocusLinearLayout : LinearLayout {
 		if(event != null) {
 			this.onDispatchTouchEventListener?.onTouch(event)
 		}
+		gestureDetector.onTouchEvent(event)// ジェスチャー機能を使う
+		
 		return flag
 	}
 	
