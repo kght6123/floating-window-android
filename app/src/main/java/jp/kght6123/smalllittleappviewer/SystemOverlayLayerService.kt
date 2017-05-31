@@ -1,5 +1,6 @@
 package jp.kght6123.smalllittleappviewer
 
+import android.app.Notification
 import android.app.Service
 import android.content.Context
 import android.content.Intent
@@ -19,6 +20,9 @@ import android.widget.LinearLayout
 import jp.kght6123.smalllittleappviewer.custom.view.ExTouchFocusLinearLayout
 import jp.kght6123.smalllittleappviewer.custom.view.OnTouchEventListener
 import jp.kght6123.smalllittleappviewer.utils.UnitUtils
+import android.app.PendingIntent
+
+
 
 
 /**
@@ -46,7 +50,8 @@ class SystemOverlayLayerService : Service() {
 			//WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS   // 半透明のステータスバー？
 			//WindowManager.LayoutParams.FLAG_LAYOUT_IN_OVERSCAN or
 			WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN or
-			WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
+			WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS or
+			WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED
 	
 	val activeDimAmount = 0.09f
 	val activeAlpha = 0.95f
@@ -57,7 +62,8 @@ class SystemOverlayLayerService : Service() {
 			WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
 			WindowManager.LayoutParams.FLAG_SPLIT_TOUCH or
 			WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN or
-			WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
+			WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS or
+			WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED
 	
 	val inactiveAlpha = 0.5f
 	
@@ -467,6 +473,29 @@ class SystemOverlayLayerService : Service() {
 		windowManager.addView(overlayView, params)
 //		windowManager.addView(createTestView1(), params1)
 //		windowManager.addView(createTestView2(), params2)
+		
+		/**
+		 * * layout xml 動的生成
+		- [Android]LayoutInflaterについて(生成,方法比較,実装) http://qiita.com/Bth0061/items/c4f66477979d064913e4
+		- 一番TopのカスタムViewだけnewして、配下の子layoutはxmlをinflateして追加とかで何とかならないか？
+		- 下記みたいな感じにして、すべてのViewをnewで追加するのは避けたい。
+		- WindowManagerにaddViewしたときの各LayoutParam＋追加したViewは、Map<Key,ViewAndParam>などで保持が必要となる。
+		
+		```
+		val windowView: View = View.inflate(context, R.layout.layout_sample/*フレームView*/, root/*親カスタムView*/, true/*rootにchild追加*/)
+		View.inflate(context, R.layout.layout_sample/*アプリView*/, windowView, true/*rootにchild追加*/)
+		```
+		 */
+		// 前面で起動する
+		val pendingIntent =
+				PendingIntent.getActivity(this, 0, Intent(this, SystemOverlayLayerActivity::class.java), 0)
+		val notification = Notification.Builder(this)
+				.setContentTitle("スモールアプリ")
+				.setContentText("起動中")
+				.setContentIntent(pendingIntent)
+				.setSmallIcon(R.mipmap.ic_launcher_round)
+				.build()
+		startForeground(startId, notification)
 		
 		return START_NOT_STICKY // 強制終了後に再起動されない
 	}

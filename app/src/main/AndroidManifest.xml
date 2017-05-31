@@ -65,7 +65,7 @@
 		<service android:name=".SystemOverlayLayerService"
 			android:enabled="true"
 			android:exported="false"
-			android:process=".local"/>
+			android:process=":local"/>
 		
 		<activity
 			android:name=".SystemOverlayLayerControlActivity"
