@@ -9,12 +9,11 @@ import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.View
 import android.widget.LinearLayout
-import jp.kght6123.smalllittleappviewer.utils.UnitUtils
 
 /**
  * Created by kogahirotaka on 2017/05/16.
  */
-class ExTouchFocusLinearLayout : LinearLayout {
+open class ExTouchFocusLinearLayout : LinearLayout {
 	constructor(context: Context?) : super(context)
 	constructor(context: Context?, attrs: AttributeSet?) : super(context, attrs)
 	constructor(context: Context?, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr)

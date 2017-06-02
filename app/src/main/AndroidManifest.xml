@@ -67,6 +67,7 @@
 			android:exported="false"
 			android:process=":local"/>
 		
+		<!--
 		<activity
 			android:name=".SystemOverlayLayerControlActivity"
 			android:clearTaskOnLaunch="true"
@@ -79,7 +80,7 @@
 		
 		<service android:name=".SystemOverlayLayerControlService"
 			android:enabled="true"
-			android:exported="false"/>
+			android:exported="false"/>-->
 	</application>
 
 </manifest>
