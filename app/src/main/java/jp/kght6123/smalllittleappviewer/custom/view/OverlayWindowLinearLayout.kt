@@ -1,8 +1,8 @@
 package jp.kght6123.smalllittleappviewer.custom.view
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.PixelFormat
-import android.graphics.Point
 import android.util.Log
 import android.view.GestureDetector.SimpleOnGestureListener
 import android.view.Gravity
@@ -15,12 +15,14 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.LinearLayout
 import jp.kght6123.smalllittleappviewer.R
+import jp.kght6123.smalllittleappviewer.manager.OverlayWindowManager
 import jp.kght6123.smalllittleappviewer.utils.UnitUtils
 
+@SuppressLint("ViewConstructor")
 /**
  * Created by kogahirotaka on 2017/06/02.
  */
-class OverlayWindowLinearLayout(context: Context) : ExTouchFocusLinearLayout(context) {
+class OverlayWindowLinearLayout(context: Context, val overlayManager: OverlayWindowManager, index: Int) : ExTouchFocusLinearLayout(context) {
 	
 	private val TAG = this.javaClass.simpleName
 	
@@ -30,6 +32,8 @@ class OverlayWindowLinearLayout(context: Context) : ExTouchFocusLinearLayout(con
 	private enum class Mode {
 		UNKNOWN, MOVE, RESIZE, FINISH
 	}
+	
+	val name = "${context.packageName}.$index"
 	
 	val activeFlags = WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN or //座標系をスクリーンに合わせる
 			WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH or // Viewの外のタッチイベントにも反応する？
@@ -61,6 +65,7 @@ class OverlayWindowLinearLayout(context: Context) : ExTouchFocusLinearLayout(con
 	
 	private var strokeMode: Stroke = Stroke.UNKNOWN
 	private var windowMode: Mode = Mode.UNKNOWN
+	var activeFlag: Boolean = false
 	
 	val windowFrame: LinearLayout by lazy {
 		View.inflate(context, R.layout.service_system_overlay_layer/*フレームView*/, this)
@@ -83,17 +88,13 @@ class OverlayWindowLinearLayout(context: Context) : ExTouchFocusLinearLayout(con
 			
 			when (motionEvent.action) {
 				MotionEvent.ACTION_UP -> {
-					windowManager.removeViewImmediate(overlayMiniView)
-					windowManager.addView(this@OverlayWindowLinearLayout, params)
+					overlayManager.switchWindowSize(this@OverlayWindowLinearLayout.name, params, false)
 				}
 			}
 			return@setOnTouchListener false
 		})
 		overlayMiniView
 	}
-	
-	// WindowManager
-	val windowManager: WindowManager by lazy { context.getSystemService(Context.WINDOW_SERVICE) as WindowManager }
 	
 	// WindowManagerに設定するレイアウトパラメータ、オーバーレイViewの設定をする
 	val params: WindowManager.LayoutParams by lazy {
@@ -109,17 +110,17 @@ class OverlayWindowLinearLayout(context: Context) : ExTouchFocusLinearLayout(con
 				PixelFormat.TRANSLUCENT)
 		params.gravity = Gravity.TOP or Gravity.START// or Gravity.LEFT
 		params.dimAmount = activeDimAmount
-		params.windowAnimations = android.R.style.Animation_Dialog//Animation_Activity//Animation_Toast
+		params.windowAnimations = android.R.style.Animation//Animation_Translucent//Animation_Activity//Animation_Toast//Animation_Dialog
 		params.alpha = activeAlpha
 		params
 	}
 	// ディスプレイのサイズを格納する
-	val displaySize: Point by lazy {
-		val display = windowManager.defaultDisplay
-		val size = Point()
-		display.getSize(size)
-		size
-	}
+//	val displaySize: Point by lazy {
+//		val display = windowManager.defaultDisplay
+//		val size = Point()
+//		display.getSize(size)
+//		size
+//	}
 	
 	init {
 		val layoutParams = LinearLayout.LayoutParams(
@@ -135,24 +136,59 @@ class OverlayWindowLinearLayout(context: Context) : ExTouchFocusLinearLayout(con
 			override fun onTouch(event: MotionEvent) {
 				Log.d(TAG, "InTouch motionEvent.x, y = ${event.x}, ${event.y}")
 				
-				params.flags = activeFlags
-				params.dimAmount = activeDimAmount
-				params.alpha = activeAlpha
-				windowManager.updateViewLayout(this@OverlayWindowLinearLayout, params)
-				
-				// TODO コントロール用のActivity起動予定
+				when(event.action){
+					MotionEvent.ACTION_MOVE -> {
+						Log.d(TAG, "InTouch ACTION_MOVE")
+					}
+					MotionEvent.ACTION_DOWN -> {
+						Log.d(TAG, "InTouch ACTION_DOWN")
+						
+						params.flags = activeFlags
+						params.dimAmount = activeDimAmount
+						params.alpha = activeAlpha
+						
+						if(this@OverlayWindowLinearLayout.activeFlag)
+							overlayManager.update(this@OverlayWindowLinearLayout.name, params)
+						else
+							overlayManager.changeActive(this@OverlayWindowLinearLayout.name, params)
+						
+						// TODO コントロール用のActivity起動予定
+					}
+					MotionEvent.ACTION_UP -> {
+						Log.d(TAG, "InTouch ACTION_UP")
+					}
+					else -> {
+						Log.d(TAG, "InTouch event.action=${event.action}")
+					}
+				}
 			}
 		}
 		this.onOutTouchEventListener = object: OnTouchEventListener {
 			override fun onTouch(event: MotionEvent) {
 				Log.d(TAG, "OutTouch motionEvent.x, y = ${event.x}, ${event.y}")
 				
-				params.flags = inactiveFlags
-				params.dimAmount = 0.0f
-				params.alpha = inactiveAlpha
-				windowManager.updateViewLayout(this@OverlayWindowLinearLayout, params)
-				
-				// TODO コントロール用のActivity停止予定
+				when(event.action){
+					MotionEvent.ACTION_MOVE -> {
+						Log.d(TAG, "OutTouch ACTION_MOVE")
+					}
+					MotionEvent.ACTION_DOWN -> {
+						Log.d(TAG, "OutTouch ACTION_DOWN")
+						
+						params.flags = inactiveFlags
+						params.dimAmount = 0.0f
+						params.alpha = inactiveAlpha
+						
+						overlayManager.update(this@OverlayWindowLinearLayout.name, params)
+						
+						// TODO コントロール用のActivity停止予定
+					}
+					MotionEvent.ACTION_UP -> {
+						Log.d(TAG, "OutTouch ACTION_UP")
+					}
+					else -> {
+						Log.d(TAG, "OutTouch event.action=${event.action}")
+					}
+				}
 			}
 		}
 		this.setOnLongClickListener {
@@ -166,8 +202,7 @@ class OverlayWindowLinearLayout(context: Context) : ExTouchFocusLinearLayout(con
 		
 		val switchMiniMode = fun() {
 			if(/*windowMode == Mode.UNKNOWN && */strokeMode != Stroke.UNKNOWN) {
-				windowManager.removeViewImmediate(this@OverlayWindowLinearLayout)
-				windowManager.addView(overlayMiniView, params)
+				overlayManager.switchWindowSize(this@OverlayWindowLinearLayout.name, params, true)
 			}
 		}
 		
@@ -338,7 +373,7 @@ class OverlayWindowLinearLayout(context: Context) : ExTouchFocusLinearLayout(con
 						
 						if(windowMode == Mode.MOVE && strokeMode != Stroke.UNKNOWN) {
 							// 移動完了
-							Log.d(TAG, "displaySize.x, y = ${displaySize.x}, ${displaySize.y}")
+							Log.d(TAG, "displaySize.x, y = ${overlayManager.defaultDisplaySize.x}, ${overlayManager.defaultDisplaySize.y}")
 							Log.d(TAG, "motionEvent.rawX, rawY = $rx, $ry")
 							Log.d(TAG, "motionEvent.x, y = ${event.x}, ${event.y}")
 							//Log.d(TAG, "touchArea.x, y = $touchAreaX, $touchAreaY")
@@ -390,19 +425,19 @@ class OverlayWindowLinearLayout(context: Context) : ExTouchFocusLinearLayout(con
 							
 							Log.d(TAG, "params.x, y = ${params.x}, ${params.y}")
 							
-							windowManager.updateViewLayout(this@OverlayWindowLinearLayout, params)
+							overlayManager.update(this@OverlayWindowLinearLayout.name, params)
 							
 							windowMode = Mode.MOVE
 						}
 						if(windowMode == Mode.RESIZE && strokeMode != Stroke.UNKNOWN) {
 							
 							val limitMaxWidth = fun(){
-								if(displaySize.x < params.width)
-									params.width = displaySize.x
+								if(overlayManager.defaultDisplaySize.x < params.width)
+									params.width = overlayManager.defaultDisplaySize.x
 							}
 							val limitMaxHeight = fun(){
-								if(displaySize.y - space < params.height)
-									params.height = displaySize.y - space // 通知バー、ナビゲーションバーの考慮(space)
+								if(overlayManager.defaultDisplaySize.y - space < params.height)
+									params.height = overlayManager.defaultDisplaySize.y - space // 通知バー、ナビゲーションバーの考慮(space)
 							}
 							when(strokeMode){
 								Stroke.TOP -> {
@@ -410,24 +445,24 @@ class OverlayWindowLinearLayout(context: Context) : ExTouchFocusLinearLayout(con
 									params.y = initialY + (ry - initialTouchY).toInt()
 									limitMaxHeight()
 									//limitMaxY()
-									windowManager.updateViewLayout(this@OverlayWindowLinearLayout, params)
+									overlayManager.update(this@OverlayWindowLinearLayout.name, params)
 								}
 								Stroke.BOTTOM -> {
 									params.height = (initialHeight + (ry - initialTouchY).toInt())
 									limitMaxHeight()
-									windowManager.updateViewLayout(this@OverlayWindowLinearLayout, params)
+									overlayManager.update(this@OverlayWindowLinearLayout.name, params)
 								}
 								Stroke.LEFT -> {
 									params.width = (initialWidth - (rx - initialTouchX).toInt())
 									params.x = initialX + (rx - initialTouchX).toInt()
 									limitMaxWidth()
 									//limitMaxX()
-									windowManager.updateViewLayout(this@OverlayWindowLinearLayout, params)
+									overlayManager.update(this@OverlayWindowLinearLayout.name, params)
 								}
 								Stroke.RIGHT -> {
 									params.width = (initialWidth + (rx - initialTouchX).toInt())
 									limitMaxWidth()
-									windowManager.updateViewLayout(this@OverlayWindowLinearLayout, params)
+									overlayManager.update(this@OverlayWindowLinearLayout.name, params)
 								}
 								else -> {
 									
@@ -447,10 +482,13 @@ class OverlayWindowLinearLayout(context: Context) : ExTouchFocusLinearLayout(con
 		webView
 		
 		// ここでビューをオーバーレイ領域に追加する
-		windowManager.addView(this, params)
+		overlayManager.put(this.name, params, this, this.overlayMiniView, false)
 	}
 	
 	fun finish() {
-		windowManager.removeViewImmediate(this)
+		overlayManager.remove(this.name)
 	}
+	
+	fun onActive() {}
+	fun onDeactive() {}
 }

@@ -5,8 +5,8 @@ import android.app.PendingIntent
 import android.app.Service
 import android.content.Intent
 import android.os.IBinder
-import jp.kght6123.smalllittleappviewer.custom.view.ExTouchFocusLinearLayout
 import jp.kght6123.smalllittleappviewer.custom.view.OverlayWindowLinearLayout
+import jp.kght6123.smalllittleappviewer.manager.OverlayWindowManager
 
 
 /**
@@ -16,13 +16,18 @@ class SystemOverlayLayerService : Service() {
 
 	private val TAG = this.javaClass.simpleName
 	
+	// オーバーレイビューをコントロールするマネージャー
+	val overlayManager: OverlayWindowManager by lazy {
+		OverlayWindowManager(this)
+	}
+	
 	// オーバーレイ表示させるビュー
-	val overlayView: OverlayWindowLinearLayout by lazy {
-		val view: OverlayWindowLinearLayout = OverlayWindowLinearLayout(this)
+	val overlayView1: OverlayWindowLinearLayout by lazy {
+		val view: OverlayWindowLinearLayout = OverlayWindowLinearLayout(this, overlayManager, 1)
 		view
 	}
 	val overlayView2: OverlayWindowLinearLayout by lazy {
-		val view: OverlayWindowLinearLayout = OverlayWindowLinearLayout(this)
+		val view: OverlayWindowLinearLayout = OverlayWindowLinearLayout(this, overlayManager, 2)
 		view
 	}
 	
@@ -70,7 +75,7 @@ class SystemOverlayLayerService : Service() {
 		 */
 		
 		// Overlay用のViewを初期化
-		overlayView
+		overlayView1
 		overlayView2
 		
 		// 前面で起動する
@@ -113,7 +118,7 @@ class SystemOverlayLayerService : Service() {
 	
 	override fun onDestroy() {
 		super.onDestroy()
-		overlayView.finish()
+		overlayView1.finish()
 		overlayView2.finish()
 	}
 }
