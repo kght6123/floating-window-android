@@ -110,7 +110,7 @@ class OverlayWindowLinearLayout(context: Context, val overlayManager: OverlayWin
 				PixelFormat.TRANSLUCENT)
 		params.gravity = Gravity.TOP or Gravity.START// or Gravity.LEFT
 		params.dimAmount = activeDimAmount
-		params.windowAnimations = android.R.style.Animation//Animation_Translucent//Animation_Activity//Animation_Toast//Animation_Dialog
+		//params.windowAnimations = android.R.style.Animation//Animation_Translucent//Animation_Activity//Animation_Toast//Animation_Dialog
 		params.alpha = activeAlpha
 		params
 	}
@@ -498,7 +498,7 @@ class OverlayWindowLinearLayout(context: Context, val overlayManager: OverlayWin
 	}
 	
 	fun onActive() {}
-	fun onDeactive() {}
+	fun onDeActive() {}
 
 	fun isOnTouchEvent(event: MotionEvent): Boolean {
 		return event.rawX in this.params.x..(this.params.x + this.params.width)

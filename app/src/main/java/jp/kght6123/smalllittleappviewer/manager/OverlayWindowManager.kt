@@ -5,7 +5,6 @@ import android.graphics.Point
 import android.view.MotionEvent
 import android.view.ViewGroup
 import android.view.WindowManager
-import android.widget.LinearLayout
 import jp.kght6123.smalllittleappviewer.custom.view.OverlayWindowLinearLayout
 
 /**
@@ -104,7 +103,7 @@ class OverlayWindowManager(val context: Context) {
 		overlayWindowMap.forEach { overlayName, overlayInfo ->
 			if(overlayName != name) {
 				overlayInfo.overlayWindow.activeFlag = false
-				overlayInfo.overlayWindow.onDeactive()
+				overlayInfo.overlayWindow.onDeActive()
 			}
 		}
 	}
