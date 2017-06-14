@@ -114,6 +114,21 @@ class OverlayWindowLinearLayout(context: Context, val overlayManager: OverlayWin
 		params.alpha = activeAlpha
 		params
 	}
+
+	private fun getActiveParams(): WindowManager.LayoutParams {
+		params.flags = activeFlags
+		params.dimAmount = activeDimAmount
+		params.alpha = activeAlpha
+		return params
+	}
+
+	private fun getInActiveParams(): WindowManager.LayoutParams {
+		params.flags = inactiveFlags
+		params.dimAmount = 0.0f
+		params.alpha = inactiveAlpha
+		return params
+	}
+
 	// ディスプレイのサイズを格納する
 //	val displaySize: Point by lazy {
 //		val display = windowManager.defaultDisplay
@@ -142,15 +157,11 @@ class OverlayWindowLinearLayout(context: Context, val overlayManager: OverlayWin
 					}
 					MotionEvent.ACTION_DOWN -> {
 						Log.d(TAG, "InTouch ACTION_DOWN")
-						
-						params.flags = activeFlags
-						params.dimAmount = activeDimAmount
-						params.alpha = activeAlpha
-						
+
 						if(this@OverlayWindowLinearLayout.activeFlag)
-							overlayManager.update(this@OverlayWindowLinearLayout.name, params)
+							overlayManager.update(this@OverlayWindowLinearLayout.name, getActiveParams())
 						else
-							overlayManager.changeActive(this@OverlayWindowLinearLayout.name, params)
+							overlayManager.changeActive(this@OverlayWindowLinearLayout.name, getActiveParams())
 						
 						// TODO コントロール用のActivity起動予定
 					}
@@ -173,12 +184,9 @@ class OverlayWindowLinearLayout(context: Context, val overlayManager: OverlayWin
 					}
 					MotionEvent.ACTION_DOWN -> {
 						Log.d(TAG, "OutTouch ACTION_DOWN")
-						
-						params.flags = inactiveFlags
-						params.dimAmount = 0.0f
-						params.alpha = inactiveAlpha
-						
-						overlayManager.update(this@OverlayWindowLinearLayout.name, params)
+
+						overlayManager.update(this@OverlayWindowLinearLayout.name, getInActiveParams())
+						overlayManager.changeOtherActive(this@OverlayWindowLinearLayout.name, event)
 						
 						// TODO コントロール用のActivity停止予定
 					}
@@ -491,4 +499,13 @@ class OverlayWindowLinearLayout(context: Context, val overlayManager: OverlayWin
 	
 	fun onActive() {}
 	fun onDeactive() {}
+
+	fun isOnTouchEvent(event: MotionEvent): Boolean {
+		return event.rawX in this.params.x..(this.params.x + this.params.width)
+				&& event.rawY in this.params.y..(this.params.y + this.params.height)
+	}
+
+	fun changeActive() {
+		overlayManager.changeActive(this@OverlayWindowLinearLayout.name, getActiveParams())
+	}
 }

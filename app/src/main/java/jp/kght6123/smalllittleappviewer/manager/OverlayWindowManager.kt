@@ -2,6 +2,7 @@ package jp.kght6123.smalllittleappviewer.manager
 
 import android.content.Context
 import android.graphics.Point
+import android.view.MotionEvent
 import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.LinearLayout
@@ -115,6 +116,15 @@ class OverlayWindowManager(val context: Context) {
 				return this.overlayMiniView
 			else
 				return this.overlayWindow
+		}
+	}
+
+	fun changeOtherActive(name: String, event: MotionEvent) {
+		for ((overlayName, overlayInfo) in overlayWindowMap) {
+			if (overlayName != name && overlayInfo.overlayWindow.isOnTouchEvent(event)) {
+				overlayInfo.overlayWindow.changeActive()
+				return@changeOtherActive
+			}
 		}
 	}
 }
