@@ -76,6 +76,9 @@ class OverlayWindowLinearLayout(context: Context, overlayManager: OverlayWindowM
 		/**
 		 * 最小化表示も、ウィンドウモードの様に枠外処理など適切に処理する必要がありそう。
 		 * OverlayWindowLinearLayoutクラスとの共用部分を抜き出して、共通化し、実装を進めていく必要がある。
+		 *  → そもそも、WindowManagerに複数Viewを追加するのではなく、一つのViewを追加して、その中でマルチウィンドウを実現した方が良い気がする。
+		 *  → メモリ的に大丈夫なのか・・・？
+		 *    → ベースが同じServiceなので、WindowManagerに複数追加と変わらない気がする
 		 */
 		var initialX: Int = 0
 		var initialY: Int = 0
