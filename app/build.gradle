@@ -28,8 +28,14 @@ dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib-jre7:$kotlin_version"
     compile 'com.android.support:appcompat-v7:25.3.1'
     compile 'com.android.support.constraint:constraint-layout:1.0.2'
+
+    def kotlin_ex_version = '0.16'
+    compile "org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlin_ex_version"
+    compile "org.jetbrains.kotlinx:kotlinx-coroutines-android:$kotlin_ex_version"
+
     testCompile 'junit:junit:4.12'
 }
 repositories {
     mavenCentral()
+    maven { url "http://dl.bintray.com/kotlin/kotlin-eap-1.1" }
 }

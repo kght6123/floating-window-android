@@ -10,7 +10,9 @@ import android.os.Build
 import android.provider.Settings
 
 /**
- * Created by koga.hirotaka on 2017/05/09.
+ * オーバーレイウィンドウサービスの起動／停止を行う、テスト用Activity
+ *
+ * Created by kght6123 on 2017/05/09.
  */
 class SystemOverlayLayerActivity : Activity() {
 	val REQUEST_SYSTEM_OVERLAY :Int = 1234

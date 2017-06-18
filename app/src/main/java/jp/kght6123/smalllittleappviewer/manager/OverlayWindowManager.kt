@@ -3,14 +3,17 @@ package jp.kght6123.smalllittleappviewer.manager
 import android.content.Context
 import android.graphics.Point
 import android.view.MotionEvent
+import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
 import jp.kght6123.smalllittleappviewer.custom.view.OverlayWindowLinearLayout
 
 /**
- * Created by kogahirotaka on 2017/06/03.
+ * オーバーレイ表示ウィンドウの破棄／追加／切替等の管理クラス
+ *
+ * Created by kght6123 on 2017/06/03.
  */
-class OverlayWindowManager(val context: Context) {
+class OverlayWindowManager(context: Context) {
 	
 	val overlayWindowMap: MutableMap<String, OverlayWindowSizeInfo> = LinkedHashMap()
 	val windowManager: WindowManager by lazy {
@@ -38,7 +41,7 @@ class OverlayWindowManager(val context: Context) {
 		windowManager.addView(overlayInfo.getActiveOverlay(), params)   // WindowManagerに追加
 		
 		updateActive(name)  // 追加したWindowをActiveに
-		updateDeActive(name)  // 追加したWindow以外をDeactiveに
+		updateDeActive(name)  // 追加したWindow以外をDeActiveに
 	}
 	
 	fun update(name: String, params: WindowManager.LayoutParams) {
@@ -55,7 +58,7 @@ class OverlayWindowManager(val context: Context) {
 		}
 		updateDeActive(name)
 	}
-	
+
 	fun switchWindowSize(name: String, params: WindowManager.LayoutParams, miniMode: Boolean) {
 		val overlayInfo = overlayWindowMap[name]
 		if(overlayInfo != null){
@@ -64,34 +67,13 @@ class OverlayWindowManager(val context: Context) {
 			put(name, params, overlayInfo)
 		}
 	}
-	
+
 	fun changeActive(name: String, params: WindowManager.LayoutParams) {
 		val overlayInfo = overlayWindowMap[name]
 		if(overlayInfo != null) {
 			remove(name)
 			put(name, params, overlayInfo)
 		}
-		
-		//val dummy = LinearLayout(context)
-		
-		
-		// 一番上に表示するViewをダミーViewに入れ替え（元View①は保持）
-		// 一番上のViewを①に入れ替え、元View②は保持
-		// ダミーViewを②に入れ替え
-		// → 指定したname同士を入れ替える関数Aを用意して処理させる
-		
-		// 上記を②のViewが２番目に来る様に繰り返したい
-		// → 関数Aを下から繰り返し実行して入れ替えする
-		
-//		overlayWindowMap.forEach { overlayName, overlayInfo ->
-//			if(name == overlayName) {
-//
-//			} else if(overlayInfo.overlayWindow.activeFlag) {
-//
-//			} else {
-//
-//			}
-//		}
 	}
 	
 	private fun updateActive(name: String) {
@@ -121,9 +103,22 @@ class OverlayWindowManager(val context: Context) {
 	fun changeOtherActive(name: String, event: MotionEvent) {
 		for ((overlayName, overlayInfo) in overlayWindowMap) {
 			if (overlayName != name && overlayInfo.overlayWindow.isOnTouchEvent(event)) {
-				overlayInfo.overlayWindow.changeActive()
+				this.changeActive(overlayName, overlayInfo.overlayWindow.getActiveParams())
 				return@changeOtherActive
 			}
+		}
+	}
+
+	fun  addOverlayView(context: Context, index: Int, layoutId: Int): View {
+		val overlayLayout = OverlayWindowLinearLayout(context, this, index, layoutId)
+		// ここでビューをオーバーレイ領域に追加する
+		this.put(overlayLayout.name, overlayLayout.params, overlayLayout, overlayLayout.overlayMiniView, false)
+		return overlayLayout.mainLayoutView
+	}
+
+	fun finish() {
+		for (overlayName in overlayWindowMap.keys.toList()) {
+			this.remove(overlayName)
 		}
 	}
 }

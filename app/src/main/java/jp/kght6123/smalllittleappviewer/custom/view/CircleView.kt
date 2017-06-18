@@ -11,7 +11,8 @@ import jp.kght6123.smalllittleappviewer.R
 
 
 /**
- * Created by kogahirotaka on 2017/05/14.
+ * 正円のViewを描画するクラス
+ * Created by kght6123 on 2017/05/14.
  */
 class CircleView : View {
 	private val paint: Paint = Paint()
@@ -33,7 +34,7 @@ class CircleView : View {
 	}*/
 
 	override fun onDraw(canvas: Canvas) {
-		paint.setAntiAlias(true)
+		paint.isAntiAlias = true
 		canvas.drawCircle(canvas.height / 2f, canvas.height / 2f, canvas.width / 2f - 2f, paint)
 	}
 }

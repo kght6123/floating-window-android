@@ -11,14 +11,15 @@ import android.view.View
 import android.widget.LinearLayout
 
 /**
- * Created by kogahirotaka on 2017/05/16.
+ * LinearLayoutをオーバーレイウィンドウ向けにイベント拡張したクラス
+ *
+ * Created by kght6123 on 2017/05/16.
  */
 open class ExTouchFocusLinearLayout : LinearLayout {
 	constructor(context: Context?) : super(context)
 	constructor(context: Context?, attrs: AttributeSet?) : super(context, attrs)
 	constructor(context: Context?, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr)
-	//constructor(context: Context?, attrs: AttributeSet?, defStyleAttr: Int, defStyleRes: Int) : super(context, attrs, defStyleAttr, defStyleRes)
-	
+
 	private val TAG = this.javaClass.simpleName
 	
 	var onInTouchEventListener: OnTouchEventListener? = null
@@ -52,7 +53,6 @@ open class ExTouchFocusLinearLayout : LinearLayout {
 	override fun onInterceptHoverEvent(event: MotionEvent): Boolean {
 		Log.d(TAG, "onInterceptHoverEvent event.rawX,Y=${event.rawX},${event.rawY} event.x,y=${event.x},${event.y}")
 		return super.onInterceptHoverEvent(event)
-		//return false
 	}
 
 	override fun dispatchWindowFocusChanged(hasFocus: Boolean) {

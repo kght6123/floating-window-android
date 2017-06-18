@@ -4,15 +4,8 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.PixelFormat
 import android.util.Log
+import android.view.*
 import android.view.GestureDetector.SimpleOnGestureListener
-import android.view.Gravity
-import android.view.LayoutInflater
-import android.view.MotionEvent
-import android.view.View
-import android.view.ViewGroup
-import android.view.WindowManager
-import android.webkit.WebView
-import android.webkit.WebViewClient
 import android.widget.LinearLayout
 import jp.kght6123.smalllittleappviewer.R
 import jp.kght6123.smalllittleappviewer.manager.OverlayWindowManager
@@ -20,9 +13,11 @@ import jp.kght6123.smalllittleappviewer.utils.UnitUtils
 
 @SuppressLint("ViewConstructor")
 /**
- * Created by kogahirotaka on 2017/06/02.
+ * オーバーレイ表示ウィンドウの基本処理クラス
+ *
+ * Created by kght6123 on 2017/06/02.
  */
-class OverlayWindowLinearLayout(context: Context, val overlayManager: OverlayWindowManager, index: Int) : ExTouchFocusLinearLayout(context) {
+class OverlayWindowLinearLayout(context: Context, overlayManager: OverlayWindowManager, index: Int, mainLayoutViewId: Int) : ExTouchFocusLinearLayout(context) {
 	
 	private val TAG = this.javaClass.simpleName
 	
@@ -71,21 +66,14 @@ class OverlayWindowLinearLayout(context: Context, val overlayManager: OverlayWin
 		View.inflate(context, R.layout.service_system_overlay_layer/*フレームView*/, this)
 		this.findViewById(R.id.windowFrame) as LinearLayout
 	}
-	val webView: WebView by lazy {
-		val webView = windowFrame.findViewById(R.id.webView) as WebView
-		webView.setWebViewClient(object : WebViewClient() {
-			override fun shouldOverrideUrlLoading(view: WebView, url: String): Boolean {
-				return false
-			}
-		})
-		webView.loadUrl("http://www.google.com")
-		webView
+	val mainLayoutView: View by lazy {
+		View.inflate(context, mainLayoutViewId, windowFrame)
 	}
 	
 	val overlayMiniView: ViewGroup by lazy {
 		val overlayMiniView = LayoutInflater.from(context).inflate(R.layout.service_system_overlay_mini_layer, null) as ViewGroup
-		overlayMiniView.setOnTouchListener({ view, motionEvent ->
-			
+		overlayMiniView.setOnTouchListener({ _, motionEvent ->
+
 			when (motionEvent.action) {
 				MotionEvent.ACTION_UP -> {
 					overlayManager.switchWindowSize(this@OverlayWindowLinearLayout.name, params, false)
@@ -115,13 +103,12 @@ class OverlayWindowLinearLayout(context: Context, val overlayManager: OverlayWin
 		params
 	}
 
-	private fun getActiveParams(): WindowManager.LayoutParams {
+	fun getActiveParams(): WindowManager.LayoutParams {
 		params.flags = activeFlags
 		params.dimAmount = activeDimAmount
 		params.alpha = activeAlpha
 		return params
 	}
-
 	private fun getInActiveParams(): WindowManager.LayoutParams {
 		params.flags = inactiveFlags
 		params.dimAmount = 0.0f
@@ -129,14 +116,6 @@ class OverlayWindowLinearLayout(context: Context, val overlayManager: OverlayWin
 		return params
 	}
 
-	// ディスプレイのサイズを格納する
-//	val displaySize: Point by lazy {
-//		val display = windowManager.defaultDisplay
-//		val size = Point()
-//		display.getSize(size)
-//		size
-//	}
-	
 	init {
 		val layoutParams = LinearLayout.LayoutParams(
 				LinearLayout.LayoutParams.MATCH_PARENT,
@@ -327,11 +306,7 @@ class OverlayWindowLinearLayout(context: Context, val overlayManager: OverlayWin
 				Log.d(TAG, "motionEvent.action = ${event.action}")
 				Log.d(TAG, "motionEvent.rawX, rawY = ${event.rawX}, ${event.rawY}")
 				Log.d(TAG, "motionEvent.x, y = ${event.x}, ${event.y}")
-				
-				// 移動のための現時点の情報作成
-				//val touchAreaX: Float = displaySize.x.toFloat() - (params.width.toFloat() - event.x)
-				//val touchAreaY: Float = displaySize.y.toFloat() - (params.height.toFloat() - event.y)
-				
+
 				val rx: Float = event.rawX //if(event.rawX > touchAreaX) touchAreaX else event.rawX
 				val ry: Float = event.rawY //if(event.rawY > touchAreaY) touchAreaY else event.rawY
 				
@@ -384,19 +359,9 @@ class OverlayWindowLinearLayout(context: Context, val overlayManager: OverlayWin
 							Log.d(TAG, "displaySize.x, y = ${overlayManager.defaultDisplaySize.x}, ${overlayManager.defaultDisplaySize.y}")
 							Log.d(TAG, "motionEvent.rawX, rawY = $rx, $ry")
 							Log.d(TAG, "motionEvent.x, y = ${event.x}, ${event.y}")
-							//Log.d(TAG, "touchArea.x, y = $touchAreaX, $touchAreaY")
 							Log.d(TAG, "params.width, height=${params.width}, ${params.height}")
-							//Log.d(TAG, "(touchAreaX - rx), (touchAreaY - ry)=${(touchAreaX - rx)}, ${(touchAreaY - ry)}")
 							Log.d(TAG, "params.x, y = ${params.x}, ${params.y}")
 
-//							if ((touchAreaX - rx) in 0..(10 + 100)  // 上部は干渉防止に100px余裕を
-//									|| params.x /*- (displaySize.x - params.width)*/ in 0..10   // Left
-//									|| params.y /*- (displaySize.y - params.height)*/ in 0..10  // Top
-//									|| (touchAreaY - ry) in 0..(161 + 10)) {    // 下部はソフトキー分の余裕を
-//								// 両端に移動したら小さくする
-//								windowManager.removeView(overlayView)
-//								windowManager.addView(overlayMiniView, params)
-//							}
 							windowMode = Mode.FINISH    // フリック誤作動防止
 						}
 						if(windowMode == Mode.RESIZE && strokeMode != Stroke.UNKNOWN) {
@@ -408,29 +373,12 @@ class OverlayWindowLinearLayout(context: Context, val overlayManager: OverlayWin
 						}
 					}
 					MotionEvent.ACTION_MOVE -> {
-						val space = 0//100
-						//val maxX = displaySize.x
-						//val maxY = displaySize.y
-						//val limitMaxX = fun(){
-						//	if (params.x > maxX - params.width)
-						//		params.x = maxX - params.width
-						//	else if (params.x < 0)
-						//		params.x = 0
-						//}
-						//val limitMaxY = fun(){
-						//	if (params.y > maxY - params.height)
-						//		params.y = maxY - params.height
-						//	else if (params.y < space)// 上部は通知バーに干渉しない様に、100pxスペースを空ける(space)
-						//		params.y = space
-						//}
+						val space = 0
 						if(windowMode != Mode.RESIZE && strokeMode != Stroke.UNKNOWN) {
 							// 移動中の処理
 							params.x = initialX + (rx - initialTouchX).toInt()
 							params.y = initialY + (ry - initialTouchY).toInt()
-							
-							//limitMaxX()
-							//limitMaxY()
-							
+
 							Log.d(TAG, "params.x, y = ${params.x}, ${params.y}")
 							
 							overlayManager.update(this@OverlayWindowLinearLayout.name, params)
@@ -486,15 +434,6 @@ class OverlayWindowLinearLayout(context: Context, val overlayManager: OverlayWin
 				
 			}
 		}
-		// WebView初期化
-		webView
-		
-		// ここでビューをオーバーレイ領域に追加する
-		overlayManager.put(this.name, params, this, this.overlayMiniView, false)
-	}
-	
-	fun finish() {
-		overlayManager.remove(this.name)
 	}
 	
 	fun onActive() {}
@@ -503,9 +442,5 @@ class OverlayWindowLinearLayout(context: Context, val overlayManager: OverlayWin
 	fun isOnTouchEvent(event: MotionEvent): Boolean {
 		return event.rawX in this.params.x..(this.params.x + this.params.width)
 				&& event.rawY in this.params.y..(this.params.y + this.params.height)
-	}
-
-	fun changeActive() {
-		overlayManager.changeActive(this@OverlayWindowLinearLayout.name, getActiveParams())
 	}
 }
