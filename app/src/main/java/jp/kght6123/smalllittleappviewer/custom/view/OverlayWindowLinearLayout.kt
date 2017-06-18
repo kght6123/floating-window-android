@@ -72,11 +72,45 @@ class OverlayWindowLinearLayout(context: Context, overlayManager: OverlayWindowM
 	
 	val overlayMiniView: ViewGroup by lazy {
 		val overlayMiniView = LayoutInflater.from(context).inflate(R.layout.service_system_overlay_mini_layer, null) as ViewGroup
-		overlayMiniView.setOnTouchListener({ _, motionEvent ->
+		val mainLayoutMiniView = LayoutInflater.from(context).inflate(R.layout.small_mini_webview, overlayMiniView) as ViewGroup
+		/**
+		 * 最小化表示も、ウィンドウモードの様に枠外処理など適切に処理する必要がありそう。
+		 * OverlayWindowLinearLayoutクラスとの共用部分を抜き出して、共通化し、実装を進めていく必要がある。
+		 */
+		var initialX: Int = 0
+		var initialY: Int = 0
+		var initialTouchX: Float = 0f
+		var initialTouchY: Float = 0f
+		var miniWindowMode: Mode = Mode.UNKNOWN
 
-			when (motionEvent.action) {
+		mainLayoutMiniView.setOnTouchListener({ _, event ->
+
+			val rx: Float = event.rawX
+			val ry: Float = event.rawY
+
+			when (event.action) {
 				MotionEvent.ACTION_UP -> {
-					overlayManager.switchWindowSize(this@OverlayWindowLinearLayout.name, params, false)
+					if(miniWindowMode != Mode.MOVE )
+						overlayManager.switchWindowSize(this@OverlayWindowLinearLayout.name, params, false)
+					miniWindowMode = Mode.FINISH
+				}
+				MotionEvent.ACTION_MOVE -> {
+					miniWindowMode = Mode.MOVE
+
+					// 移動中の処理
+					params.x = initialX + (rx - initialTouchX).toInt()
+					params.y = initialY + (ry - initialTouchY).toInt()
+
+					overlayManager.update(this@OverlayWindowLinearLayout.name, params)
+				}
+				MotionEvent.ACTION_DOWN -> {
+					miniWindowMode = Mode.UNKNOWN
+
+					// 移動・拡大縮小のための初期値設定
+					initialX = params.x
+					initialY = params.y
+					initialTouchX = rx
+					initialTouchY = ry
 				}
 			}
 			return@setOnTouchListener false

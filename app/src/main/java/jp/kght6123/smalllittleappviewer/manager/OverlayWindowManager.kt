@@ -102,7 +102,7 @@ class OverlayWindowManager(context: Context) {
 
 	fun changeOtherActive(name: String, event: MotionEvent) {
 		for ((overlayName, overlayInfo) in overlayWindowMap) {
-			if (overlayName != name && overlayInfo.overlayWindow.isOnTouchEvent(event)) {
+			if (overlayName != name && !overlayInfo.miniMode && overlayInfo.overlayWindow.isOnTouchEvent(event)) {
 				this.changeActive(overlayName, overlayInfo.overlayWindow.getActiveParams())
 				return@changeOtherActive
 			}

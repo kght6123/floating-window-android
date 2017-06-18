@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<jp.kght6123.smalllittleappviewer.custom.view.CircleView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:circle="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/miniIcon"
+    android:background="@android:color/transparent"
+    android:orientation="vertical"
+    android:layout_width="75dp"
+    android:layout_height="75dp"
+    circle:color="@android:color/white">
+
+    <ImageView
+        android:id="@+id/webImageMiniView"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:src="@mipmap/ic_launcher" />
+
+</jp.kght6123.smalllittleappviewer.custom.view.CircleView>
