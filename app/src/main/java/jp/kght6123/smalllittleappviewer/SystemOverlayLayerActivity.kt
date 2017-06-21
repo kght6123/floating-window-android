@@ -23,7 +23,14 @@ class SystemOverlayLayerActivity : Activity() {
 	val overlay_stop_button: Button by lazy {
 		findViewById(R.id.overlay_stop_button) as Button
 	}
-	
+
+	val overlay_start_button2: Button by lazy {
+		findViewById(R.id.overlay_start_button2) as Button
+	}
+	val overlay_stop_button2: Button by lazy {
+		findViewById(R.id.overlay_stop_button2) as Button
+	}
+
 	private fun init() {
 		if (checkOverlayPermission()) {
 			this.setContentView(R.layout.activity_system_overlay_layer)
@@ -34,7 +41,14 @@ class SystemOverlayLayerActivity : Activity() {
 			overlay_stop_button.setOnClickListener({
 				stopService(Intent(this@SystemOverlayLayerActivity, SystemOverlayLayerService::class.java))
 			})
-			
+
+			overlay_start_button2.setOnClickListener({
+				startService(Intent(this@SystemOverlayLayerActivity, SystemOverlayLayerService2::class.java))
+			})
+			overlay_stop_button2.setOnClickListener({
+				stopService(Intent(this@SystemOverlayLayerActivity, SystemOverlayLayerService2::class.java))
+			})
+
 		} else {
 			requestOverlayPermission()
 		}

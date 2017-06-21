@@ -9,6 +9,8 @@
 	<string name="edit_text_hint">Type here</string>
 	<string name="overlay_text_start">Overlay Start</string>
 	<string name="overlay_text_stop">Overlay Stop</string>
+	<string name="overlay_text_start2">Overlay Start 2</string>
+	<string name="overlay_text_stop2">Overlay Stop 2</string>
 	<string name="control_text_start">Control Start</string>
 	<string name="control_text_stop">Control Stop</string>
 </resources>

@@ -1,6 +1,7 @@
 package jp.kght6123.smalllittleappviewer.custom.view
 
 import android.content.Context
+import android.graphics.Canvas
 import android.util.AttributeSet
 import android.util.Log
 import android.view.GestureDetector
@@ -8,14 +9,15 @@ import android.view.GestureDetector.SimpleOnGestureListener
 import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.View
+import android.widget.FrameLayout
 import android.widget.LinearLayout
 
 /**
- * LinearLayoutをオーバーレイウィンドウ向けにイベント拡張したクラス
+ * FrameLayoutをオーバーレイウィンドウ向けにイベント拡張したクラス
  *
  * Created by kght6123 on 2017/05/16.
  */
-open class ExTouchFocusLinearLayout : LinearLayout {
+open class ExTouchFocusFrameLayout : FrameLayout {
 	constructor(context: Context?) : super(context)
 	constructor(context: Context?, attrs: AttributeSet?) : super(context, attrs)
 	constructor(context: Context?, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr)
@@ -125,9 +127,9 @@ open class ExTouchFocusLinearLayout : LinearLayout {
 		return flag
 	}
 }
-//interface OnTouchEventListener {
-//	fun onTouch(event: MotionEvent): Unit
-//}
-//interface OnKeyEventListener {
-//	fun onKey(event: KeyEvent?): Unit
-//}
+interface OnTouchEventListener {
+	fun onTouch(event: MotionEvent): Unit
+}
+interface OnKeyEventListener {
+	fun onKey(event: KeyEvent?): Unit
+}
