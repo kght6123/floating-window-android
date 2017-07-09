@@ -3,10 +3,10 @@ apply plugin: 'kotlin-android'
 
 android {
     compileSdkVersion 25
-    buildToolsVersion "25.0.3"
+    buildToolsVersion '25.0.3'
     defaultConfig {
         applicationId "jp.kght6123.smalllittleappviewer"
-        minSdkVersion 24
+        minSdkVersion 23
         targetSdkVersion 25
         versionCode 1
         versionName "1.0"
@@ -21,18 +21,16 @@ android {
 }
 
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
+    compile fileTree(include: ['*.jar'], dir: 'libs')
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
-    compile "org.jetbrains.kotlin:kotlin-stdlib-jre7:$kotlin_version"
-    compile 'com.android.support:appcompat-v7:25.3.1'
+    compile 'org.jetbrains.kotlin:kotlin-stdlib-jre7:1.1.3'
     compile 'com.android.support.constraint:constraint-layout:1.0.2'
-
-    def kotlin_ex_version = '0.16'
-    compile "org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlin_ex_version"
-    compile "org.jetbrains.kotlinx:kotlinx-coroutines-android:$kotlin_ex_version"
-
+    //compile "com.android.support:support-core-utils:25.4.0"
+    compile 'com.android.support:appcompat-v7:25.4.0'
+    compile 'org.jetbrains.kotlinx:kotlinx-coroutines-core:0.16'
+    compile 'org.jetbrains.kotlinx:kotlinx-coroutines-android:0.16'
     testCompile 'junit:junit:4.12'
 }
 repositories {

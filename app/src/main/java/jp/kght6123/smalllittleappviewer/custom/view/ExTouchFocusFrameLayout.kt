@@ -1,16 +1,12 @@
 package jp.kght6123.smalllittleappviewer.custom.view
 
 import android.content.Context
-import android.graphics.Canvas
 import android.util.AttributeSet
 import android.util.Log
-import android.view.GestureDetector
-import android.view.GestureDetector.SimpleOnGestureListener
 import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.View
 import android.widget.FrameLayout
-import android.widget.LinearLayout
 
 /**
  * FrameLayoutをオーバーレイウィンドウ向けにイベント拡張したクラス
@@ -23,31 +19,16 @@ open class ExTouchFocusFrameLayout : FrameLayout {
 	constructor(context: Context?, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr)
 
 	private val TAG = this.javaClass.simpleName
-	
-	var onInTouchEventListener: OnTouchEventListener? = null
-	var onOutTouchEventListener: OnTouchEventListener? = null
-	var onDispatchTouchEventListener: OnTouchEventListener? = null
-	
-	var onKeyEventListener: OnKeyEventListener? = null
-	
-	var onGestureListener: GestureDetector.OnGestureListener = SimpleOnGestureListener()
-	val gestureDetector: GestureDetector by lazy {
-		GestureDetector(context, onGestureListener)
-	}
-	
-	override fun onInterceptTouchEvent(event: MotionEvent): Boolean {
-		Log.d(TAG, "onInterceptTouchEvent event.rawX,Y=${event.rawX},${event.rawY} event.x,y=${event.x},${event.y} this.width,height=${this.width},${this.height}")
 
-		if(event.x in 0..this.width && event.y in 0..this.height) {
-			Log.d(TAG, "on View")
-			this.onInTouchEventListener?.onTouch(event)
-		} else {
-			Log.d(TAG, "out View")
-			this.onOutTouchEventListener?.onTouch(event)
-		}
-		
+	var onDispatchTouchEventListener: OnTouchListener? = null
+	var onKeyEventListener: OnKeyEventListener? = null
+
+	override fun onInterceptTouchEvent(event: MotionEvent): Boolean {
+		Log.d(TAG, "onInterceptTouchEvent .action=${event.action}, .rawX,Y=${event.rawX},${event.rawY} .x,y=${event.x},${event.y} this.width,height=${this.width},${this.height}")
+
 		val flag = super.onInterceptTouchEvent(event)
 		Log.d(TAG, "onInterceptTouchEvent flag=$flag")
+
 		return flag
 		//return false
 	}
@@ -74,14 +55,14 @@ open class ExTouchFocusFrameLayout : FrameLayout {
 	
 	override fun dispatchTouchEvent(event: MotionEvent?): Boolean {
 		val flag = super.dispatchTouchEvent(event)
-		Log.d(TAG, "dispatchTouchEvent flag=$flag event.rawX,rawY=${event?.rawX},${event?.rawY} event.x,y=${event?.x},${event?.y}")
+		Log.d(TAG, "dispatchTouchEvent .action=${event?.action}, flag=$flag .rawX,rawY=${event?.rawX},${event?.rawY} .x,y=${event?.x},${event?.y}")
 		
 		if(event != null) {
-			this.onDispatchTouchEventListener?.onTouch(event)
+			this.onDispatchTouchEventListener?.onTouch(this, event)
 		}
-		gestureDetector.onTouchEvent(event)// ジェスチャー機能を使う
-		
-		return flag
+		//return flag
+		return false
+		//return true
 	}
 	
 	override fun dispatchDisplayHint(hint: Int) {
@@ -117,7 +98,6 @@ open class ExTouchFocusFrameLayout : FrameLayout {
 	override fun dispatchKeyEvent(event: KeyEvent?): Boolean {
 		Log.d(TAG, "dispatchKeyEvent ${event?.keyCode}")
 		this.onKeyEventListener?.onKey(event)
-		
 		return super.dispatchKeyEvent(event)
 	}
 	

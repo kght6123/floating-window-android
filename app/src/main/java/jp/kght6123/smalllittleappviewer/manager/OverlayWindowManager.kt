@@ -82,10 +82,10 @@ class OverlayWindowManager(context: Context) {
 		overlayInfo?.overlayWindow?.onActive()
 	}
 	private fun updateDeActive(name: String) {
-		overlayWindowMap.forEach { overlayName, overlayInfo ->
-			if(overlayName != name) {
-				overlayInfo.overlayWindow.activeFlag = false
-				overlayInfo.overlayWindow.onDeActive()
+		overlayWindowMap.forEach { entry ->
+			if(entry.key != name) {
+				entry.value.overlayWindow.activeFlag = false
+				entry.value.overlayWindow.onDeActive()
 			}
 		}
 	}
