@@ -5,7 +5,7 @@
 		android:layout_width="0dp"
 		android:layout_height="0dp"
 		android:background="@drawable/shadow_233622"
-		android:id="@+id/windowOutFrame">
+		android:id="@+id/windowOutlineFrame">
 	<LinearLayout
 		android:orientation="vertical"
 		android:layout_width="match_parent"
@@ -14,7 +14,7 @@
 		android:focusableInTouchMode="true"
 		android:background="@android:color/background_light"
 		android:padding="3dp"
-		android:id="@+id/windowInFrame">
+		android:id="@+id/windowInlineFrame">
 
 	</LinearLayout>
 </LinearLayout>

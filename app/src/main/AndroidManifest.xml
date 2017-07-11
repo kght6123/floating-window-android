@@ -72,6 +72,11 @@
 			android:exported="false"
 			android:process=":local"/>
 
+		<service android:name=".MultiFloatWindowTestService"
+			android:enabled="true"
+			android:exported="false"
+			android:process=":local"/>
+
 		<!--
 		<activity
 			android:name=".SystemOverlayLayerControlActivity"

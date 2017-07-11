@@ -397,7 +397,7 @@ class SystemOverlayLayerService2 : Service() {
 		val windowInFrame: ViewGroup by lazy {
 
 			val windowInFrame =
-					windowOutFrame.findViewById(R.id.windowInFrame) as LinearLayout
+					windowOutFrame.findViewById(R.id.windowInlineFrame) as LinearLayout
 			val mainLayoutView =
 					View.inflate(context, R.layout.small_webview, windowInFrame) as ViewGroup
 

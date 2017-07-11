@@ -43,10 +43,10 @@ class SystemOverlayLayerActivity : Activity() {
 			})
 
 			overlay_start_button2.setOnClickListener({
-				startService(Intent(this@SystemOverlayLayerActivity, SystemOverlayLayerService2::class.java))
+				startService(Intent(this@SystemOverlayLayerActivity, MultiFloatWindowTestService::class.java))
 			})
 			overlay_stop_button2.setOnClickListener({
-				stopService(Intent(this@SystemOverlayLayerActivity, SystemOverlayLayerService2::class.java))
+				stopService(Intent(this@SystemOverlayLayerActivity, MultiFloatWindowTestService::class.java))
 			})
 
 		} else {
