@@ -13,7 +13,7 @@ import jp.kght6123.multiwindow.utils.UnitUtils
  *
  * Created by kght6123 on 2017/07/11.
  */
-class MultiFloatWindowInfo(val context: Context, val manager: MultiFloatWindowManager, val name: String, var miniMode: Boolean) {
+class MultiFloatWindowInfo(val context: Context, val manager: MultiFloatWindowManager, val name: String, var miniMode: Boolean, val backgroundColor: Int, val initWidth: Int, val initHeight: Int) {
 
     private val TAG = this.javaClass.name
 
@@ -120,12 +120,7 @@ class MultiFloatWindowInfo(val context: Context, val manager: MultiFloatWindowMa
     private val windowOutlineFrame: ViewGroup by lazy {
         val windowOutFrame =
                 View.inflate(context, R.layout.multiwindow_frame, null).findViewById(R.id.windowOutlineFrame) as ViewGroup
-        val layoutParams =
-                FrameLayout.LayoutParams(
-                        UnitUtils.convertDp2Px(300f, context).toInt(),
-                        UnitUtils.convertDp2Px(450f, context).toInt())
-
-        windowOutFrame.layoutParams = layoutParams
+        windowOutFrame.layoutParams = FrameLayout.LayoutParams(initWidth, initHeight)
         windowOutFrame
     }
 
@@ -133,6 +128,9 @@ class MultiFloatWindowInfo(val context: Context, val manager: MultiFloatWindowMa
 
         val windowInFrame =
                 windowOutlineFrame.findViewById(R.id.windowInlineFrame) as ViewGroup
+        windowInFrame.setBackgroundColor(backgroundColor)
+        //windowInFrame.setBackgroundResource(android.R.color.background_light)
+
 //        val mainLayoutView =
 //                View.inflate(context, R.layout.small_webview, windowInlineFrame) as ViewGroup
 //
@@ -272,7 +270,8 @@ class MultiFloatWindowInfo(val context: Context, val manager: MultiFloatWindowMa
                         }
                         if(strokeMode != Stroke.UNKNOWN) {
                             // ACTION_UP,DOWNのみの対策。
-                            windowInFrame.setBackgroundResource(android.R.color.background_light)
+                            windowInFrame.setBackgroundColor(backgroundColor)
+                            //windowInFrame.setBackgroundResource(android.R.color.background_light)
                         }
                     }
                     MotionEvent.ACTION_MOVE -> {

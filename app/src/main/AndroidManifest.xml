@@ -5,6 +5,7 @@
 	
 	<uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
 	<uses-permission android:name="android.permission.INTERNET" />
+	<uses-permission android:name="android.permission.BIND_APPWIDGET" />
 	
 	<application
 		android:allowBackup="false"
@@ -18,40 +19,16 @@
 		<!-- android:configChangesは、自動のActivity破棄を停止し、自分で処理を記載可能にする（onConfigurationChangedメソッドをオーバーライド） -->
 		<!-- android:windowSoftInputMode="adjustResize" キーボードが表示されたらアクティビティのサイズがキーボード分小さくなる -->
 		<!-- android:windowSoftInputMode="stateAlwaysHidden" Activityのメインウィンドウに初期入力フォーカス時、ソフトウェアキーボードが常に隠れる -->
-		<!-- android:noHistory
-		<activity
-			android:name=".MainActivity"
-			android:configChanges="orientation|screenSize"
-			android:label="@string/app_name1"
-			android:noHistory="true"
-			android:theme="@android:style/Theme.DeviceDefault.Light"
-			android:windowSoftInputMode="adjustResize|stateAlwaysHidden">
-			<intent-filter>
-				<action android:name="android.intent.action.MAIN" />
-				<category android:name="android.intent.category.LAUNCHER" />
-			</intent-filter>
-		</activity>
-		-->
-		
-		
+		<!-- android:noHistory -->
 		<!--
 		tools:ignoreは指定された lint の issue が無視
-		<activity
-			android:name=".PopupMainActivity"
-			android:clearTaskOnLaunch="true"
-			android:configChanges="orientation|screenSize"
-			android:exported="true"
-			android:label="@string/app_name"
-			android:noHistory="true"
-			android:theme="@style/Theme.FloatingWindow.Popup"
-			android:windowSoftInputMode="adjustResize|stateAlwaysHidden"
-			tools:ignore="ExportedActivity" />
+			tools:ignore="ExportedActivity"
 		-->
 		<!-- excludeFromRecentsは指定したActivityをRootにもつアプリを履歴（Recent Apps）に残さない -->
 		<activity
-			android:name=".SystemOverlayLayerActivity"
+			android:name=".MultiFloatWindowTestActivity"
 			android:configChanges="orientation|screenSize"
-			android:label="@string/app_name2"
+			android:label="@string/app_name"
 			android:noHistory="true"
 			android:theme="@android:style/Theme.DeviceDefault.Light"
 			android:windowSoftInputMode="adjustResize|stateAlwaysHidden"
@@ -61,36 +38,17 @@
 				<category android:name="android.intent.category.LAUNCHER" />
 			</intent-filter>
 		</activity>
-		
-		<service android:name=".SystemOverlayLayerService"
-			android:enabled="true"
-			android:exported="false"
-			android:process=":local"/>
-
-		<service android:name=".SystemOverlayLayerService2"
-			android:enabled="true"
-			android:exported="false"
-			android:process=":local"/>
 
 		<service android:name=".MultiFloatWindowTestService"
 			android:enabled="true"
 			android:exported="false"
 			android:process=":local"/>
 
-		<!--
-		<activity
-			android:name=".SystemOverlayLayerControlActivity"
-			android:clearTaskOnLaunch="true"
-			android:configChanges="orientation|screenSize"
-			android:label="@string/app_name3"
-			android:noHistory="true"
-			android:theme="@android:style/Theme.Translucent.NoTitleBar"
-			android:windowSoftInputMode="adjustResize|stateAlwaysHidden"
-			android:excludeFromRecents="true"/>
-		
-		<service android:name=".SystemOverlayLayerControlService"
+		<service android:name=".MultiFloatWidgetTestService"
 			android:enabled="true"
-			android:exported="false"/>-->
+			android:exported="false"
+			android:process=":local"/>
+
 	</application>
 
 </manifest>

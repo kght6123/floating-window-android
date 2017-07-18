@@ -96,7 +96,7 @@ class MultiFloatWindowManager(val context: Context) {
         params.gravity = Gravity.TOP or Gravity.START// or Gravity.LEFT
         params.dimAmount = activeDimAmount
         //params.windowAnimations = android.R.style.Animation//Animation_Translucent//Animation_Activity//Animation_Toast//Animation_Dialog
-        params.windowAnimations = android.R.style.Animation_Translucent
+        //params.windowAnimations = android.R.style.Animation_Translucent
         params.alpha = activeAlpha
         params
     }
@@ -122,9 +122,9 @@ class MultiFloatWindowManager(val context: Context) {
     init {
         windowManager.addView(overlayView, getActiveParams())   // WindowManagerに追加
     }
-    private fun put(index: Int, miniMode: Boolean, x: Int?, y: Int?): MultiFloatWindowInfo {
+    private fun put(index: Int, miniMode: Boolean, x: Int?, y: Int?, backgroundColor: Int, initWidth: Int, initHeight: Int): MultiFloatWindowInfo {
         val name = "${context.packageName}.$index"
-        val overlayWindowInfo = MultiFloatWindowInfo(context, this, name, miniMode)
+        val overlayWindowInfo = MultiFloatWindowInfo(context, this, name, miniMode, backgroundColor, initWidth, initHeight)
         put(name, overlayWindowInfo)
         moveFixed(name, x!!, y!!)
         return overlayWindowInfo
@@ -218,8 +218,8 @@ class MultiFloatWindowManager(val context: Context) {
         }
         return false
     }
-    fun add(index: Int, x: Int?, y: Int?, miniMode: Boolean): MultiFloatWindowInfo {
-        return put(index, miniMode, x, y)// ここでビューをオーバーレイ領域に追加する
+    fun add(index: Int, x: Int?, y: Int?, miniMode: Boolean, backgroundColor: Int, initWidth: Int, initHeight: Int): MultiFloatWindowInfo {
+        return put(index, miniMode, x, y, backgroundColor, initWidth, initHeight)// ここでビューをオーバーレイ領域に追加する
     }
     fun finish() {
         for ((overlayName, _) in overlayWindowMap.toList()) {

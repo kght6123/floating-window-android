@@ -22,6 +22,7 @@ open class MultiFloatWindowOverlayLayout : FrameLayout {
     private val TAG = this.javaClass.simpleName
 
     var onDispatchTouchEventListener: OnTouchListener? = null
+    var onDispatchKeyEventListener: OnKeyListener? = null
 
     override fun onInterceptTouchEvent(event: MotionEvent): Boolean {
         Log.d(TAG, "onInterceptTouchEvent .action=${event.action}, .rawX,Y=${event.rawX},${event.rawY} .x,y=${event.x},${event.y} this.width,height=${this.width},${this.height}")
@@ -96,8 +97,15 @@ open class MultiFloatWindowOverlayLayout : FrameLayout {
     }
 
     override fun dispatchKeyEvent(event: KeyEvent?): Boolean {
-        Log.d(TAG, "dispatchKeyEvent ${event?.keyCode}")
-        return super.dispatchKeyEvent(event)
+        val flag = super.dispatchKeyEvent(event)
+        Log.d(TAG, "dispatchKeyEvent keyCode=${event?.keyCode}, flag=$flag")
+
+        if(event != null) {
+            this.onDispatchKeyEventListener?.onKey(this, event.keyCode, event)
+        }
+        //return flag
+        return false
+        //return true
     }
 
 //    override fun onTouchEvent(event: MotionEvent?): Boolean {
