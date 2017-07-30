@@ -5,4 +5,8 @@
 	<string name="overlay_text_stop">Overlay Stop</string>
 	<string name="widget_text_start">Widget Start</string>
 	<string name="widget_text_stop">Widget Stop</string>
+    <string name="multi_window_start_text">Start Multi Window</string>
+	<string name="multi_window_open_text">Open Multi Window</string>
+	<string name="multi_window_close_text">Close Multi Window</string>
+	<string name="multi_window_exit_text">Exit Multi Window</string>
 </resources>

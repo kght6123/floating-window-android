@@ -1,9 +1,14 @@
 package jp.kght6123.multiwindow
 
 import android.content.Context
+import android.graphics.Bitmap
 import android.graphics.PixelFormat
 import android.util.Log
 import android.view.*
+import android.widget.FrameLayout
+import jp.kght6123.multiwindow.recycler.CardAppListRecyclerView
+import jp.kght6123.multiwindow.utils.UnitUtils
+import kotlin.concurrent.withLock
 
 /**
  * マルチウィンドウ情報のコントロールを行う
@@ -101,6 +106,148 @@ class MultiFloatWindowManager(val context: Context) {
         params
     }
 
+    val ctrlActiveFlags = WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN or
+            WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH or
+            WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or
+            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
+            WindowManager.LayoutParams.FLAG_SPLIT_TOUCH or
+            WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN or
+            WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS or
+            WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED
+
+    val ctrlIconParams: WindowManager.LayoutParams by lazy {
+        val params = WindowManager.LayoutParams(
+                UnitUtils.convertDp2Px(75f, context).toInt(),
+                UnitUtils.convertDp2Px(75f, context).toInt(),
+                100, // X
+                150, // Y
+                //WindowManager.LayoutParams.TYPE_SYSTEM_OVERLAY,   // ロック画面より上にくる
+                WindowManager.LayoutParams.TYPE_SYSTEM_ALERT, // なるべく上の階層で表示
+                //WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY, // Android-O以降
+                ctrlActiveFlags,
+                PixelFormat.TRANSLUCENT)
+        params.gravity = Gravity.TOP or Gravity.START// or Gravity.LEFT
+        params.dimAmount = 0.0f
+        params.alpha = 0.75f
+        params
+    }
+
+    val ctrlListParams: WindowManager.LayoutParams by lazy {
+        val params = WindowManager.LayoutParams(
+                WindowManager.LayoutParams.WRAP_CONTENT,
+                WindowManager.LayoutParams.MATCH_PARENT,
+                0, // X
+                0, // Y
+                //WindowManager.LayoutParams.TYPE_SYSTEM_OVERLAY,   // ロック画面より上にくる
+                WindowManager.LayoutParams.TYPE_SYSTEM_ALERT, // なるべく上の階層で表示
+                //WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY, // Android-O以降
+                ctrlActiveFlags,
+                PixelFormat.TRANSLUCENT)
+        params.gravity = Gravity.TOP or Gravity.RIGHT// RIGHTをLEFTにすると左寄せ
+        params.dimAmount = 0.0f
+        params.alpha = 0.90f
+        params
+    }
+
+    val cardAppListParams by lazy {
+        val params = FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.WRAP_CONTENT,
+                FrameLayout.LayoutParams.MATCH_PARENT)
+        params
+    }
+
+    var cardAppListView: CardAppListRecyclerView? = null
+    val controlLayer by lazy {
+        val controlLayer =
+                View.inflate(context, R.layout.multiwindow_control_layer, null).findViewById(R.id.controlLayer) as MultiFloatWindowOverlayLayout
+
+        val controlIconLayer = controlLayer.findViewById(R.id.controlIconLayer)
+
+        controlLayer.onDispatchTouchEventListener = object: View.OnTouchListener {
+
+            val TAG = this.javaClass.name
+
+            val gestureDetector: GestureDetector = GestureDetector(context, object: GestureDetector.SimpleOnGestureListener() {
+
+                override fun onSingleTapConfirmed(event: MotionEvent?): Boolean {
+                    Log.d(TAG, "controlLayer SimpleOnGestureListener onSingleTapConfirmed")
+                    this@MultiFloatWindowManager.changeForciblyActiveEvent()
+                    return false
+                }
+
+                val lock = java.util.concurrent.locks.ReentrantLock()
+
+                var initialX = 0
+                var initialY = 0
+
+                override fun onDown(e: MotionEvent?): Boolean {
+                    Log.d(TAG, "controlLayer SimpleOnGestureListener onDown")
+                    initialX = ctrlIconParams.x
+                    initialY = ctrlIconParams.y
+                    return false
+                }
+
+                override fun onLongPress(e: MotionEvent?) {
+                    Log.d(TAG, "controlLayer SimpleOnGestureListener onLongPress")
+                    lock.withLock {
+                        if (cardAppListView != null) {
+                            controlLayer.removeView(cardAppListView)
+                            controlLayer.setBackgroundResource(R.drawable.shape_rounded_corners)
+                            controlIconLayer.visibility = View.VISIBLE
+                            windowManager.updateViewLayout(controlLayer, ctrlIconParams)
+                            cardAppListView = null
+                        }
+                    }
+                }
+
+                override fun onDoubleTapEvent(e: MotionEvent?): Boolean {
+                    Log.d(TAG, "controlLayer SimpleOnGestureListener onDoubleTapEvent")
+                    lock.withLock {
+                        if(cardAppListView == null) {
+                            cardAppListView = createCardAppListView()
+                            controlLayer.addView(cardAppListView, cardAppListParams)
+                            controlLayer.setBackgroundResource(R.color.app_list_background_color)
+                            controlIconLayer.visibility = View.GONE
+                            windowManager.updateViewLayout(controlLayer, ctrlListParams)
+                        }
+                    }
+                    return false
+                }
+
+                override fun onScroll(e1: MotionEvent?, e2: MotionEvent?, distanceX: Float, distanceY: Float): Boolean {
+                    Log.d(TAG, "controlLayer SimpleOnGestureListener onScroll distanceX=$distanceX, distanceY=$distanceY")
+                    lock.withLock {
+                        if (cardAppListView == null) {
+                            ctrlIconParams.x = initialX + (e2!!.rawX - e1!!.rawX).toInt()
+                            ctrlIconParams.y = initialY + (e2.rawY - e1.rawY).toInt()
+                            windowManager.updateViewLayout(controlLayer, ctrlIconParams)
+                        }
+                    }
+                    return false
+                }
+            })
+
+            override fun onTouch(view: View, event: MotionEvent): Boolean {
+                when (event.action) {
+                    MotionEvent.ACTION_OUTSIDE -> {
+                        Log.d(TAG, "controlLayer onDispatchTouchEventListener onTouch MotionEvent.ACTION_OUTSIDE")
+                        return false
+                    }
+                }
+                Log.d(TAG, "controlLayer onDispatchTouchEventListener onTouch .action=${event.action}, .rawX,rawY=${event.rawX},${event.rawY} .x,y=${event.x},${event.y}")
+
+                gestureDetector.onTouchEvent(event)// ジェスチャー機能を使う
+                return false
+            }
+        }
+        controlLayer
+    }
+
+    private fun createCardAppListView(): CardAppListRecyclerView {
+        val cardAppListView = CardAppListRecyclerView(context, this)
+        return cardAppListView
+    }
+
     private fun getActiveParams(): WindowManager.LayoutParams {
         params.flags = activeFlags
         params.dimAmount = activeDimAmount
@@ -109,8 +256,8 @@ class MultiFloatWindowManager(val context: Context) {
     }
 
     private fun getInActiveParams(): WindowManager.LayoutParams {
-        params.width = WindowManager.LayoutParams.WRAP_CONTENT
-        params.height = WindowManager.LayoutParams.WRAP_CONTENT
+//        params.width = WindowManager.LayoutParams.WRAP_CONTENT
+//        params.height = WindowManager.LayoutParams.WRAP_CONTENT
         params.flags = inactiveFlags
         params.dimAmount = inactiveDimAmount
         params.alpha = inactiveAlpha
@@ -121,9 +268,13 @@ class MultiFloatWindowManager(val context: Context) {
 
     init {
         windowManager.addView(overlayView, getActiveParams())   // WindowManagerに追加
+        windowManager.addView(controlLayer, ctrlIconParams)
+    }
+    private fun indexToName(index: Int): String {
+        return "${context.packageName}.$index"
     }
     private fun put(index: Int, miniMode: Boolean, x: Int?, y: Int?, backgroundColor: Int, initWidth: Int, initHeight: Int): MultiFloatWindowInfo {
-        val name = "${context.packageName}.$index"
+        val name = indexToName(index)
         val overlayWindowInfo = MultiFloatWindowInfo(context, this, name, miniMode, backgroundColor, initWidth, initHeight)
         put(name, overlayWindowInfo)
         moveFixed(name, x!!, y!!)
@@ -148,6 +299,9 @@ class MultiFloatWindowManager(val context: Context) {
             overlayInfo.getActiveOverlay().layoutParams = params
         }
     }
+    fun remove(index: Int) {
+        remove(indexToName(index))
+    }
     private fun remove(name: String) {
          val overlayInfo = overlayWindowMap[name]
         if(overlayInfo != null){
@@ -165,7 +319,8 @@ class MultiFloatWindowManager(val context: Context) {
         }
     }
 
-    private fun changeActive(name: String) {
+    private fun changeActive(name: String?) {
+        if(name == null) return
         val overlayInfo = overlayWindowMap[name]
         if(overlayInfo != null) {
             remove(name)
@@ -175,13 +330,13 @@ class MultiFloatWindowManager(val context: Context) {
     private fun updateActive(name: String) {
         val overlayInfo = overlayWindowMap[name]
         overlayInfo?.activeFlag = true
-        overlayInfo?.onActive()
+        onActive(overlayInfo!!)
     }
     private fun updateDeActive(name: String) {
         overlayWindowMap.forEach { entry ->
             if(entry.key == name) {
                 entry.value.activeFlag = false
-                entry.value.onDeActive()
+                onDeActive(entry.value)
             }
         }
     }
@@ -189,9 +344,39 @@ class MultiFloatWindowManager(val context: Context) {
         overlayWindowMap.forEach { entry ->
             if(entry.key != name) {
                 entry.value.activeFlag = false
-                entry.value.onDeActive()
+                onDeActive(entry.value)
             }
         }
+    }
+    fun changeForciblyActiveEvent() {
+        if(!overlayWindowMap.isEmpty()) {
+            changeActive(overlayWindowMap.keys.last())
+            windowManager.updateViewLayout(overlayView, getActiveParams())
+        }
+    }
+//    fun nextForciblyActiveThumb() :Bitmap? {
+//        if(!overlayWindowMap.isEmpty()) {
+//            val windowInlineFrame = overlayWindowMap.values.last().windowInlineFrame
+//            windowInlineFrame.isDrawingCacheEnabled = true
+//            windowInlineFrame.destroyDrawingCache();
+//            return windowInlineFrame.drawingCache
+//        }
+//        return null
+//    }
+    fun getThumb(seq: Int) :Bitmap? {
+        val windowInlineFrame = getMultiFloatWindowInfo(seq)?.windowInlineFrame
+        windowInlineFrame?.isDrawingCacheEnabled = true
+        windowInlineFrame?.destroyDrawingCache()
+        return windowInlineFrame?.drawingCache
+    }
+    fun changeActive(seq: Int) {
+        changeActive(getMultiFloatWindowInfo(seq)?.name)
+    }
+    private fun getMultiFloatWindowInfo(seq: Int) :MultiFloatWindowInfo? {
+        if(seq < overlayWindowMap.size) {
+            return overlayWindowMap.values.toList()[seq]
+        }
+        return null
     }
     private fun changeActiveEvent(event: MotionEvent) :Boolean {
         var changeActiveName: String? = null
@@ -208,9 +393,11 @@ class MultiFloatWindowManager(val context: Context) {
                 changeActiveName = ""
             }
         }
-        if(changeActiveName == null)
-        // nullの時、何もタッチされてないので、全体をinActiveへ
+        if(changeActiveName == null) {
+            // nullの時、何もタッチされてないので、全体をinActiveへ
             windowManager.updateViewLayout(overlayView, getInActiveParams())
+            onDeActiveAll()
+        }
         else if(changeActiveName != "") {
             // 他のinActiveなウィンドウをタッチされた時、Activeへ
             changeActive(changeActiveName)
@@ -226,5 +413,41 @@ class MultiFloatWindowManager(val context: Context) {
             this.remove(overlayName)
         }
         windowManager.removeViewImmediate(overlayView)
+        windowManager.removeViewImmediate(controlLayer)
+    }
+
+    var onActiveEvent: ChangeActiveEventListener? = null
+    var onDeActiveEvent: ChangeActiveEventListener? = null
+    var onDeActiveAllEvent: AllChangeActiveEventListener? = null
+
+    fun onActive(info: MultiFloatWindowInfo) {
+        if(cardAppListView == null)
+            controlLayer.setBackgroundResource(R.drawable.shape_rounded_corners)
+        else
+            cardAppListView?.adapter?.notifyDataSetChanged()
+
+        onActiveEvent?.onChange(info)
+    }
+    fun onDeActive(info: MultiFloatWindowInfo) {
+        if(cardAppListView != null)
+            cardAppListView?.adapter?.notifyDataSetChanged()
+
+        onDeActiveEvent?.onChange(info)
+    }
+    fun onDeActiveAll() {
+        if(cardAppListView == null)
+            controlLayer.setBackgroundResource(R.drawable.shape_rounded_corners_accent)
+        else
+            cardAppListView?.adapter?.notifyDataSetChanged()
+
+        onDeActiveAllEvent?.onChangeAll()
+    }
+
+    interface ChangeActiveEventListener {
+        fun onChange(info: MultiFloatWindowInfo)
+    }
+
+    interface AllChangeActiveEventListener {
+        fun onChangeAll()
     }
 }

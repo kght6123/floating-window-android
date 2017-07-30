@@ -44,6 +44,11 @@
 			android:exported="false"
 			android:process=":local"/>
 
+		<service android:name=".MultiFloatWindowSampleService"
+			android:enabled="true"
+			android:exported="false"
+			android:process=":local"/>
+
 		<service android:name=".MultiFloatWidgetTestService"
 			android:enabled="true"
 			android:exported="false"

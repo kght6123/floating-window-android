@@ -6,6 +6,7 @@ import android.util.Log
 import android.view.*
 import android.widget.FrameLayout
 import android.widget.LinearLayout
+import jp.kght6123.multiwindow.utils.DisplayUtils
 import jp.kght6123.multiwindow.utils.UnitUtils
 
 /**
@@ -29,10 +30,7 @@ class MultiFloatWindowInfo(val context: Context, val manager: MultiFloatWindowMa
 
     // ディスプレイのサイズを格納する
     private val defaultDisplaySize: Point by lazy {
-        val display = (context.getSystemService(Context.WINDOW_SERVICE) as WindowManager).defaultDisplay
-        val size = Point()
-        display.getSize(size)
-        size
+        DisplayUtils.defaultDisplaySize(context)
     }
 
     val miniWindowFrame: ViewGroup by lazy {
@@ -360,9 +358,6 @@ class MultiFloatWindowInfo(val context: Context, val manager: MultiFloatWindowMa
     fun getActiveWindowLayoutParams(): FrameLayout.LayoutParams {
         return getLayoutParams(getActiveOverlay())
     }
-    fun onActive() {}
-    fun onDeActive() {}
-
     fun isOnTouchEvent(event: MotionEvent): Boolean {
         val params = getActiveWindowLayoutParams()
         return event.rawX in params.leftMargin..(params.leftMargin + params.width)

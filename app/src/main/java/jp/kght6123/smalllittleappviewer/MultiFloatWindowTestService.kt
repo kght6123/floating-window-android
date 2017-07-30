@@ -5,7 +5,7 @@ import android.app.PendingIntent
 import android.app.Service
 import android.content.Intent
 import android.os.IBinder
-import android.view.View
+import android.view.*
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
@@ -69,6 +69,11 @@ class MultiFloatWindowTestService : Service() {
 		webView.loadUrl("http://www.google.com")
 		webView
 	}
+
+	override fun onCreate() {
+		super.onCreate()
+	}
+
 	override fun onBind(intent: Intent?): IBinder {
 		throw UnsupportedOperationException("Not yet implemented")
 	}

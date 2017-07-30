@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">MultiWindowSupport</string>
+    <string name="app_thumb_desc">AppThumbImage</string>
 </resources>

@@ -1,7 +1,6 @@
 package jp.kght6123.smalllittleappviewer
 
 import android.app.Activity
-import android.os.Bundle
 import android.widget.Button
 import android.content.Intent
 import android.net.Uri
@@ -9,7 +8,11 @@ import android.provider.Settings
 import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetHost
 import android.appwidget.AppWidgetProviderInfo
-
+import android.content.ComponentName
+import android.content.Context
+import android.content.ServiceConnection
+import android.os.*
+import jp.kght6123.multiwindow.MultiFloatWindowApplication
 
 /**
  * オーバーレイウィンドウサービスの起動／停止を行う、テスト用Activity
@@ -36,6 +39,19 @@ class MultiFloatWindowTestActivity : Activity() {
 //		button
 //	}
 
+	val multi_window_start_button: Button by lazy {
+		findViewById(R.id.multi_window_start_button) as Button
+	}
+	val multi_window_open_button: Button by lazy {
+		findViewById(R.id.multi_window_open_button) as Button
+	}
+	val multi_window_close_button: Button by lazy {
+		findViewById(R.id.multi_window_close_button) as Button
+	}
+	val multi_window_exit_button: Button by lazy {
+		findViewById(R.id.multi_window_exit_button) as Button
+	}
+
 	val overlay_start_button: Button by lazy {
 		val button = findViewById(R.id.overlay_start_button) as Button
 		button
@@ -51,16 +67,33 @@ class MultiFloatWindowTestActivity : Activity() {
 		findViewById(R.id.widget_stop_button) as Button
 	}
 
+	var index: Int = 1
+
 	private fun init() {
 		if (checkOverlayPermission()) {
 			this.setContentView(R.layout.activity_system_overlay_layer)
-			
+
+			multi_window_start_button.setOnClickListener({
+				startService(Intent(this@MultiFloatWindowTestActivity, MultiFloatWindowSampleService::class.java))
+				sendMessage(MultiFloatWindowApplication.MultiWindowControlCommand.HELLO, 0)
+			})
+			multi_window_open_button.setOnClickListener({
+				sendMessage(MultiFloatWindowApplication.MultiWindowControlCommand.OPEN, index++)
+			})
+			multi_window_close_button.setOnClickListener({
+				sendMessage(MultiFloatWindowApplication.MultiWindowControlCommand.CLOSE, 0)
+			})
+			multi_window_exit_button.setOnClickListener({
+				stopService(Intent(this@MultiFloatWindowTestActivity, MultiFloatWindowSampleService::class.java))
+			})
+
 			overlay_start_button.setOnClickListener({
 				startService(Intent(this@MultiFloatWindowTestActivity, MultiFloatWindowTestService::class.java))
 			})
 			overlay_stop_button.setOnClickListener({
 				stopService(Intent(this@MultiFloatWindowTestActivity, MultiFloatWindowTestService::class.java))
 			})
+
 			widget_start_button.setOnClickListener({
 
 				// ウィジェット毎ユニークIDを取得
@@ -84,10 +117,38 @@ class MultiFloatWindowTestActivity : Activity() {
 			requestOverlayPermission()
 		}
 	}
+
+	var mService :Messenger? = null
+	val mConnection = object: ServiceConnection {
+		override fun onServiceDisconnected(name: ComponentName?) {
+			mService = null
+		}
+		override fun onServiceConnected(name: ComponentName?, binder: IBinder?) {
+			if(binder != null) {
+				mService = Messenger(binder)
+			}
+		}
+	}
+	fun sendMessage(command: MultiFloatWindowApplication.MultiWindowControlCommand, index: Int) {
+		mService?.send(Message.obtain(null, command.ordinal, index, 0))
+	}
+
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
 		init()
 	}
+
+	override fun onStart() {
+		super.onStart()
+		bindService(Intent(this, MultiFloatWindowSampleService::class.java), mConnection,
+				Context.BIND_AUTO_CREATE)
+	}
+
+	override fun onStop() {
+		super.onStop()
+		unbindService(mConnection)
+	}
+
 	override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
 
 		when (resultCode) {
