@@ -34,11 +34,6 @@ class MultiFloatWindowTestActivity : Activity() {
 	}
 	var appWidgetId :Int = -1
 
-//	val testLayout: LinearLayout by lazy {
-//		val button = findViewById(R.id.test_layout) as LinearLayout
-//		button
-//	}
-
 	val multi_window_start_button: Button by lazy {
 		findViewById(R.id.multi_window_start_button) as Button
 	}
@@ -81,7 +76,7 @@ class MultiFloatWindowTestActivity : Activity() {
 				sendMessage(MultiFloatWindowApplication.MultiWindowControlCommand.OPEN, index++)
 			})
 			multi_window_close_button.setOnClickListener({
-				sendMessage(MultiFloatWindowApplication.MultiWindowControlCommand.CLOSE, 0)
+				sendMessage(MultiFloatWindowApplication.MultiWindowControlCommand.CLOSE, --index)
 			})
 			multi_window_exit_button.setOnClickListener({
 				stopService(Intent(this@MultiFloatWindowTestActivity, MultiFloatWindowSampleService::class.java))
@@ -180,22 +175,6 @@ class MultiFloatWindowTestActivity : Activity() {
 						val intent = Intent(this@MultiFloatWindowTestActivity, MultiFloatWidgetTestService::class.java)
 						intent.replaceExtras(data)
 						startService(intent)
-
-//						val appWidgetId = data?.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, -1) ?: appWidgetId
-//						val appWidgetProviderInfo = AppWidgetManager.getInstance(this).getAppWidgetInfo(appWidgetId)
-//
-//						appWidgetHost.startListening()
-//
-//						val appWidgetHostView = appWidgetHost.createView(this, appWidgetId, appWidgetProviderInfo)
-//						appWidgetHostView.layoutParams = LinearLayout.LayoutParams(appWidgetProviderInfo.minWidth, appWidgetProviderInfo.minHeight)
-//						appWidgetHostView.setAppWidget(appWidgetId, appWidgetProviderInfo)
-
-						//val widgetLabel = appWidgetProviderInfo.label
-						//val widgetIcon = packageManager.getDrawable(appWidgetProviderInfo.provider.packageName, appWidgetProviderInfo.icon, null)
-						//val widgetWidth = appWidgetProviderInfo.minWidth
-						//val widgetHeight = appWidgetProviderInfo.minHeight
-
-//						testLayout.addView(appWidgetHostView)
 					}
 				}
 			}

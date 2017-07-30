@@ -5,7 +5,9 @@ import android.graphics.Point
 import android.view.WindowManager
 
 /**
- * Created by kogahirotaka on 2017/07/29.
+ * 画面系のユーティリティクラス
+ *
+ * Created by kght6123 on 2017/07/29.
  */
 class DisplayUtils {
 

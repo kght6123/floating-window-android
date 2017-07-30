@@ -14,7 +14,9 @@ import android.widget.LinearLayout
 import android.widget.Toast
 
 /**
- * Created by kogahirotaka on 2017/07/30.
+ * マルチウィンドウサービスの実装を簡易化するクラス
+ *
+ * Created by kght6123 on 2017/07/30.
  */
 abstract class MultiFloatWindowApplication : Service() {
 

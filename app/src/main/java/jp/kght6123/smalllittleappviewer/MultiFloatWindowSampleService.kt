@@ -14,7 +14,7 @@ import jp.kght6123.multiwindow.utils.UnitUtils
 
 
 /**
- * マルチウィンドウライブラリのテスト用サービスクラス
+ * マルチウィンドウライブラリのサンプルサービスクラス
  *
  * Created by kght6123 on 2017/05/09.
  */

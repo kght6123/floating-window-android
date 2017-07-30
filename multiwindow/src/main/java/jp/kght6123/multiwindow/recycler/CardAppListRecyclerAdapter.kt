@@ -10,7 +10,9 @@ import jp.kght6123.multiwindow.MultiFloatWindowManager
 import jp.kght6123.multiwindow.R
 
 /**
- * Created by kogahirotaka on 2017/07/28.
+ * リサイクルビューのアプリ一覧を作成するアダプタークラス
+ *
+ * Created by kght6123 on 2017/07/28.
  */
 class CardAppListRecyclerAdapter(val context: Context, val manager: MultiFloatWindowManager) : RecyclerView.Adapter<CardAppListRecyclerAdapter.ViewHolder>() {
 

@@ -8,7 +8,9 @@ import jp.kght6123.multiwindow.MultiFloatWindowManager
 
 @SuppressLint("ViewConstructor")
 /**
- * Created by kogahirotaka on 2017/07/29.
+ * アプリ一覧を表示するリサイクルビュー
+ *
+ * Created by kght6123 on 2017/07/29.
  */
 class CardAppListRecyclerView(context: Context?, manager: MultiFloatWindowManager) : RecyclerView(context) {
     init {
