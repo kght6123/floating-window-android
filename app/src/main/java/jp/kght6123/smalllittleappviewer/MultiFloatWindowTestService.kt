@@ -84,11 +84,11 @@ class MultiFloatWindowTestService : Service() {
 		val initWidth = UnitUtils.convertDp2Px(300f, applicationContext).toInt()
 		val initHeight = UnitUtils.convertDp2Px(450f, applicationContext).toInt()
 
-		val info1 = manager.add(1, margin, margin, false, getColor(android.R.color.background_light), initWidth, initHeight)
+		val info1 = manager.add(1, margin, margin, false, getColor(android.R.color.background_light), initWidth, initHeight, "")
 		info1.miniWindowFrame.addView(iconView1, iconViewLayoutParam1)
 		info1.windowInlineFrame.addView(webView1)
 
-		val info2 = manager.add(2, margin*2, margin*2, false, getColor(android.R.color.background_light), initWidth, initHeight)
+		val info2 = manager.add(2, margin*2, margin*2, false, getColor(android.R.color.background_light), initWidth, initHeight, "")
 		info2.miniWindowFrame.addView(iconView2, iconViewLayoutParam2)
 		info2.windowInlineFrame.addView(webView2)
 

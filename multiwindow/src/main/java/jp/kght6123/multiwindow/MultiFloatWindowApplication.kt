@@ -12,9 +12,11 @@ import android.os.Messenger
 import android.view.View
 import android.widget.LinearLayout
 import android.widget.Toast
+import jp.kght6123.multiwindow.utils.UnitUtils
 
 /**
  * マルチウィンドウサービスの実装を簡易化するクラス
+ * FIXME リソースIDベースのsetterも作らなきゃ
  *
  * Created by kght6123 on 2017/07/30.
  */
@@ -22,21 +24,14 @@ abstract class MultiFloatWindowApplication : Service() {
 
     val manager: MultiFloatWindowManager by lazy { MultiFloatWindowManager(applicationContext) }
 
-    abstract fun getIconView() : View
-    abstract fun getIconLayoutParam() : LinearLayout.LayoutParams
-    abstract fun getWindowView() : View
-    abstract fun getWindowLayoutParam() : LinearLayout.LayoutParams
+    var title: String = ""
+    var initSettings: MultiFloatWindowInitSettings? = null
+    var notificationSettings: MultiFloatWindowNotificationSettings? = null
 
-    abstract fun getX() : Int
-    abstract fun getY() : Int
-    abstract fun getInitWidth() : Int
-    abstract fun getInitHeight() : Int
-    abstract fun getBackgroundColor() : Int
-
-    abstract fun getNotificationTitle() : String
-    abstract fun getNotificationText() : String
-    abstract fun getNotificationIcon() : Icon
-    abstract fun getNotificationPendingIntent() : PendingIntent
+    var minimizedViewFactory: MultiFloatWindowViewFactory? = null
+    var minimizedLayoutParamFactory: MultiFloatWindowLayoutParamFactory? = null
+    var windowViewFactory: MultiFloatWindowViewFactory? = null
+    var windowLayoutParamFactory: MultiFloatWindowLayoutParamFactory? = null
 
     enum class MultiWindowControlCommand {
         HELLO,
@@ -55,9 +50,29 @@ abstract class MultiFloatWindowApplication : Service() {
                             Toast.makeText(applicationContext, "hello!! multi window framework.", Toast.LENGTH_SHORT).show()
                         }
                         MultiWindowControlCommand.OPEN -> {
-                            val info = manager.add(msg.arg1, getX(), getY(), false, getBackgroundColor(), getInitWidth(), getInitHeight())
-                            info.miniWindowFrame.addView(getIconView(), getIconLayoutParam())
-                            info.windowInlineFrame.addView(getWindowView(), getWindowLayoutParam())
+                            if(initSettings == null)
+                                initSettings = MultiFloatWindowInitSettings(
+                                        UnitUtils.convertDp2Px(25f, applicationContext).toInt(),
+                                        UnitUtils.convertDp2Px(25f, applicationContext).toInt(),
+                                        UnitUtils.convertDp2Px(300f, applicationContext).toInt(),
+                                        UnitUtils.convertDp2Px(450f, applicationContext).toInt()
+                                )
+
+                            val info = manager.add(
+                                    msg.arg1,
+                                    initSettings!!.x,
+                                    initSettings!!.y,
+                                    initSettings!!.miniMode,
+                                    initSettings!!.backgroundColor,
+                                    initSettings!!.width,
+                                    initSettings!!.height,
+                                    title)
+
+                            if(minimizedViewFactory != null && minimizedLayoutParamFactory != null)
+                                info.miniWindowFrame.addView(minimizedViewFactory!!.create(), minimizedLayoutParamFactory!!.create())
+
+                            if(windowViewFactory != null && windowLayoutParamFactory != null)
+                                info.windowInlineFrame.addView(windowViewFactory!!.create(), windowLayoutParamFactory!!.create())
                         }
                         MultiWindowControlCommand.CLOSE -> {
                             manager.remove(msg.arg1)
@@ -81,21 +96,47 @@ abstract class MultiFloatWindowApplication : Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
 
-        // 前面で起動する
-        val notification = Notification.Builder(this)
-                .setContentTitle(getNotificationTitle())
-                .setContentText(getNotificationText())
-                .setContentIntent(getNotificationPendingIntent())
-                .setSmallIcon(getNotificationIcon())
-                .build()
+        if(notificationSettings != null) {
+            // 前面で起動する
+            val notification = Notification.Builder(this)
+                    .setContentTitle(notificationSettings!!.title)
+                    .setContentText(notificationSettings!!.text)
+                    .setContentIntent(notificationSettings!!.pendingIntent)
+                    .setSmallIcon(notificationSettings!!.icon)
+                    .build()
 
-        startForeground(startId, notification)
-
+            startForeground(startId, notification)
+        }
         return START_NOT_STICKY // 強制終了後に再起動されない
     }
 
     override fun onDestroy() {
         super.onDestroy()
+        finish()
+    }
+
+    private fun finish() {
         manager.finish()
+    }
+
+    data class MultiFloatWindowInitSettings(
+            val x: Int,
+            val y: Int,
+            val width: Int,
+            val height: Int,
+            val backgroundColor: Int = MultiFloatWindowConstants.Theme.Light.rgb,
+            val miniMode: Boolean = false
+    )
+    data class MultiFloatWindowNotificationSettings(
+            val title: String = "Multi Window Application",
+            val text: String = "Processing",
+            val icon: Icon,
+            val pendingIntent: PendingIntent
+    )
+    interface MultiFloatWindowViewFactory {
+        fun create(): View
+    }
+    interface MultiFloatWindowLayoutParamFactory {
+        fun create(): LinearLayout.LayoutParams
     }
 }

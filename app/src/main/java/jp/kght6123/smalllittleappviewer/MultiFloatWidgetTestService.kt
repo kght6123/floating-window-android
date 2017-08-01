@@ -62,7 +62,7 @@ class MultiFloatWidgetTestService : Service() {
 		val initWidth = UnitUtils.convertDp2Px(300f, applicationContext).toInt()
 		val initHeight = UnitUtils.convertDp2Px(450f, applicationContext).toInt()
 
-		val info1 = manager.add(1, margin, margin, false, getColor(R.color.float_window_background_color), initWidth, initHeight)
+		val info1 = manager.add(1, margin, margin, false, getColor(R.color.float_window_background_color), initWidth, initHeight, "")
 		info1.miniWindowFrame.addView(iconView1, iconViewLayoutParam1)
 		info1.windowInlineFrame.addView(appWidgetHostView)
 

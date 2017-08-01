@@ -8,6 +8,7 @@ import android.view.*
 import android.widget.FrameLayout
 import jp.kght6123.multiwindow.recycler.CardAppListRecyclerView
 import jp.kght6123.multiwindow.utils.UnitUtils
+import jp.kght6123.multiwindow.viewgroup.MultiFloatWindowOverlayLayout
 import kotlin.concurrent.withLock
 
 /**
@@ -273,9 +274,9 @@ class MultiFloatWindowManager(val context: Context) {
     private fun indexToName(index: Int): String {
         return "${context.packageName}.$index"
     }
-    private fun put(index: Int, miniMode: Boolean, x: Int?, y: Int?, backgroundColor: Int, initWidth: Int, initHeight: Int): MultiFloatWindowInfo {
+    private fun put(index: Int, miniMode: Boolean, x: Int?, y: Int?, backgroundColor: Int, initWidth: Int, initHeight: Int, title: String): MultiFloatWindowInfo {
         val name = indexToName(index)
-        val overlayWindowInfo = MultiFloatWindowInfo(context, this, name, miniMode, backgroundColor, initWidth, initHeight)
+        val overlayWindowInfo = MultiFloatWindowInfo(context, this, name, miniMode, backgroundColor, initWidth, initHeight, title)
         put(name, overlayWindowInfo)
         moveFixed(name, x!!, y!!)
         return overlayWindowInfo
@@ -405,8 +406,8 @@ class MultiFloatWindowManager(val context: Context) {
         }
         return false
     }
-    fun add(index: Int, x: Int?, y: Int?, miniMode: Boolean, backgroundColor: Int, initWidth: Int, initHeight: Int): MultiFloatWindowInfo {
-        return put(index, miniMode, x, y, backgroundColor, initWidth, initHeight)// ここでビューをオーバーレイ領域に追加する
+    fun add(index: Int, x: Int?, y: Int?, miniMode: Boolean, backgroundColor: Int, initWidth: Int, initHeight: Int, title: String): MultiFloatWindowInfo {
+        return put(index, miniMode, x, y, backgroundColor, initWidth, initHeight, title)// ここでビューをオーバーレイ領域に追加する
     }
     fun finish() {
         for ((overlayName, _) in overlayWindowMap.toList()) {

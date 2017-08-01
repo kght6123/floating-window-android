@@ -1,4 +1,4 @@
-package jp.kght6123.multiwindow
+package jp.kght6123.multiwindow.viewgroup
 
 import android.content.Context
 import android.util.AttributeSet

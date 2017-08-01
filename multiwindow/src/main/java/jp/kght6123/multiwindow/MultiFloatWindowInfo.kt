@@ -14,7 +14,16 @@ import jp.kght6123.multiwindow.utils.UnitUtils
  *
  * Created by kght6123 on 2017/07/11.
  */
-class MultiFloatWindowInfo(val context: Context, val manager: MultiFloatWindowManager, val name: String, var miniMode: Boolean, val backgroundColor: Int, val initWidth: Int, val initHeight: Int) {
+class MultiFloatWindowInfo(
+        val context: Context,
+        val manager: MultiFloatWindowManager,
+        val name: String,
+        var miniMode: Boolean,
+        val backgroundColor: Int,
+        val initWidth: Int,
+        val initHeight: Int,
+        val title: String
+) {
 
     private val TAG = this.javaClass.name
 

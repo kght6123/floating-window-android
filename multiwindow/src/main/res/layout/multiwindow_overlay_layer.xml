@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<jp.kght6123.multiwindow.MultiFloatWindowOverlayLayout
+<jp.kght6123.multiwindow.viewgroup.MultiFloatWindowOverlayLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical"
     android:layout_width="fill_parent"
@@ -8,4 +8,4 @@
     android:focusableInTouchMode="true"
     android:id="@+id/parent"
     >
-</jp.kght6123.multiwindow.MultiFloatWindowOverlayLayout>
+</jp.kght6123.multiwindow.viewgroup.MultiFloatWindowOverlayLayout>

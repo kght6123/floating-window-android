@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<jp.kght6123.multiwindow.MultiFloatWindowOverlayLayout
+<jp.kght6123.multiwindow.viewgroup.MultiFloatWindowOverlayLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
@@ -17,4 +17,4 @@
         android:elevation="2dp"
         android:id="@+id/controlIconLayer"
         android:orientation="horizontal" />
-</jp.kght6123.multiwindow.MultiFloatWindowOverlayLayout>
+</jp.kght6123.multiwindow.viewgroup.MultiFloatWindowOverlayLayout>
