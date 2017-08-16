@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    style="@style/smallapp_browser_webview_control_area_bottom2"
+    android:hardwareAccelerated="true"
+    >
+    <Button
+        android:id="@+id/btnMinimized"
+        android:background="@drawable/ic_window_minimized"
+        style="@style/smallapp_browser_smallapp_buttom"
+        android:hardwareAccelerated="true" />
+    <Button
+        android:id="@+id/btnNormal"
+        android:background="@drawable/ic_window_normal"
+        style="@style/smallapp_browser_smallapp_buttom"
+        android:hardwareAccelerated="true" />
+    <Button
+        android:id="@+id/btnFfitted"
+        android:background="@drawable/ic_window_fitted"
+        style="@style/smallapp_browser_smallapp_buttom"
+        android:hardwareAccelerated="true" />
+    <Button
+        android:id="@+id/btnRefresh"
+        android:background="@drawable/ic_refresh"
+        style="@style/smallapp_browser_smallapp_buttom"
+        android:hardwareAccelerated="true" />
+    <Button
+        android:id="@+id/btnBack"
+        android:background="@drawable/ic_back"
+        style="@style/smallapp_browser_smallapp_buttom"
+        android:hardwareAccelerated="true" />
+    <Button
+        android:id="@+id/btnForward"
+        android:background="@drawable/ic_forward"
+        style="@style/smallapp_browser_smallapp_buttom"
+        android:hardwareAccelerated="true" />
+    <Button
+        android:id="@+id/btnPin"
+        android:background="@drawable/ic_pin" 
+        style="@style/smallapp_browser_smallapp_buttom"
+        android:hardwareAccelerated="true" />
+    <Button
+        android:id="@+id/btnHistry"
+        android:background="@drawable/ic_history" 
+        style="@style/smallapp_browser_smallapp_buttom"
+        android:hardwareAccelerated="true" />
+    <Button
+        android:id="@+id/btnShared"
+        android:background="@drawable/ic_shared" 
+        style="@style/smallapp_browser_smallapp_buttom"
+        android:hardwareAccelerated="true" />
+</LinearLayout>

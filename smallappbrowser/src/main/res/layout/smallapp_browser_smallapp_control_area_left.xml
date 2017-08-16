@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    style="@style/smallapp_browser_smallapp_control_area_left"
+    android:hardwareAccelerated="true"
+    >
+    <Button
+        android:id="@+id/btnChrome"
+        android:background="@drawable/ic_chrome"
+        style="@style/smallapp_browser_smallapp_buttom"
+        android:hardwareAccelerated="true" />
+    <Button
+        android:id="@+id/btnClose"
+        android:background="@drawable/ic_close"
+        style="@style/smallapp_browser_smallapp_buttom"
+        android:hardwareAccelerated="true" />
+</LinearLayout>

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="bottom_actionbar_view_close_let_bar_key">bottom_actionbar_view_close_let_bar_key</string>
+
+    <string name="back_view_title_key">back_view_title_key</string>
+    <string name="forward_view_title_key">forward_view_title_key</string>
+    <string name="chrome_view_title_key">chrome_view_title_key</string>
+
+    <string name="minimization_view_bar_key">minimization_view_bar_key</string>
+    <string name="maximization_view_bar_key">maximization_view_bar_key</string>
+    <string name="returned_view_bar_key">returned_view_bar_key</string>
+    <string name="refresh_view_bar_key">refresh_view_bar_key</string>
+    <string name="back_view_bar_key">back_view_bar_key</string>
+    <string name="forward_view_bar_key">forward_view_bar_key</string>
+    <string name="pin_view_bar_key">pin_view_bar_key</string>
+    <string name="history_view_bar_key">history_view_bar_key</string>
+    <string name="shared_view_bar_key">shared_view_bar_key</string>
+    <string name="chrome_view_bar_key">chrome_view_bar_key</string>
+    <string name="close_view_bar_key">close_view_bar_key</string>
+</resources>

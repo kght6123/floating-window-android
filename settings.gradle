@@ -1,1 +1,1 @@
-include ':app', ':multiwindow'
+include ':app', ':multiwindow', ':smallappbrowser'

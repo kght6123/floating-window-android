@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:hardwareAccelerated="true" >
+
+    <!-- ImageView
+        android:id="@+id/webPageFavicon"
+        android:layout_width="96dp"
+        android:layout_height="96dp"
+        android:src="@drawable/ic_save"
+        android:layout_gravity="top"
+        android:contentDescription="@string/app_name"
+         / -->
+
+    <TextView
+        android:id="@+id/webPageTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="24dp"
+        android:text="@string/app_name"
+        android:layout_gravity="top"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:maxLength="30"
+        android:paddingLeft="5dp"
+        android:hardwareAccelerated="true" />
+    <TextView
+        android:id="@+id/webPageUrl"
+        android:layout_width="wrap_content"
+        android:layout_height="24dp"
+        android:text="@string/app_name"
+        android:layout_gravity="top"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:maxLength="70"
+        android:paddingLeft="10dp"
+        android:hardwareAccelerated="true" />
+
+</LinearLayout>

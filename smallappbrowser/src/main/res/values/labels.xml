@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="back">Back</string>
+    <string name="forward">Forward</string>
+    <string name="chrome">Chrome</string>
+    <string name="menu">Menu</string>
+
+    <string name="maximization">最大化</string>
+    <string name="minimization">最小化</string>
+    <string name="returned">元に戻す</string>
+    <string name="javascriptEnable">JavaScriptを有効化</string>
+    <string name="javascriptDisable">JavaScriptを無効化</string>
+    <string name="send">送信</string>
+
+    <string name="start">Start</string>
+    <string name="open">Open</string>
+    <string name="close">Close</string>
+    <string name="exit">Exit</string>
+</resources>

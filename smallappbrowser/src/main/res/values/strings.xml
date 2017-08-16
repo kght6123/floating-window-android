@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">SmallAppBrowser</string>
+    <string name="test_app_name">スモールブラウザ（テスト）</string>
+
+    <string name="app_browser_name">スモールブラウザ</string>
+    <string name="app_browser_changer_name">ブラウザチェンジャー</string>
+</resources>

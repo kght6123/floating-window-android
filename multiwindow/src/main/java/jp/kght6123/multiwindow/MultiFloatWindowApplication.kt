@@ -16,7 +16,7 @@ import jp.kght6123.multiwindow.utils.UnitUtils
 
 /**
  * マルチウィンドウサービスの実装を簡易化するクラス
- * FIXME リソースIDベースのsetterも作らなきゃ
+ * FIXME リソースIDベースのsetterも作らなきゃ!!
  *
  * Created by kght6123 on 2017/07/30.
  */
@@ -28,8 +28,6 @@ abstract class MultiFloatWindowApplication : Service() {
     var initSettings: MultiFloatWindowInitSettings? = null
     var notificationSettings: MultiFloatWindowNotificationSettings? = null
 
-    var minimizedViewFactory: MultiFloatWindowViewFactory? = null
-    var minimizedLayoutParamFactory: MultiFloatWindowLayoutParamFactory? = null
     var windowViewFactory: MultiFloatWindowViewFactory? = null
     var windowLayoutParamFactory: MultiFloatWindowLayoutParamFactory? = null
 
@@ -68,11 +66,14 @@ abstract class MultiFloatWindowApplication : Service() {
                                     initSettings!!.height,
                                     title)
 
-                            if(minimizedViewFactory != null && minimizedLayoutParamFactory != null)
-                                info.miniWindowFrame.addView(minimizedViewFactory!!.create(), minimizedLayoutParamFactory!!.create())
-
-                            if(windowViewFactory != null && windowLayoutParamFactory != null)
-                                info.windowInlineFrame.addView(windowViewFactory!!.create(), windowLayoutParamFactory!!.create())
+                            if(windowViewFactory != null && windowLayoutParamFactory != null) {
+                                info.windowInlineFrame.addView(
+                                        windowViewFactory!!.createWindowView(msg.arg2),
+                                        windowLayoutParamFactory!!.createWindowLayoutParams(msg.arg2))
+                                info.miniWindowFrame.addView(
+                                        windowViewFactory!!.createMinimizedView(msg.arg2),
+                                        windowLayoutParamFactory!!.createMinimizedLayoutParams(msg.arg2))
+                            }
                         }
                         MultiWindowControlCommand.CLOSE -> {
                             manager.remove(msg.arg1)
@@ -87,14 +88,18 @@ abstract class MultiFloatWindowApplication : Service() {
             }
         }
     }
-
     val mMessenger = Messenger(handler)
 
+    override fun onCreate() {
+        super.onCreate()
+    }
     override fun onBind(intent: Intent?): IBinder {
         return mMessenger.binder
     }
-
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+
+        // Start
+        windowViewFactory!!.start(intent)
 
         if(notificationSettings != null) {
             // 前面で起動する
@@ -109,16 +114,13 @@ abstract class MultiFloatWindowApplication : Service() {
         }
         return START_NOT_STICKY // 強制終了後に再起動されない
     }
-
     override fun onDestroy() {
         super.onDestroy()
         finish()
     }
-
     private fun finish() {
         manager.finish()
     }
-
     data class MultiFloatWindowInitSettings(
             val x: Int,
             val y: Int,
@@ -134,9 +136,12 @@ abstract class MultiFloatWindowApplication : Service() {
             val pendingIntent: PendingIntent
     )
     interface MultiFloatWindowViewFactory {
-        fun create(): View
+        fun createWindowView(arg: Int): View
+        fun createMinimizedView(arg: Int): View
+        fun start(intent: Intent?)
     }
     interface MultiFloatWindowLayoutParamFactory {
-        fun create(): LinearLayout.LayoutParams
+        fun createWindowLayoutParams(arg: Int): LinearLayout.LayoutParams
+        fun createMinimizedLayoutParams(arg: Int): LinearLayout.LayoutParams
     }
 }

@@ -136,7 +136,7 @@ class MultiFloatWindowInfo(
         val windowInFrame =
                 windowOutlineFrame.findViewById(R.id.windowInlineFrame) as ViewGroup
         windowInFrame.setBackgroundColor(backgroundColor)
-        //windowInFrame.setBackgroundResource(android.R.color.background_light)
+        // FIXME windowInFrame.setBackgroundResource(R.drawable.frame_resize_right_bottom/*android.R.color.background_light*/)
 
 //        val mainLayoutView =
 //                View.inflate(context, R.layout.small_webview, windowInlineFrame) as ViewGroup
@@ -278,7 +278,7 @@ class MultiFloatWindowInfo(
                         if(strokeMode != Stroke.UNKNOWN) {
                             // ACTION_UP,DOWNのみの対策。
                             windowInFrame.setBackgroundColor(backgroundColor)
-                            //windowInFrame.setBackgroundResource(android.R.color.background_light)
+                            // FIXME windowInFrame.setBackgroundResource(R.drawable.frame_resize_right_bottom/*android.R.color.background_light*/)
                         }
                     }
                     MotionEvent.ACTION_MOVE -> {

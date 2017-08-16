@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:hardwareAccelerated="true" 
+    android:clipToPadding="true">
+    
+    <LinearLayout
+           android:layout_width="match_parent"
+           android:layout_height="match_parent"
+           android:layout_gravity="fill"
+           android:clipToPadding="true"
+        >
+            <WebView
+            android:id="@+id/webview"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:hardwareAccelerated="true"
+            android:clipToPadding="true"/>
+    </LinearLayout>
+       <LinearLayout
+           android:layout_width="match_parent"
+           android:layout_height="wrap_content"
+           android:orientation="vertical"
+           android:gravity="bottom"
+           android:layout_gravity="bottom"
+           android:layout_marginStart="49dp"
+           android:hardwareAccelerated="true">
+       <ListView
+           android:id="@+id/browserPinListView"
+           android:layout_width="match_parent"
+           android:layout_height="193dp"
+           android:background="#CC000000"
+           android:visibility="gone"
+           android:hardwareAccelerated="true">
+       </ListView>
+       <ListView
+           android:id="@+id/browserHistoryListView"
+           android:layout_width="match_parent"
+           android:layout_height="193dp"
+           android:background="#CC000000"
+           android:visibility="gone"
+           android:layout_marginTop="5dp"
+           android:hardwareAccelerated="true">
+       </ListView>
+    </LinearLayout>
+    
+    <ProgressBar
+        android:id="@+id/progressBarForWeb"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="match_parent"
+        android:layout_height="10dp"
+        android:layout_marginBottom="-8dp"
+        android:layout_marginTop="-4dp"
+        android:hardwareAccelerated="true"/>
+    
+    <include android:id="@+id/moveControlAreaBottom" layout="@layout/smallapp_browser_move_control_area_bottom"/>
+    <include android:id="@+id/moveControlAreaLeft" layout="@layout/smallapp_browser_move_control_area_left"/>
+    <include android:id="@+id/moveControlAreaRight" layout="@layout/smallapp_browser_move_control_area_right"/>
+    
+    <include android:id="@+id/webviewControlAreaBottom" layout="@layout/smallapp_browser_webview_control_area_bottom"/>
+    <include android:id="@+id/webviewControlAreaBottom2" layout="@layout/smallapp_browser_webview_control_area_bottom2"/>
+    <include android:id="@+id/webviewControlAreaLeft" layout="@layout/smallapp_browser_webview_control_area_left"/>
+    <include android:id="@+id/webviewControlAreaRight" layout="@layout/smallapp_browser_webview_control_area_right"/>
+    
+    <include android:id="@+id/smallappControlAreaBottom" layout="@layout/smallapp_browser_smallapp_control_area_bottom"/>
+    <include android:id="@+id/smallappControlAreaBottom2" layout="@layout/smallapp_browser_smallapp_control_area_bottom2"/>
+    <include android:id="@+id/smallappControlAreaLeft" layout="@layout/smallapp_browser_smallapp_control_area_left"/>
+    <include android:id="@+id/smallappControlAreaRight" layout="@layout/smallapp_browser_smallapp_control_area_right"/>
+    
+</FrameLayout>

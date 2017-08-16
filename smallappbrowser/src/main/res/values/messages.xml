@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="pin_completed">ピン止めしました。</string>
+    <string name="pin_deleted">ピンを削除しました。</string>
+</resources>

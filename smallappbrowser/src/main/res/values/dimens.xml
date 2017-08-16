@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="iconSize">35dp</dimen>
+    <dimen name="actionBarIconSize">48dp</dimen>
+    <dimen name="actionBarMarginLeft">7dp</dimen>
+
+    <dimen name="x">25dp</dimen>
+    <dimen name="y">25dp</dimen>
+    <dimen name="width">200dp</dimen>
+    <dimen name="height">300dp</dimen>
+
+    <item name="btnAlpha" format="float" type="dimen">0.88</item>
+
+</resources>

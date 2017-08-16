@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout  xmlns:android="http://schemas.android.com/apk/res/android"
+    style="@style/smallapp_browser_move_control_area_bottom"
+    android:hardwareAccelerated="true"
+    android:visibility="invisible">
+    <Button
+        android:id="@+id/btnMoveControl"
+        android:background="@drawable/ic_forward"
+        style="@style/smallapp_browser_smallapp_buttom"
+        android:hardwareAccelerated="true"
+        android:rotation="90" />
+</LinearLayout>
