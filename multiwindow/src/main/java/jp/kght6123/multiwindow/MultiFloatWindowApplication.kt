@@ -12,7 +12,6 @@ import android.os.Messenger
 import android.view.View
 import android.widget.LinearLayout
 import android.widget.Toast
-import jp.kght6123.multiwindow.utils.UnitUtils
 
 /**
  * マルチウィンドウサービスの実装を簡易化するクラス
@@ -23,22 +22,20 @@ import jp.kght6123.multiwindow.utils.UnitUtils
 abstract class MultiFloatWindowApplication : Service() {
 
     val manager: MultiFloatWindowManager by lazy { MultiFloatWindowManager(applicationContext) }
-
-    var title: String = ""
-    var initSettings: MultiFloatWindowInitSettings? = null
-    var notificationSettings: MultiFloatWindowNotificationSettings? = null
-
-    var windowViewFactory: MultiFloatWindowViewFactory? = null
-    var windowLayoutParamFactory: MultiFloatWindowLayoutParamFactory? = null
+    val factoryMap: MutableMap<Int, MultiFloatWindowFactory> by lazy { HashMap<Int, MultiFloatWindowFactory>() }
 
     enum class MultiWindowControlCommand {
         HELLO,
+        START,
         OPEN,
         CLOSE,
         EXIT
     }
+    enum class MultiWindowControlParam {
+        WINDOW_INDEX,
+    }
 
-    val handler: Handler by lazy {
+    private val handler: Handler by lazy {
         object: Handler() {
             override fun handleMessage(msg: Message?) {
                 if(msg != null) {
@@ -48,32 +45,31 @@ abstract class MultiFloatWindowApplication : Service() {
                             Toast.makeText(applicationContext, "hello!! multi window framework.", Toast.LENGTH_SHORT).show()
                         }
                         MultiWindowControlCommand.OPEN -> {
-                            if(initSettings == null)
-                                initSettings = MultiFloatWindowInitSettings(
-                                        UnitUtils.convertDp2Px(25f, applicationContext).toInt(),
-                                        UnitUtils.convertDp2Px(25f, applicationContext).toInt(),
-                                        UnitUtils.convertDp2Px(300f, applicationContext).toInt(),
-                                        UnitUtils.convertDp2Px(450f, applicationContext).toInt()
-                                )
+                            val factory = MultiFloatWindowFactory(onCreateFactory(msg.arg1), onCreateSettingsFactory(msg.arg1))
+                            factoryMap.put(msg.arg1, factory)
 
+                            val initSettings = factory.windowSettingsFactory.createInitSettings(msg.arg1)
                             val info = manager.add(
                                     msg.arg1,
-                                    initSettings!!.x,
-                                    initSettings!!.y,
-                                    initSettings!!.miniMode,
-                                    initSettings!!.backgroundColor,
-                                    initSettings!!.width,
-                                    initSettings!!.height,
-                                    title)
+                                    initSettings.x,
+                                    initSettings.y,
+                                    initSettings.miniMode,
+                                    initSettings.backgroundColor,
+                                    initSettings.width,
+                                    initSettings.height)
 
-                            if(windowViewFactory != null && windowLayoutParamFactory != null) {
-                                info.windowInlineFrame.addView(
-                                        windowViewFactory!!.createWindowView(msg.arg2),
-                                        windowLayoutParamFactory!!.createWindowLayoutParams(msg.arg2))
-                                info.miniWindowFrame.addView(
-                                        windowViewFactory!!.createMinimizedView(msg.arg2),
-                                        windowLayoutParamFactory!!.createMinimizedLayoutParams(msg.arg2))
-                            }
+                            val windowViewFactory = factory.windowViewFactory
+                            info.windowInlineFrame.addView(
+                                    windowViewFactory.createWindowView(msg.arg1),
+                                    windowViewFactory.createWindowLayoutParams(msg.arg1))
+                            info.miniWindowFrame.addView(
+                                    windowViewFactory.createMinimizedView(msg.arg1),
+                                    windowViewFactory.createMinimizedLayoutParams(msg.arg1))
+                        }
+                        MultiWindowControlCommand.START -> {
+                            val intent = msg.obj as Intent
+                            val index = intent.getIntExtra(MultiFloatWindowApplication.MultiWindowControlParam.WINDOW_INDEX.name, 0)
+                            factoryMap.getValue(index).windowViewFactory.start(intent)
                         }
                         MultiWindowControlCommand.CLOSE -> {
                             manager.remove(msg.arg1)
@@ -88,7 +84,7 @@ abstract class MultiFloatWindowApplication : Service() {
             }
         }
     }
-    val mMessenger = Messenger(handler)
+    private val mMessenger by lazy { Messenger(handler) }
 
     override fun onCreate() {
         super.onCreate()
@@ -98,20 +94,17 @@ abstract class MultiFloatWindowApplication : Service() {
     }
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
 
-        // Start
-        windowViewFactory!!.start(intent)
+        val notificationSettings = onCreateNotificationSettings()
+        // 前面で起動する
+        val notification = Notification.Builder(this)
+                .setContentTitle(notificationSettings.title)
+                .setContentText(notificationSettings.text)
+                .setContentIntent(notificationSettings.pendingIntent)
+                .setSmallIcon(notificationSettings.icon)
+                .build()
 
-        if(notificationSettings != null) {
-            // 前面で起動する
-            val notification = Notification.Builder(this)
-                    .setContentTitle(notificationSettings!!.title)
-                    .setContentText(notificationSettings!!.text)
-                    .setContentIntent(notificationSettings!!.pendingIntent)
-                    .setSmallIcon(notificationSettings!!.icon)
-                    .build()
+        startForeground(startId, notification)
 
-            startForeground(startId, notification)
-        }
         return START_NOT_STICKY // 強制終了後に再起動されない
     }
     override fun onDestroy() {
@@ -121,6 +114,11 @@ abstract class MultiFloatWindowApplication : Service() {
     private fun finish() {
         manager.finish()
     }
+
+    abstract fun onCreateNotificationSettings(): MultiFloatWindowNotificationSettings
+    abstract fun onCreateFactory(index: Int): MultiFloatWindowViewFactory
+    abstract fun onCreateSettingsFactory(index: Int): MultiFloatWindowSettingsFactory
+
     data class MultiFloatWindowInitSettings(
             val x: Int,
             val y: Int,
@@ -135,13 +133,19 @@ abstract class MultiFloatWindowApplication : Service() {
             val icon: Icon,
             val pendingIntent: PendingIntent
     )
+    data class MultiFloatWindowFactory(
+            val windowViewFactory: MultiFloatWindowViewFactory,
+            val windowSettingsFactory: MultiFloatWindowSettingsFactory
+    )
     interface MultiFloatWindowViewFactory {
         fun createWindowView(arg: Int): View
         fun createMinimizedView(arg: Int): View
-        fun start(intent: Intent?)
-    }
-    interface MultiFloatWindowLayoutParamFactory {
         fun createWindowLayoutParams(arg: Int): LinearLayout.LayoutParams
         fun createMinimizedLayoutParams(arg: Int): LinearLayout.LayoutParams
+
+        fun start(intent: Intent?)
+    }
+    interface MultiFloatWindowSettingsFactory {
+        fun createInitSettings(arg: Int): MultiFloatWindowInitSettings
     }
 }

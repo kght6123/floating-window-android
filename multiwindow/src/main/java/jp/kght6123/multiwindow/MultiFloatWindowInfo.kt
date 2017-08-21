@@ -20,15 +20,14 @@ class MultiFloatWindowInfo(
         val name: String,
         var miniMode: Boolean,
         val backgroundColor: Int,
-        val initWidth: Int,
-        val initHeight: Int,
-        val title: String
+        private val initWidth: Int,
+        private val initHeight: Int
 ) {
 
     private val TAG = this.javaClass.name
 
     private enum class Stroke {
-        UNKNOWN, TOP, BOTTOM, LEFT, RIGHT
+        UNKNOWN, TOP, BOTTOM, LEFT, RIGHT, TOP_LEFT, TOP_RIGHT, BOTTOM_LEFT, BOTTOM_RIGHT,
     }
     private enum class Mode {
         UNKNOWN, MOVE, RESIZE, FINISH
@@ -136,7 +135,7 @@ class MultiFloatWindowInfo(
         val windowInFrame =
                 windowOutlineFrame.findViewById(R.id.windowInlineFrame) as ViewGroup
         windowInFrame.setBackgroundColor(backgroundColor)
-        // FIXME windowInFrame.setBackgroundResource(R.drawable.frame_resize_right_bottom/*android.R.color.background_light*/)
+        // FIXME windowInFrame.setBackgroundResource(R.drawable.multiwindow_frame_stroke_left/*android.R.color.background_light*/)
 
 //        val mainLayoutView =
 //                View.inflate(context, R.layout.small_webview, windowInlineFrame) as ViewGroup
@@ -152,7 +151,33 @@ class MultiFloatWindowInfo(
         windowOutlineFrame.setOnLongClickListener {
             if(strokeMode != Stroke.UNKNOWN && windowMode == Mode.UNKNOWN) {
                 // リサイズモードの背景色に変える
-                windowInFrame.setBackgroundResource(R.color.colorAccent)
+                when (strokeMode) {
+                    Stroke.TOP -> {
+                        windowInFrame.setBackgroundResource(R.drawable.multiwindow_frame_stroke_top)
+                    }
+                    Stroke.BOTTOM -> {
+                        windowInFrame.setBackgroundResource(R.drawable.multiwindow_frame_stroke_bottom)
+                    }
+                    Stroke.LEFT -> {
+                        windowInFrame.setBackgroundResource(R.drawable.multiwindow_frame_stroke_left)
+                    }
+                    Stroke.RIGHT -> {
+                        windowInFrame.setBackgroundResource(R.drawable.multiwindow_frame_stroke_right)
+                    }
+                    Stroke.TOP_LEFT -> {
+                        windowInFrame.setBackgroundResource(R.drawable.multiwindow_frame_stroke_top_left)
+                    }
+                    Stroke.TOP_RIGHT -> {
+                        windowInFrame.setBackgroundResource(R.drawable.multiwindow_frame_stroke_top_right)
+                    }
+                    Stroke.BOTTOM_LEFT -> {
+                        windowInFrame.setBackgroundResource(R.drawable.multiwindow_frame_stroke_bottom_left)
+                    }
+                    Stroke.BOTTOM_RIGHT -> {
+                        windowInFrame.setBackgroundResource(R.drawable.multiwindow_frame_stroke_bottom_right)
+                    }
+                    else -> {}
+                }
                 windowMode = Mode.RESIZE
             }
             return@setOnLongClickListener false
@@ -170,21 +195,13 @@ class MultiFloatWindowInfo(
                     Log.d(TAG, "SimpleOnGestureListener onDoubleTap $strokeMode")
 
                     when (strokeMode) {
-                        Stroke.TOP -> {
+                        Stroke.TOP, Stroke.BOTTOM, Stroke.LEFT, Stroke.RIGHT -> {
                             switchMiniMode()
                         }
-                        Stroke.BOTTOM -> {
-                            switchMiniMode()
+                        Stroke.TOP_LEFT, Stroke.TOP_RIGHT, Stroke.BOTTOM_LEFT, Stroke.BOTTOM_RIGHT -> {
+                            // FIXME
                         }
-                        Stroke.LEFT -> {
-                            switchMiniMode()
-                        }
-                        Stroke.RIGHT -> {
-                            switchMiniMode()
-                        }
-                        else -> {
-
-                        }
+                        else -> {}
                     }
                     return super.onDoubleTap(event)
                 }
@@ -228,25 +245,42 @@ class MultiFloatWindowInfo(
                         Log.d(TAG, "params.width-this.strokeWidth = ${params.width-this.strokeWidth}")
                         Log.d(TAG, "params.height-this.strokeWidth = ${params.height-this.strokeWidth}")
 
-                        if(event.x in 0..this.strokeWidth){
+                        val left = event.x in 0..this.strokeWidth
+                        val right = event.x in (params.width-this.strokeWidth)..params.width
+                        val top = event.y in 0..this.strokeWidth
+                        val bottom = event.y in (params.height-this.strokeWidth)..params.height
+
+                        if(left){
                             strokeMode = Stroke.LEFT
                             Log.d(TAG, "dispatchTouchEvent $strokeMode strokeWidth=$strokeWidth")
-
                         }
-                        if(event.x in (params.width-this.strokeWidth)..params.width) {
+                        if(right) {
                             strokeMode = Stroke.RIGHT
                             Log.d(TAG, "dispatchTouchEvent $strokeMode strokeWidth=$strokeWidth")
-
                         }
-                        if(event.y in 0..this.strokeWidth) {
+                        if(top) {
                             strokeMode = Stroke.TOP
                             Log.d(TAG, "dispatchTouchEvent $strokeMode strokeWidth=$strokeWidth")
-
                         }
-                        if(event.y in (params.height-this.strokeWidth)..params.height) {
+                        if(bottom) {
                             strokeMode = Stroke.BOTTOM
                             Log.d(TAG, "dispatchTouchEvent $strokeMode strokeWidth=$strokeWidth")
-
+                        }
+                        if(top && left) {
+                            strokeMode = Stroke.TOP_LEFT
+                            Log.d(TAG, "dispatchTouchEvent $strokeMode strokeWidth=$strokeWidth")
+                        }
+                        if(top && right) {
+                            strokeMode = Stroke.TOP_RIGHT
+                            Log.d(TAG, "dispatchTouchEvent $strokeMode strokeWidth=$strokeWidth")
+                        }
+                        if(bottom && left) {
+                            strokeMode = Stroke.BOTTOM_LEFT
+                            Log.d(TAG, "dispatchTouchEvent $strokeMode strokeWidth=$strokeWidth")
+                        }
+                        if(bottom && right) {
+                            strokeMode = Stroke.BOTTOM_RIGHT
+                            Log.d(TAG, "dispatchTouchEvent $strokeMode strokeWidth=$strokeWidth")
                         }
                         if(strokeMode != Stroke.UNKNOWN) {
                             // 移動・拡大縮小のための初期値設定
@@ -278,7 +312,7 @@ class MultiFloatWindowInfo(
                         if(strokeMode != Stroke.UNKNOWN) {
                             // ACTION_UP,DOWNのみの対策。
                             windowInFrame.setBackgroundColor(backgroundColor)
-                            // FIXME windowInFrame.setBackgroundResource(R.drawable.frame_resize_right_bottom/*android.R.color.background_light*/)
+                            // FIXME windowInFrame.setBackgroundResource(R.drawable.multiwindow_frame_stroke_left/*android.R.color.background_light*/)
                         }
                     }
                     MotionEvent.ACTION_MOVE -> {
@@ -302,30 +336,56 @@ class MultiFloatWindowInfo(
                                 if(defaultDisplaySize.y - space < params.height)
                                     params.height = defaultDisplaySize.y - space // 通知バー、ナビゲーションバーの考慮(space)
                             }
+                            val resizeTop = fun(){
+                                params.height = (initialHeight - (ry - initialTouchY).toInt())
+                                params.topMargin = initialY + (ry - initialTouchY).toInt()
+                                limitMaxHeight()
+                                //limitMaxY()
+                            }
+                            val resizeBottom = fun(){
+                                params.height = (initialHeight + (ry - initialTouchY).toInt())
+                                limitMaxHeight()
+                            }
+                            val resizeLeft = fun(){
+                                params.width = (initialWidth - (rx - initialTouchX).toInt())
+                                params.leftMargin = initialX + (rx - initialTouchX).toInt()
+                                limitMaxWidth()
+                                //limitMaxX()
+                            }
+                            val resizeRight = fun(){
+                                params.width = (initialWidth + (rx - initialTouchX).toInt())
+                                limitMaxWidth()
+                            }
                             when(strokeMode){
                                 Stroke.TOP -> {
-                                    params.height = (initialHeight - (ry - initialTouchY).toInt())
-                                    params.topMargin = initialY + (ry - initialTouchY).toInt()
-                                    limitMaxHeight()
-                                    //limitMaxY()
+                                    resizeTop()
                                 }
                                 Stroke.BOTTOM -> {
-                                    params.height = (initialHeight + (ry - initialTouchY).toInt())
-                                    limitMaxHeight()
+                                    resizeBottom()
                                 }
                                 Stroke.LEFT -> {
-                                    params.width = (initialWidth - (rx - initialTouchX).toInt())
-                                    params.leftMargin = initialX + (rx - initialTouchX).toInt()
-                                    limitMaxWidth()
-                                    //limitMaxX()
+                                    resizeLeft()
                                 }
                                 Stroke.RIGHT -> {
-                                    params.width = (initialWidth + (rx - initialTouchX).toInt())
-                                    limitMaxWidth()
+                                    resizeRight()
                                 }
-                                else -> {
-
+                                Stroke.TOP_LEFT -> {
+                                    resizeTop()
+                                    resizeLeft()
                                 }
+                                Stroke.TOP_RIGHT -> {
+                                    resizeTop()
+                                    resizeRight()
+                                }
+                                Stroke.BOTTOM_LEFT -> {
+                                    resizeBottom()
+                                    resizeLeft()
+                                }
+                                Stroke.BOTTOM_RIGHT -> {
+                                    resizeBottom()
+                                    resizeRight()
+                                }
+                                else -> {}
                             }
                         }
                         getActiveOverlay().layoutParams = params
