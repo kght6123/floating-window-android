@@ -324,17 +324,14 @@ class SmallBrowserApplicationService : MultiFloatWindowApplication() {
                     defaultCacheMode = WebSettings.LOAD_CACHE_ELSE_NETWORK
                 ws.cacheMode = defaultCacheMode
 
-                val javaScriptDisabled =
-                        if (intent != null && intent.getExtras() != null)
-                            ws.javaScriptEnabled = intent.getExtras().getBoolean(EXTRA_JAVASCRIPT_DISABLED, false)
-                        else
-                            ws.javaScriptEnabled = true
+                if (intent != null && intent.getExtras() != null)
+                    ws.javaScriptEnabled = intent.getExtras().getBoolean(EXTRA_JAVASCRIPT_DISABLED, false)
+                else
+                    ws.javaScriptEnabled = true
 
                 if (intent != null)
                     webView.loadUrl(intent.getDataString(), additionalHttpHeaders)
                 else {
-                    //ws.setUserAgentString("Mozilla/5.0 (Windows NT 5.1; rv:20.0) Gecko/20100101 Firefox/20.0");
-                    //webView.loadUrl("http://www.dmm.com/netgame/social/-/gadgets/=/app_id=854854/", additionalHttpHeaders );
                     webView.loadUrl("https://www.google.com/", additionalHttpHeaders)
                 }
             }

@@ -4,6 +4,7 @@ import android.widget.Button
 import android.content.Intent
 import android.net.Uri
 import android.os.*
+import jp.kght6123.multiwindow.MultiFloatWindowApplication
 import jp.kght6123.multiwindow.MultiFloatWindowApplicationActivity
 import jp.kght6123.smallappbrowser.R
 import jp.kght6123.smallappbrowser.SmallBrowserApplicationService
@@ -40,7 +41,8 @@ class SmallBrowserApplicationTestActivity: MultiFloatWindowApplicationActivity<S
             })
             multi_window_open_button.setOnClickListener({
                 // FIXME 新しいウィンドウを常に開くか、既存のウィンドウがあればを使うかなど、フラグの方が良いかも。対象のウィンドウのIndexを返す。
-                openMultiFloatWindowView(++index)
+                //openMultiFloatWindowView(++index, MultiFloatWindowApplication.MultiWindowOpenType.NEW)
+                openMultiFloatWindowView(index, MultiFloatWindowApplication.MultiWindowOpenType.UPDATE)
 
                 val intent = Intent()
                 intent.data = Uri.parse("http://google.co.jp/")
@@ -48,7 +50,8 @@ class SmallBrowserApplicationTestActivity: MultiFloatWindowApplicationActivity<S
                 startMultiFloatWindowView(index, intent)
             })
             multi_window_close_button.setOnClickListener({
-                closeMultiFloatWindowView(index--, Intent())
+                //closeMultiFloatWindowView(index--, Intent())
+                closeMultiFloatWindowView(index, Intent())
             })
             multi_window_exit_button.setOnClickListener({
                 stopMultiFloatWindowService()

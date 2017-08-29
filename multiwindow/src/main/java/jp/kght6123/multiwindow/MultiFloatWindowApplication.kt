@@ -34,6 +34,10 @@ abstract class MultiFloatWindowApplication : Service() {
     enum class MultiWindowControlParam {
         WINDOW_INDEX,
     }
+    enum class MultiWindowOpenType {
+        UPDATE,
+        NEW,
+    }
 
     private val handler: Handler by lazy {
         object: Handler() {
@@ -45,26 +49,18 @@ abstract class MultiFloatWindowApplication : Service() {
                             Toast.makeText(applicationContext, "hello!! multi window framework.", Toast.LENGTH_SHORT).show()
                         }
                         MultiWindowControlCommand.OPEN -> {
-                            val factory = MultiFloatWindowFactory(onCreateFactory(msg.arg1), onCreateSettingsFactory(msg.arg1))
-                            factoryMap.put(msg.arg1, factory)
-
-                            val initSettings = factory.windowSettingsFactory.createInitSettings(msg.arg1)
-                            val info = manager.add(
-                                    msg.arg1,
-                                    initSettings.x,
-                                    initSettings.y,
-                                    initSettings.miniMode,
-                                    initSettings.backgroundColor,
-                                    initSettings.width,
-                                    initSettings.height)
-
-                            val windowViewFactory = factory.windowViewFactory
-                            info.windowInlineFrame.addView(
-                                    windowViewFactory.createWindowView(msg.arg1),
-                                    windowViewFactory.createWindowLayoutParams(msg.arg1))
-                            info.miniWindowFrame.addView(
-                                    windowViewFactory.createMinimizedView(msg.arg1),
-                                    windowViewFactory.createMinimizedLayoutParams(msg.arg1))
+                            val command = MultiWindowOpenType.values()[msg.arg2]
+                            when (command) {
+                                MultiWindowOpenType.NEW -> {
+                                    openNewWindow(msg)
+                                }
+                                MultiWindowOpenType.UPDATE -> {
+                                    if(factoryMap.containsKey(msg.arg1))
+                                        openUpdateWindow(msg)
+                                    else
+                                        openNewWindow(msg)
+                                }
+                            }
                         }
                         MultiWindowControlCommand.START -> {
                             val intent = msg.obj as Intent
@@ -73,6 +69,7 @@ abstract class MultiFloatWindowApplication : Service() {
                         }
                         MultiWindowControlCommand.CLOSE -> {
                             manager.remove(msg.arg1)
+                            factoryMap.remove(msg.arg1)
                         }
                         else -> {
                             super.handleMessage(msg)
@@ -81,6 +78,53 @@ abstract class MultiFloatWindowApplication : Service() {
                 } else {
                     super.handleMessage(msg)
                 }
+            }
+            private fun openNewWindow(msg: Message) {
+                val factory = MultiFloatWindowFactory(onCreateFactory(msg.arg1), onCreateSettingsFactory(msg.arg1))
+                factoryMap.put(msg.arg1, factory)
+
+                val initSettings = factory.windowSettingsFactory.createInitSettings(msg.arg1)
+                val info = manager.add(
+                        msg.arg1,
+                        initSettings.miniMode,
+                        initSettings.x,
+                        initSettings.y,
+                        initSettings.backgroundColor,
+                        initSettings.width,
+                        initSettings.height,
+                        initSettings.active)
+
+                val windowViewFactory = factory.windowViewFactory
+                info.windowInlineFrame.addView(
+                        windowViewFactory.createWindowView(msg.arg1),
+                        windowViewFactory.createWindowLayoutParams(msg.arg1))
+                info.miniWindowFrame.addView(
+                        windowViewFactory.createMinimizedView(msg.arg1),
+                        windowViewFactory.createMinimizedLayoutParams(msg.arg1))
+            }
+            private fun openUpdateWindow(msg: Message) {
+                val factory = MultiFloatWindowFactory(onCreateFactory(msg.arg1), onCreateSettingsFactory(msg.arg1))
+                factoryMap.put(msg.arg1, factory)
+
+                val initSettings = factory.windowSettingsFactory.createInitSettings(msg.arg1)
+                val info = manager.update(
+                        msg.arg1,
+                        initSettings.miniMode,
+                        initSettings.backgroundColor,
+                        initSettings.width,
+                        initSettings.height,
+                        initSettings.active)
+
+                info.windowInlineFrame.removeAllViews()
+                info.miniWindowFrame.removeAllViews()
+
+                val windowViewFactory = factory.windowViewFactory
+                info.windowInlineFrame.addView(
+                        windowViewFactory.createWindowView(msg.arg1),
+                        windowViewFactory.createWindowLayoutParams(msg.arg1))
+                info.miniWindowFrame.addView(
+                        windowViewFactory.createMinimizedView(msg.arg1),
+                        windowViewFactory.createMinimizedLayoutParams(msg.arg1))
             }
         }
     }
@@ -125,7 +169,8 @@ abstract class MultiFloatWindowApplication : Service() {
             val width: Int,
             val height: Int,
             val backgroundColor: Int = MultiFloatWindowConstants.Theme.Light.rgb,
-            val miniMode: Boolean = false
+            val miniMode: Boolean = false,
+            val active: Boolean = false
     )
     data class MultiFloatWindowNotificationSettings(
             val title: String = "Multi Window Application",

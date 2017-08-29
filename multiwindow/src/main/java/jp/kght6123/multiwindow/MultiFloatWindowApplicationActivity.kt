@@ -47,9 +47,9 @@ abstract class MultiFloatWindowApplicationActivity<in S: MultiFloatWindowApplica
         startService(serviceIntent)
         bindService(serviceIntent, mConnection, Context.BIND_AUTO_CREATE)
     }
-    protected fun openMultiFloatWindowView(index: Int) {
+    protected fun openMultiFloatWindowView(index: Int, openType: MultiFloatWindowApplication.MultiWindowOpenType) {
         Log.i(TAG, "Open Window")
-        sendMessage(MultiFloatWindowApplication.MultiWindowControlCommand.OPEN, index)
+        sendMessage(MultiFloatWindowApplication.MultiWindowControlCommand.OPEN, index, openType)
     }
     protected fun startMultiFloatWindowView(index: Int, intent: Intent) {
         Log.i(TAG, "Start Window")
@@ -69,6 +69,9 @@ abstract class MultiFloatWindowApplicationActivity<in S: MultiFloatWindowApplica
 
     private fun sendMessage(command: MultiFloatWindowApplication.MultiWindowControlCommand, index: Int) {
         mService?.send(Message.obtain(null, command.ordinal, index, 0))
+    }
+    private fun sendMessage(command: MultiFloatWindowApplication.MultiWindowControlCommand, index: Int, openType: MultiFloatWindowApplication.MultiWindowOpenType) {
+        mService?.send(Message.obtain(null, command.ordinal, index, openType.ordinal))
     }
     private fun sendMessage(command: MultiFloatWindowApplication.MultiWindowControlCommand, index: Int, obj: Any) {
         mService?.send(Message.obtain(null, command.ordinal, index, 0, obj))
