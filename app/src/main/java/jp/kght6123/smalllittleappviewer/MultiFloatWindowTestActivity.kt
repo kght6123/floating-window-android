@@ -12,7 +12,7 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.ServiceConnection
 import android.os.*
-import jp.kght6123.multiwindow.MultiFloatWindowApplication
+import android.widget.RemoteViews
 
 /**
  * オーバーレイウィンドウサービスの起動／停止を行う、テスト用Activity
@@ -34,12 +34,14 @@ class MultiFloatWindowTestActivity : Activity() {
 	}
 	var appWidgetId :Int = -1
 
-	val overlay_start_button: Button by lazy {
-		val button = findViewById(R.id.overlay_start_button) as Button
-		button
+	val remote_start_button: Button by lazy {
+		findViewById(R.id.remote_start_button) as Button
 	}
-	val overlay_stop_button: Button by lazy {
-		findViewById(R.id.overlay_stop_button) as Button
+    val remote_add_button: Button by lazy {
+        findViewById(R.id.remote_add_button) as Button
+    }
+	val remote_stop_button: Button by lazy {
+		findViewById(R.id.remote_stop_button) as Button
 	}
 
 	val widget_start_button: Button by lazy {
@@ -49,17 +51,42 @@ class MultiFloatWindowTestActivity : Activity() {
 		findViewById(R.id.widget_stop_button) as Button
 	}
 
+    private val serviceIntent: Intent by lazy {
+        val intent = Intent("jp.kght6123.smallappbrowser.SmallBrowserApplicationService")
+		intent.`package` = "jp.kght6123.smallappbrowser"
+		intent
+    }
+    private var mService : Messenger? = null
+    private val mConnection = object: ServiceConnection {
+        override fun onServiceDisconnected(name: ComponentName?) {
+            mService = null
+        }
+        override fun onServiceConnected(name: ComponentName?, binder: IBinder?) {
+            if(binder != null) {
+                mService = Messenger(binder)
+            }
+        }
+    }
+
 	private fun init() {
 		if (checkOverlayPermission()) {
 			this.setContentView(R.layout.activity_system_overlay_layer)
 
-			overlay_start_button.setOnClickListener({
-				startService(Intent(this@MultiFloatWindowTestActivity, MultiFloatWindowTestService::class.java))
+            remote_start_button.setOnClickListener({
+                //startService(serviceIntent)
+                bindService(serviceIntent, mConnection, Context.BIND_AUTO_CREATE)
 			})
-			overlay_stop_button.setOnClickListener({
-				stopService(Intent(this@MultiFloatWindowTestActivity, MultiFloatWindowTestService::class.java))
+            remote_add_button.setOnClickListener({
+                val msg = Message.obtain(null, 3/*ADD_REMOTE_VIEWS*/, 10, 0/*UPDATE*/)
+                msg.data = Bundle()
+                msg.data.putParcelable("REMOTE_WINDOW_VIEWS", RemoteViews(packageName, R.layout.remote_window_view))
+                msg.data.putParcelable("REMOTE_MINI_VIEWS", RemoteViews(packageName, R.layout.remote_mini_view))
+                mService?.send(msg)
+            })
+            remote_stop_button.setOnClickListener({
+                unbindService(mConnection)
+                //stopService(serviceIntent)
 			})
-
 			widget_start_button.setOnClickListener({
 
 				// ウィジェット毎ユニークIDを取得

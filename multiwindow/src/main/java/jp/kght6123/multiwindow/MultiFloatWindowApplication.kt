@@ -3,6 +3,7 @@ package jp.kght6123.multiwindow
 import android.app.Notification
 import android.app.PendingIntent
 import android.app.Service
+import android.content.Context
 import android.content.Intent
 import android.graphics.drawable.Icon
 import android.os.Handler
@@ -10,8 +11,9 @@ import android.os.IBinder
 import android.os.Message
 import android.os.Messenger
 import android.view.View
-import android.widget.LinearLayout
-import android.widget.Toast
+import android.view.ViewGroup
+import android.widget.*
+import jp.kght6123.multiwindow.utils.UnitUtils
 
 /**
  * マルチウィンドウサービスの実装を簡易化するクラス
@@ -28,11 +30,15 @@ abstract class MultiFloatWindowApplication : Service() {
         HELLO,
         START,
         OPEN,
+        ADD_REMOTE_VIEWS,
+        DEL_REMOTE_VIEWS,
         CLOSE,
-        EXIT
+        EXIT,
     }
     enum class MultiWindowControlParam {
         WINDOW_INDEX,
+        REMOTE_WINDOW_VIEWS,
+        REMOTE_MINI_VIEWS,
     }
     enum class MultiWindowOpenType {
         UPDATE,
@@ -52,13 +58,13 @@ abstract class MultiFloatWindowApplication : Service() {
                             val command = MultiWindowOpenType.values()[msg.arg2]
                             when (command) {
                                 MultiWindowOpenType.NEW -> {
-                                    openNewWindow(msg)
+                                    openWindow(msg, false)
                                 }
                                 MultiWindowOpenType.UPDATE -> {
                                     if(factoryMap.containsKey(msg.arg1))
-                                        openUpdateWindow(msg)
+                                        openWindow(msg, true)
                                     else
-                                        openNewWindow(msg)
+                                        openWindow(msg, false)
                                 }
                             }
                         }
@@ -71,6 +77,16 @@ abstract class MultiFloatWindowApplication : Service() {
                             manager.remove(msg.arg1)
                             factoryMap.remove(msg.arg1)
                         }
+                        MultiWindowControlCommand.ADD_REMOTE_VIEWS -> {
+                            if(factoryMap.containsKey(msg.arg1))
+                                openRemoteWindow(msg, true)
+                            else
+                                openRemoteWindow(msg, false)
+                        }
+                        MultiWindowControlCommand.DEL_REMOTE_VIEWS -> {
+                            manager.remove(msg.arg1)
+                            factoryMap.remove(msg.arg1)
+                        }
                         else -> {
                             super.handleMessage(msg)
                         }
@@ -79,12 +95,62 @@ abstract class MultiFloatWindowApplication : Service() {
                     super.handleMessage(msg)
                 }
             }
-            private fun openNewWindow(msg: Message) {
+            private fun openWindow(msg: Message, update: Boolean) {
                 val factory = MultiFloatWindowFactory(onCreateFactory(msg.arg1), onCreateSettingsFactory(msg.arg1))
                 factoryMap.put(msg.arg1, factory)
 
                 val initSettings = factory.windowSettingsFactory.createInitSettings(msg.arg1)
-                val info = manager.add(
+                val info =
+                    if(update)
+                        manager.update(
+                            msg.arg1,
+                            initSettings.miniMode,
+                            initSettings.backgroundColor,
+                            initSettings.width,
+                            initSettings.height,
+                            initSettings.active)
+                    else
+                        manager.add(
+                            msg.arg1,
+                            initSettings.miniMode,
+                            initSettings.x,
+                            initSettings.y,
+                            initSettings.backgroundColor,
+                            initSettings.width,
+                            initSettings.height,
+                            initSettings.active)
+
+                if(update) {
+                    info.windowInlineFrame.removeAllViews()
+                    info.miniWindowFrame.removeAllViews()
+                }
+                val windowViewFactory = factory.windowViewFactory
+                info.windowInlineFrame.addView(
+                        windowViewFactory.createWindowView(msg.arg1),
+                        windowViewFactory.createWindowLayoutParams(msg.arg1))
+                info.miniWindowFrame.addView(
+                        windowViewFactory.createMinimizedView(msg.arg1),
+                        windowViewFactory.createMinimizedLayoutParams(msg.arg1))
+            }
+            private fun openRemoteWindow(msg: Message, update: Boolean) {
+                val remoteWindowViews =
+                        msg.data.getParcelable<RemoteViews>(MultiFloatWindowApplication.MultiWindowControlParam.REMOTE_WINDOW_VIEWS.name)
+                val remoteMiniViews =
+                        msg.data.getParcelable<RemoteViews>(MultiFloatWindowApplication.MultiWindowControlParam.REMOTE_MINI_VIEWS.name)
+
+                val windowSettingsFactory = MultiFloatWindowSettingsRemoteViewFactory(applicationContext)
+                val initSettings = windowSettingsFactory.createInitSettings(msg.arg1)
+
+                val info = if(update)
+                    manager.update(
+                        msg.arg1,
+                        initSettings.miniMode,
+                        initSettings.backgroundColor,
+                        initSettings.width,
+                        initSettings.height,
+                        initSettings.active)
+                else
+                    manager.add(
                         msg.arg1,
                         initSettings.miniMode,
                         initSettings.x,
@@ -94,37 +160,26 @@ abstract class MultiFloatWindowApplication : Service() {
                         initSettings.height,
                         initSettings.active)
 
-                val windowViewFactory = factory.windowViewFactory
+                val windowViewFactory = MultiFloatWindowViewRemoteViewFactory(
+                        applicationContext,
+                        remoteWindowViews,
+                        remoteMiniViews,
+                        info.windowInlineFrame,
+                        info.miniWindowFrame)
+
+                if(update) {
+                    info.windowInlineFrame.removeAllViews()
+                    info.miniWindowFrame.removeAllViews()
+                }
                 info.windowInlineFrame.addView(
                         windowViewFactory.createWindowView(msg.arg1),
                         windowViewFactory.createWindowLayoutParams(msg.arg1))
                 info.miniWindowFrame.addView(
                         windowViewFactory.createMinimizedView(msg.arg1),
                         windowViewFactory.createMinimizedLayoutParams(msg.arg1))
-            }
-            private fun openUpdateWindow(msg: Message) {
-                val factory = MultiFloatWindowFactory(onCreateFactory(msg.arg1), onCreateSettingsFactory(msg.arg1))
+
+                val factory = MultiFloatWindowFactory(windowViewFactory, windowSettingsFactory)
                 factoryMap.put(msg.arg1, factory)
-
-                val initSettings = factory.windowSettingsFactory.createInitSettings(msg.arg1)
-                val info = manager.update(
-                        msg.arg1,
-                        initSettings.miniMode,
-                        initSettings.backgroundColor,
-                        initSettings.width,
-                        initSettings.height,
-                        initSettings.active)
-
-                info.windowInlineFrame.removeAllViews()
-                info.miniWindowFrame.removeAllViews()
-
-                val windowViewFactory = factory.windowViewFactory
-                info.windowInlineFrame.addView(
-                        windowViewFactory.createWindowView(msg.arg1),
-                        windowViewFactory.createWindowLayoutParams(msg.arg1))
-                info.miniWindowFrame.addView(
-                        windowViewFactory.createMinimizedView(msg.arg1),
-                        windowViewFactory.createMinimizedLayoutParams(msg.arg1))
             }
         }
     }
@@ -192,5 +247,42 @@ abstract class MultiFloatWindowApplication : Service() {
     }
     interface MultiFloatWindowSettingsFactory {
         fun createInitSettings(arg: Int): MultiFloatWindowInitSettings
+    }
+    private class MultiFloatWindowViewRemoteViewFactory(
+            val context: Context,
+            val remoteWindowViews: RemoteViews,
+            val remoteMiniViews: RemoteViews,
+            val windowInlineFrame: ViewGroup,
+            val miniWindowFrame: ViewGroup): MultiFloatWindowViewFactory {
+
+        override fun createWindowView(arg: Int): View {
+            return remoteWindowViews.apply(context, windowInlineFrame)
+        }
+        override fun createMinimizedView(arg: Int): View {
+            return remoteMiniViews.apply(context, miniWindowFrame)
+        }
+        override fun createMinimizedLayoutParams(arg: Int): LinearLayout.LayoutParams {
+            return LinearLayout.LayoutParams(
+                    UnitUtils.convertDp2Px(75f, context).toInt(),
+                    UnitUtils.convertDp2Px(75f, context).toInt())
+        }
+        override fun createWindowLayoutParams(arg: Int): LinearLayout.LayoutParams {
+            return LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.MATCH_PARENT)
+        }
+        override fun start(intent: Intent?) {}
+    }
+    private class MultiFloatWindowSettingsRemoteViewFactory(val context: Context): MultiFloatWindowSettingsFactory {
+        override fun createInitSettings(arg: Int): MultiFloatWindowInitSettings {
+            return MultiFloatWindowInitSettings(
+                    x = 50,
+                    y = 50,
+                    width = UnitUtils.convertDp2Px(75f, context).toInt(),
+                    height = UnitUtils.convertDp2Px(75f, context).toInt(),
+                    backgroundColor = MultiFloatWindowConstants.Theme.Dark.rgb,
+                    active = false
+            )
+        }
     }
 }

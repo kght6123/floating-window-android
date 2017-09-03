@@ -53,8 +53,12 @@
 
         <service android:name=".SmallBrowserApplicationService"
             android:enabled="true"
-            android:exported="false"
-            android:process=":local"/>
+            android:exported="true"
+            android:process=":local">
+            <intent-filter>
+                <action android:name="jp.kght6123.smallappbrowser.SmallBrowserApplicationService" />
+            </intent-filter>
+        </service>
 
         <activity
             android:name=".activity.SmallBrowserApplicationTestActivity"
