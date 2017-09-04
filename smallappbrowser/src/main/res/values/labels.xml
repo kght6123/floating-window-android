@@ -13,7 +13,9 @@
     <string name="send">送信</string>
 
     <string name="start">Start</string>
+    <string name="update">Update</string>
     <string name="open">Open</string>
     <string name="close">Close</string>
     <string name="exit">Exit</string>
+    <string name="widget">Widget</string>
 </resources>

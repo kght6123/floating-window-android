@@ -1,6 +1,9 @@
 package jp.kght6123.multiwindow
 
 import android.app.Activity
+import android.appwidget.AppWidgetHost
+import android.appwidget.AppWidgetManager
+import android.appwidget.AppWidgetProviderInfo
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
@@ -23,6 +26,8 @@ abstract class MultiFloatWindowApplicationActivity<in S: MultiFloatWindowApplica
 
     companion object {
         private val REQUEST_CODE_SYSTEM_OVERLAY :Int = 1234
+        private val REQUEST_CODE_PICK_APPWIDGET :Int = 5678
+        private val REQUEST_CODE_CONFIGURE_APPWIDGET :Int = 9012
     }
 
     private val TAG = MultiFloatWindowApplicationActivity::class.java.simpleName
@@ -42,6 +47,11 @@ abstract class MultiFloatWindowApplicationActivity<in S: MultiFloatWindowApplica
         }
     }
 
+    private val appWidgetHost by lazy {
+        AppWidgetHost(this, MultiFloatWindowApplication.APP_WIDGET_HOST_ID)
+    }
+    private var appWidgetIndex :Int = -1
+
     protected fun startMultiFloatWindowService() {
         Log.i(TAG, "Start Service")
         startService(serviceIntent)
@@ -55,11 +65,11 @@ abstract class MultiFloatWindowApplicationActivity<in S: MultiFloatWindowApplica
         Log.i(TAG, "Start Window")
         // FIXME WINDOW_INDEX渡しは不要、args1として渡せばOK、Intentを渡せるか検証のため
         intent.putExtra(MultiFloatWindowApplication.MultiWindowControlParam.WINDOW_INDEX.name, index)
-        sendMessage(MultiFloatWindowApplication.MultiWindowControlCommand.START, index, intent)
+        sendMessage(MultiFloatWindowApplication.MultiWindowControlCommand.START, index, 0, intent)
     }
     protected fun closeMultiFloatWindowView(index: Int, intent: Intent) {
         Log.i(TAG, "Close Window")
-        sendMessage(MultiFloatWindowApplication.MultiWindowControlCommand.CLOSE, index, intent)
+        sendMessage(MultiFloatWindowApplication.MultiWindowControlCommand.CLOSE, index, 0, intent)
     }
     protected fun stopMultiFloatWindowService() {
         Log.i(TAG, "Stop Service")
@@ -67,14 +77,31 @@ abstract class MultiFloatWindowApplicationActivity<in S: MultiFloatWindowApplica
         stopService(serviceIntent)
     }
 
-    private fun sendMessage(command: MultiFloatWindowApplication.MultiWindowControlCommand, index: Int) {
-        mService?.send(Message.obtain(null, command.ordinal, index, 0))
+    protected fun startAppWidgetWindowView(index: Int) {
+        // ウィジェット毎ユニークIDを取得
+        val appWidgetId = appWidgetHost.allocateAppWidgetId()
+        appWidgetIndex = index
+
+        val appWidgetProviderInfoList = ArrayList<AppWidgetProviderInfo>()
+        val bundleList = ArrayList<Bundle>()
+        val intent = Intent(AppWidgetManager.ACTION_APPWIDGET_PICK)
+                .putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId)
+                .putExtra("EXTRA_APPWIDGET_INDEX", index)
+                .putParcelableArrayListExtra(AppWidgetManager.EXTRA_CUSTOM_INFO, appWidgetProviderInfoList)
+                .putParcelableArrayListExtra(AppWidgetManager.EXTRA_CUSTOM_EXTRAS, bundleList)
+
+        // ウィジェット一覧表示
+        startActivityForResult(intent, REQUEST_CODE_PICK_APPWIDGET)
+    }
+
+    private fun sendMessage(command: MultiFloatWindowApplication.MultiWindowControlCommand, index: Int, arg2: Int) {
+        mService?.send(Message.obtain(null, command.ordinal, index, arg2))
     }
     private fun sendMessage(command: MultiFloatWindowApplication.MultiWindowControlCommand, index: Int, openType: MultiFloatWindowApplication.MultiWindowOpenType) {
         mService?.send(Message.obtain(null, command.ordinal, index, openType.ordinal))
     }
-    private fun sendMessage(command: MultiFloatWindowApplication.MultiWindowControlCommand, index: Int, obj: Any) {
-        mService?.send(Message.obtain(null, command.ordinal, index, 0, obj))
+    private fun sendMessage(command: MultiFloatWindowApplication.MultiWindowControlCommand, index: Int, arg2: Int, obj: Any) {
+        mService?.send(Message.obtain(null, command.ordinal, index, arg2, obj))
     }
 
     abstract fun onCheckOverlayPermissionResult(result: Boolean)
@@ -100,17 +127,49 @@ abstract class MultiFloatWindowApplicationActivity<in S: MultiFloatWindowApplica
             RESULT_OK -> {
                 Toast.makeText(applicationContext, "RESULT_OK.", Toast.LENGTH_SHORT).show()
                 when (requestCode) {
-                    REQUEST_CODE_SYSTEM_OVERLAY ->
+                    REQUEST_CODE_SYSTEM_OVERLAY -> {
                         // もう一度権限を確認して、権限があれば処理をする
                         judgeOverlayPermission()
+                    }
+                    REQUEST_CODE_PICK_APPWIDGET -> if(data != null) {
+                        val appWidgetId: Int =
+                                data.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, -1)
+                        val appWidgetProviderInfo =
+                                AppWidgetManager.getInstance(this).getAppWidgetInfo(appWidgetId)
+
+                        if (appWidgetProviderInfo.configure != null) {
+                            val intent = Intent(AppWidgetManager.ACTION_APPWIDGET_CONFIGURE)
+                                    .setComponent(appWidgetProviderInfo.configure)
+                                    .putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId)
+                            startActivityForResult(intent, REQUEST_CODE_CONFIGURE_APPWIDGET)
+                        } else {
+                            onActivityResult(REQUEST_CODE_CONFIGURE_APPWIDGET, Activity.RESULT_OK, data)
+                        }
+                    }
+                    REQUEST_CODE_CONFIGURE_APPWIDGET -> if(data != null) {
+                        val appWidgetId: Int =
+                                data.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, -1)
+                        val appWidgetIndex: Int = data.getIntExtra("EXTRA_APPWIDGET_INDEX", appWidgetIndex)
+
+                        sendMessage(MultiFloatWindowApplication.MultiWindowControlCommand.ADD_APP_WIDGET, appWidgetIndex, appWidgetId, data)
+                    }
                 }
             }
             RESULT_CANCELED -> {
                 Toast.makeText(applicationContext, "RESULT_CANCELED.", Toast.LENGTH_SHORT).show()
                 when (requestCode) {
-                    REQUEST_CODE_SYSTEM_OVERLAY ->
+                    REQUEST_CODE_SYSTEM_OVERLAY -> {
                         // もう一度権限を確認して、権限があれば処理をする
                         judgeOverlayPermission()
+                    }
+                    REQUEST_CODE_PICK_APPWIDGET, REQUEST_CODE_CONFIGURE_APPWIDGET -> {
+                        if (data != null) {
+                            val appWidgetId = data.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, -1)
+                            if (appWidgetId != -1)
+                            // appWidgetIdを削除
+                                appWidgetHost.deleteAppWidgetId(appWidgetId)
+                        }
+                    }
                 }
             }
         }

@@ -10,12 +10,23 @@
     tools:cardUseCompatPadding="true"
     tools:cardCornerRadius="5dp">
 
-    <ImageView
-        android:id="@+id/thumbImageView"
+    <FrameLayout
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:contentDescription="@string/app_thumb_desc"
-        android:scaleType="centerInside"
-        />
+        android:layout_height="wrap_content">
+        <ImageView
+            android:id="@+id/thumbImageView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:contentDescription="@string/app_thumb_desc"
+            android:scaleType="centerInside"
+            />
+        <ImageButton
+            android:id="@+id/btnThumbClose"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@android:drawable/ic_delete"
+            android:contentDescription="@string/app_thumb_desc"
+            android:layout_gravity="end|top"/>
+    </FrameLayout>
 
 </android.support.v7.widget.CardView>

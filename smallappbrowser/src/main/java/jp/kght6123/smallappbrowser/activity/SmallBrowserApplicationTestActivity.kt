@@ -16,19 +16,24 @@ import jp.kght6123.smallappbrowser.SmallBrowserApplicationService
  */
 class SmallBrowserApplicationTestActivity: MultiFloatWindowApplicationActivity<SmallBrowserApplicationService>(SmallBrowserApplicationService::class.java) {
 
-    //private val TAG = SmallBrowserApplicationTestActivity::class.java.simpleName
     private val multi_window_start_button: Button by lazy {
 		findViewById(R.id.multi_window_start_button) as Button
 	}
     private val multi_window_open_button: Button by lazy {
 		findViewById(R.id.multi_window_open_button) as Button
 	}
+    private val multi_window_update_button: Button by lazy {
+        findViewById(R.id.multi_window_update_button) as Button
+    }
     private val multi_window_close_button: Button by lazy {
 		findViewById(R.id.multi_window_close_button) as Button
 	}
     private val multi_window_exit_button: Button by lazy {
 		findViewById(R.id.multi_window_exit_button) as Button
 	}
+    private val multi_window_widget_button: Button by lazy {
+        findViewById(R.id.multi_window_widget_button) as Button
+    }
 
 	private var index: Int = 0
 
@@ -40,8 +45,14 @@ class SmallBrowserApplicationTestActivity: MultiFloatWindowApplicationActivity<S
                 startMultiFloatWindowService()
             })
             multi_window_open_button.setOnClickListener({
-                // FIXME 新しいウィンドウを常に開くか、既存のウィンドウがあればを使うかなど、フラグの方が良いかも。対象のウィンドウのIndexを返す。
-                //openMultiFloatWindowView(++index, MultiFloatWindowApplication.MultiWindowOpenType.NEW)
+                openMultiFloatWindowView(++index, MultiFloatWindowApplication.MultiWindowOpenType.NEW)
+
+                val intent = Intent()
+                intent.data = Uri.parse("http://google.co.jp/")
+
+                startMultiFloatWindowView(index, intent)
+            })
+            multi_window_update_button.setOnClickListener({
                 openMultiFloatWindowView(index, MultiFloatWindowApplication.MultiWindowOpenType.UPDATE)
 
                 val intent = Intent()
@@ -50,11 +61,14 @@ class SmallBrowserApplicationTestActivity: MultiFloatWindowApplicationActivity<S
                 startMultiFloatWindowView(index, intent)
             })
             multi_window_close_button.setOnClickListener({
-                //closeMultiFloatWindowView(index--, Intent())
-                closeMultiFloatWindowView(index, Intent())
+                closeMultiFloatWindowView(index--, Intent())
+                //closeMultiFloatWindowView(index, Intent())
             })
             multi_window_exit_button.setOnClickListener({
                 stopMultiFloatWindowService()
+            })
+            multi_window_widget_button.setOnClickListener({
+                startAppWidgetWindowView(++index)
             })
         }
     }

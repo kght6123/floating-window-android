@@ -27,6 +27,11 @@
 		<Button
 			android:layout_width="match_parent"
 			android:layout_height="wrap_content"
+			android:id="@+id/multi_window_update_button"
+			android:text="@string/update" />
+		<Button
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
 			android:id="@+id/multi_window_close_button"
 			android:text="@string/close" />
 		<Button
@@ -34,6 +39,11 @@
 			android:layout_height="wrap_content"
 			android:id="@+id/multi_window_exit_button"
 			android:text="@string/exit" />
+		<Button
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:id="@+id/multi_window_widget_button"
+			android:text="@string/widget" />
 	</LinearLayout>
 
 </LinearLayout>

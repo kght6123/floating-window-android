@@ -19,6 +19,8 @@ import kotlin.concurrent.withLock
  */
 class MultiFloatWindowManager(val context: Context) {
 
+    val TAG = this.javaClass.name
+
     private enum class ControlViewMode {
         MINI_ICON, APP_LIST,
     }
@@ -346,9 +348,11 @@ class MultiFloatWindowManager(val context: Context) {
     private fun remove(name: String) {
          val overlayInfo = overlayWindowMap[name]
         if(overlayInfo != null){
+            Log.d(TAG, "remove is not null. name=$name")
             overlayWindowMap.remove(name)
             overlayView.removeView(overlayInfo.getActiveOverlay())
-        }
+        } else
+            Log.d(TAG, "remove is null. name=$name")
         updateDeActive(name)
     }
     fun changeMode(name: String, miniMode: Boolean) {
@@ -415,6 +419,9 @@ class MultiFloatWindowManager(val context: Context) {
     }
     fun changeActive(seq: Int) {
         changeActive(getMultiFloatWindowInfo(seq)?.name)
+    }
+    fun removeSeq(seq: Int) {
+        getMultiFloatWindowInfo(seq)?.name?.let { remove(it) }
     }
     private fun getMultiFloatWindowInfo(seq: Int) :MultiFloatWindowInfo? {
         if(seq < overlayWindowMap.size) {

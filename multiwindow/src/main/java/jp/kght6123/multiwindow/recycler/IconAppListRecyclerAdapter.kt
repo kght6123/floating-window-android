@@ -29,7 +29,7 @@ class IconAppListRecyclerAdapter(val context: Context) : RecyclerView.Adapter<Ic
     }
 
     override fun getItemCount(): Int {
-        return 5
+        return 10
     }
 
     class ViewHolder(itemView: View?) : RecyclerView.ViewHolder(itemView) {
