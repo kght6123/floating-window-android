@@ -1,2 +1,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="jp.kght6123.multiwindow" />
+    package="jp.kght6123.multiwindow"
+    android:sharedUserId="jp.kght6123">
+    <permission android:name="jp.kght6123.multiwindow.permission.SMALL_APPS"
+        android:label="@string/app_name"
+        android:description="@string/app_name"
+        android:protectionLevel="normal" /><!-- dangerousはnormalの方が良いかも -->
+
+</manifest>

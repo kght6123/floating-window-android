@@ -105,8 +105,7 @@ class MultiFloatWindowTestActivity : Activity() {
 			widget_stop_button.setOnClickListener({
 				stopService(Intent(this@MultiFloatWindowTestActivity, MultiFloatWidgetTestService::class.java))
 			})
-
-		} else {
+        } else {
 			requestOverlayPermission()
 		}
 	}

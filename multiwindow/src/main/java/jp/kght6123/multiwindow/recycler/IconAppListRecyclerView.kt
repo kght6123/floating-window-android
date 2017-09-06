@@ -12,12 +12,12 @@ import jp.kght6123.multiwindow.MultiFloatWindowManager
  *
  * Created by kght6123 on 2017/07/29.
  */
-class IconAppListRecyclerView(context: Context?) : RecyclerView(context) {
+class IconAppListRecyclerView(context: Context?, windowManager: MultiFloatWindowManager) : RecyclerView(context) {
     init {
         val manager = LinearLayoutManager(context)
-        manager.setOrientation(LinearLayoutManager.HORIZONTAL)
+        manager.orientation = LinearLayoutManager.HORIZONTAL
 
         this.layoutManager = manager
-        this.adapter = IconAppListRecyclerAdapter(context!!)
+        this.adapter = context?.let { IconAppListRecyclerAdapter(it, windowManager) }
     }
 }

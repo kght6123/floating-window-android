@@ -1,8 +1,12 @@
 package jp.kght6123.smallappbrowser.activity
 
-import android.app.Activity
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
-
+import jp.kght6123.multiwindow.MultiFloatWindowApplication
+import jp.kght6123.multiwindow.MultiFloatWindowApplicationActivity
+import jp.kght6123.smallappbrowser.SmallBrowserApplicationService
+import jp.kght6123.smallappbrowser.application.SharedDataApplication
 
 
 /**
@@ -10,7 +14,27 @@ import android.os.Bundle
  *
  * Created by kght6123 on 2017/08/04.
  */
-class HttpActionDelegateActivity :Activity() {
+class HttpActionDelegateActivity : MultiFloatWindowApplicationActivity<SmallBrowserApplicationService>(SmallBrowserApplicationService::class.java) {
+
+    private val initIntent by lazy {
+        val intent = Intent()
+        intent.data = Uri.parse("http://google.co.jp/")
+        intent
+    }
+
+    override fun onCheckOverlayPermissionResult(result: Boolean) {
+        if (result) {
+            // FIXME 作成中・・・ブラウザを起動する、アプリ一覧から呼び出すため
+            val application = this.application as SharedDataApplication
+
+            startMultiFloatWindowService()
+
+            openMultiFloatWindowView(++application.windowIndex, MultiFloatWindowApplication.MultiWindowOpenType.NEW)
+
+            startMultiFloatWindowView(application.windowIndex, initIntent)
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 

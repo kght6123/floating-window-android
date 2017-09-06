@@ -13,7 +13,8 @@
 		android:orientation="vertical"
 		android:gravity="fill_horizontal"
 		android:padding="20dp"
-		android:background="@android:color/background_light">
+		android:background="@android:color/background_light"
+		android:id="@+id/buttonGroup">
 		<Button
 			android:layout_width="match_parent"
 			android:layout_height="wrap_content"

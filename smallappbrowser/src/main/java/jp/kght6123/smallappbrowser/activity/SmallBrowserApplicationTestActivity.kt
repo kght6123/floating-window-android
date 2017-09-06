@@ -1,9 +1,13 @@
 package jp.kght6123.smallappbrowser.activity
 
+import android.content.Context
 import android.widget.Button
 import android.content.Intent
 import android.net.Uri
 import android.os.*
+import android.view.View
+import android.widget.LinearLayout
+import android.widget.Toast
 import jp.kght6123.multiwindow.MultiFloatWindowApplication
 import jp.kght6123.multiwindow.MultiFloatWindowApplicationActivity
 import jp.kght6123.smallappbrowser.R
@@ -70,6 +74,41 @@ class SmallBrowserApplicationTestActivity: MultiFloatWindowApplicationActivity<S
             multi_window_widget_button.setOnClickListener({
                 startAppWidgetWindowView(++index)
             })
+
+            val sharedContext = this.createPackageContext("jp.kght6123.smalllittleappviewer", Context.CONTEXT_INCLUDE_CODE)
+            val classObj = Class.forName("jp.kght6123.smalllittleappviewer.MultiFloatWindowDelegateViewTest", true, sharedContext.classLoader)
+
+            Toast.makeText(applicationContext, "className=${classObj.name}.", Toast.LENGTH_SHORT).show()
+
+            val delegate = classObj.getConstructor(Context::class.java).newInstance(sharedContext)
+
+            Toast.makeText(applicationContext, "delegate=$delegate.", Toast.LENGTH_SHORT).show()
+
+            val view = classObj.getMethod("onCreate").invoke(delegate) as View
+
+            Toast.makeText(applicationContext, "view=$view.", Toast.LENGTH_SHORT).show()
+
+            val buttonGroup = findViewById(R.id.buttonGroup) as LinearLayout
+            buttonGroup.addView(view)
+
+//            val windowManager = applicationContext.getSystemService(Context.WINDOW_SERVICE) as WindowManager
+//            val otherAppContext = createPackageContext(
+//                    "jp.kght6123.smalllittleappviewer",
+//                    Context.CONTEXT_INCLUDE_CODE/* or Context.CONTEXT_IGNORE_SECURITY*/)
+//
+//            val mMainThreadField = otherAppContext.javaClass.getDeclaredField("mMainThread")
+//            mMainThreadField.isAccessible = true
+//
+//            val mMainThread = mMainThreadField.get(otherAppContext)
+//
+//            val mInitialApplicationField = mMainThread.javaClass.getDeclaredField("mInitialApplication")
+//            mInitialApplicationField.isAccessible = true
+//
+//            val mInitialApplication = mInitialApplicationField.get(mMainThread)
+//
+//            val otherApplication = mInitialApplication as Application
+//
+//            Toast.makeText(applicationContext, "className=${otherApplication.applicationInfo.className}.", Toast.LENGTH_SHORT).show()
         }
     }
 	override fun onCreate(savedInstanceState: Bundle?) {

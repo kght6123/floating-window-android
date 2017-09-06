@@ -173,7 +173,7 @@ class MultiFloatWindowManager(val context: Context) {
                 UnitUtils.convertDp2Px(75f, context).toInt())
         params
     }
-    var iconAppListView: IconAppListRecyclerView = IconAppListRecyclerView(context)
+    var iconAppListView: IconAppListRecyclerView = IconAppListRecyclerView(context, this)
 
     private val controlLayer by lazy {
         val controlLayer =
@@ -279,8 +279,6 @@ class MultiFloatWindowManager(val context: Context) {
     }
 
     private fun getInActiveParams(): WindowManager.LayoutParams {
-//        params.width = WindowManager.LayoutParams.WRAP_CONTENT
-//        params.height = WindowManager.LayoutParams.WRAP_CONTENT
         params.flags = inactiveFlags
         params.dimAmount = inactiveDimAmount
         params.alpha = inactiveAlpha
@@ -312,11 +310,8 @@ class MultiFloatWindowManager(val context: Context) {
 
         overlayView.removeView(overlayInfoOld.getActiveOverlay())
         overlayView.addView(overlayInfo.getActiveOverlay())
-        //overlayView.updateViewLayout(overlayInfo.getActiveOverlay(), FrameLayout.LayoutParams(overlayView.layoutParams))
 
         if(initActive)
-        //updateActive(name)  // 追加したWindowをActiveに
-        //updateOtherDeActive(name)  // 追加したWindow以外をDeActiveに
             changeActive(name)
 
         return overlayInfo
@@ -329,8 +324,6 @@ class MultiFloatWindowManager(val context: Context) {
         overlayView.addView(overlayInfo.getActiveOverlay())
 
         if(active)
-            //updateActive(name)  // 追加したWindowをActiveに
-            //updateOtherDeActive(name)  // 追加したWindow以外をDeActiveに
             changeActive(name)
     }
     private fun moveFixed(name: String, x: Int, y: Int) {
@@ -353,6 +346,7 @@ class MultiFloatWindowManager(val context: Context) {
             overlayView.removeView(overlayInfo.getActiveOverlay())
         } else
             Log.d(TAG, "remove is null. name=$name")
+
         updateDeActive(name)
     }
     fun changeMode(name: String, miniMode: Boolean) {
@@ -369,8 +363,6 @@ class MultiFloatWindowManager(val context: Context) {
 
         val overlayInfo = overlayWindowMap[name]
         if(overlayInfo != null) {
-            //remove(name)
-            //put(name, overlayInfo)
             updateActive(name)  // 追加したWindowをActiveに
             updateOtherDeActive(name)  // 追加したWindow以外をDeActiveに
         }
@@ -402,15 +394,6 @@ class MultiFloatWindowManager(val context: Context) {
             windowManager.updateViewLayout(overlayView, getActiveParams())
         }
     }
-//    fun nextForciblyActiveThumb() :Bitmap? {
-//        if(!overlayWindowMap.isEmpty()) {
-//            val windowInlineFrame = overlayWindowMap.values.last().windowInlineFrame
-//            windowInlineFrame.isDrawingCacheEnabled = true
-//            windowInlineFrame.destroyDrawingCache();
-//            return windowInlineFrame.drawingCache
-//        }
-//        return null
-//    }
     fun getThumb(seq: Int) :Bitmap? {
         val windowInlineFrame = getMultiFloatWindowInfo(seq)?.windowInlineFrame
         windowInlineFrame?.isDrawingCacheEnabled = true

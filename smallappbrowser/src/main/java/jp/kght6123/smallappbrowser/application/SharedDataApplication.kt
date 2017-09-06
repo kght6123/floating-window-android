@@ -17,6 +17,8 @@ import android.util.Log
 class SharedDataApplication : Application() {
     private val TAG = SharedDataApplication::class.java.simpleName
 
+    var windowIndex: Int = 0
+
     var statusBarNotifications: Array<StatusBarNotification>? = null
     //private List<StatusBarNotification> statusBarNotificationTempList = Collections.synchronizedList(new LinkedList<StatusBarNotification>());
     private var statusBarNotificationTemp: StatusBarNotification? = null

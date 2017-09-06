@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
+import jp.kght6123.multiwindow.MultiFloatWindowManager
 import jp.kght6123.multiwindow.R
 
 /**
@@ -13,7 +14,7 @@ import jp.kght6123.multiwindow.R
  *
  * Created by kght6123 on 2017/07/28.
  */
-class IconAppListRecyclerAdapter(val context: Context) : RecyclerView.Adapter<IconAppListRecyclerAdapter.ViewHolder>() {
+class IconAppListRecyclerAdapter(val context: Context, val manager: MultiFloatWindowManager) : RecyclerView.Adapter<IconAppListRecyclerAdapter.ViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup?, viewType: Int): ViewHolder {
         return ViewHolder(LayoutInflater.from(context).inflate(R.layout.multiwindow_thumbnail_icon, parent, false))
@@ -34,7 +35,7 @@ class IconAppListRecyclerAdapter(val context: Context) : RecyclerView.Adapter<Ic
 
     class ViewHolder(itemView: View?) : RecyclerView.ViewHolder(itemView) {
         val thumbImageView : ImageView by lazy {
-            itemView?.findViewById(R.id.thumbIconImageView) as ImageView
+            itemView?.findViewById(R.id.thumbIconButton) as ImageView
         }
         init {
             thumbImageView
