@@ -1,11 +1,9 @@
 package jp.kght6123.smallappbrowser
 
-import android.app.PendingIntent
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
-import android.graphics.drawable.Icon
 import android.net.ConnectivityManager
 import android.net.Uri
 import android.os.Handler
@@ -15,9 +13,8 @@ import android.util.Log
 import android.view.*
 import android.webkit.*
 import android.widget.*
-import jp.kght6123.multiwindow.MultiFloatWindowApplication
-import jp.kght6123.multiwindow.utils.UnitUtils
-import jp.kght6123.smallappbrowser.activity.BrowserChangerActivity
+import jp.kght6123.multiwindowframework.MultiFloatWindowApplication
+import jp.kght6123.multiwindowframework.utils.UnitUtils
 import jp.kght6123.smallappbrowser.adapter.WebHistoryItemAdapter
 import jp.kght6123.smallappbrowser.application.SharedDataApplication
 import jp.kght6123.smallappbrowser.utils.PrefUtils
@@ -51,7 +48,7 @@ class SmallBrowserApplicationService : MultiFloatWindowApplication() {
 	private var defaultCacheMode = WebSettings.LOAD_CACHE_ELSE_NETWORK
 
     override fun onCreateFactory(index: Int): MultiFloatWindowViewFactory {
-        return object : MultiFloatWindowViewFactory {
+        return object : MultiFloatWindowViewFactory() {
 
             private val mainView by lazy { View.inflate(applicationContext, R.layout.smallapp_browser_main, null) }
             private val webView by lazy { mainView.findViewById(R.id.webview) as WebView }
@@ -559,21 +556,4 @@ class SmallBrowserApplicationService : MultiFloatWindowApplication() {
 			}
         }
 	}
-
-    override fun onCreateNotificationSettings(): MultiFloatWindowNotificationSettings {
-        return MultiFloatWindowNotificationSettings(
-                "マルチウィンドウアプリ",
-                "起動中",
-                Icon.createWithResource(applicationContext, R.mipmap.ic_launcher_round),
-                PendingIntent.getActivity(
-                        this@SmallBrowserApplicationService,
-                        0,
-                        Intent(
-                                this@SmallBrowserApplicationService,
-                                BrowserChangerActivity::class.java
-                        ),
-                        0
-                )
-        )
-    }
 }

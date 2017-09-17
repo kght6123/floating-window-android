@@ -9,7 +9,7 @@
 	<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
 	<!--uses-permission android:name="android.permission.BIND_APPWIDGET" /-->
 
-	<uses-permission android:name="jp.kght6123.multiwindow.permission.SMALL_APPS" />
+	<uses-permission android:name="jp.kght6123.multiwindow.manifest.permission.APPS" />
 
 	<application
 		android:allowBackup="false"
@@ -19,7 +19,7 @@
 		android:resizeableActivity="true"
 		android:roundIcon="@mipmap/ic_launcher_round"
 		tools:ignore="GoogleAppIndexingWarning">
-		
+
 		<!-- android:configChangesは、自動のActivity破棄を停止し、自分で処理を記載可能にする（onConfigurationChangedメソッドをオーバーライド） -->
 		<!-- android:windowSoftInputMode="adjustResize" キーボードが表示されたらアクティビティのサイズがキーボード分小さくなる -->
 		<!-- android:windowSoftInputMode="stateAlwaysHidden" Activityのメインウィンドウに初期入力フォーカス時、ソフトウェアキーボードが常に隠れる -->
@@ -48,6 +48,16 @@
 			android:exported="false"
 			android:process=":local"/>
 
+		<service android:name=".SmallBrowserTestOtherApplication"
+			android:enabled="true"
+			android:exported="true"
+			android:icon="@mipmap/ic_launcher"
+			android:roundIcon="@mipmap/ic_launcher_round">
+			<intent-filter>
+				<action android:name="jp.kght6123.multiwindow.intent.action.MAIN" />
+				<category android:name="jp.kght6123.multiwindow.intent.category.LAUNCHER" />
+			</intent-filter>
+		</service>
 	</application>
 
 </manifest>

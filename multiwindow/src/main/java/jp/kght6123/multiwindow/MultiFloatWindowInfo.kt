@@ -7,7 +7,7 @@ import android.view.*
 import android.widget.FrameLayout
 import android.widget.LinearLayout
 import jp.kght6123.multiwindow.utils.DisplayUtils
-import jp.kght6123.multiwindow.utils.UnitUtils
+import jp.kght6123.multiwindowframework.utils.UnitUtils
 
 /**
  * マルチウィンドウの状態を保持するクラス
@@ -108,19 +108,6 @@ class MultiFloatWindowInfo(
                 return true
             }
         })
-
-//        val iconView = ImageView(context)
-//        iconView.setImageResource(R.mipmap.ic_launcher)
-//        iconView.isFocusableInTouchMode = true
-//        iconView.isFocusable = true
-//
-//        val layoutParams1 =
-//                LinearLayout.LayoutParams(
-//                        UnitUtils.convertDp2Px(75f, context).toInt(),
-//                        UnitUtils.convertDp2Px(75f, context).toInt())
-//
-//        miniView.addView(iconView, layoutParams1)
-
         miniView
     }
     private val windowOutlineFrame: ViewGroup by lazy {
@@ -135,18 +122,6 @@ class MultiFloatWindowInfo(
         val windowInFrame =
                 windowOutlineFrame.findViewById(R.id.windowInlineFrame) as ViewGroup
         windowInFrame.setBackgroundColor(backgroundColor)
-        // FIXME windowInFrame.setBackgroundResource(R.drawable.multiwindow_frame_stroke_left/*android.R.color.background_light*/)
-
-//        val mainLayoutView =
-//                View.inflate(context, R.layout.small_webview, windowInlineFrame) as ViewGroup
-//
-//        val webView = mainLayoutView.findViewById(R.id.webView) as WebView
-//        webView.setWebViewClient(object : WebViewClient() {
-//            override fun shouldOverrideUrlLoading(view: WebView, req: WebResourceRequest): Boolean {
-//                return false
-//            }
-//        })
-//        webView.loadUrl("http://www.google.com")
 
         windowOutlineFrame.setOnLongClickListener {
             if(strokeMode != Stroke.UNKNOWN && windowMode == Mode.UNKNOWN) {
@@ -183,7 +158,7 @@ class MultiFloatWindowInfo(
             return@setOnLongClickListener false
         }
         val switchMiniMode = fun() {
-            if(/*windowMode == Mode.UNKNOWN && */strokeMode != Stroke.UNKNOWN) {
+            if(strokeMode != Stroke.UNKNOWN) {
                 manager.changeMode(this.name, true)
             }
         }
@@ -312,7 +287,6 @@ class MultiFloatWindowInfo(
                         if(strokeMode != Stroke.UNKNOWN) {
                             // ACTION_UP,DOWNのみの対策。
                             windowInFrame.setBackgroundColor(backgroundColor)
-                            // FIXME windowInFrame.setBackgroundResource(R.drawable.multiwindow_frame_stroke_left/*android.R.color.background_light*/)
                         }
                     }
                     MotionEvent.ACTION_MOVE -> {
@@ -418,12 +392,6 @@ class MultiFloatWindowInfo(
     private fun getLayoutParams(viewGroup: ViewGroup): FrameLayout.LayoutParams {
         return (viewGroup.layoutParams as FrameLayout.LayoutParams)
     }
-    //		fun getMiniFrameLayoutParams(): FrameLayout.LayoutParams {
-//			return getLayoutParams(this.miniWindowFrame)
-//		}
-//		fun getWindowOutFrameLayoutParams(): FrameLayout.LayoutParams {
-//			return getLayoutParams(this.windowOutlineFrame)
-//		}
     fun getActiveWindowLayoutParams(): FrameLayout.LayoutParams {
         return getLayoutParams(getActiveOverlay())
     }

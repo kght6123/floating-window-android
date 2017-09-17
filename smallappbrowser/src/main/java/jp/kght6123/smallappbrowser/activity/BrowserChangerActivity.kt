@@ -16,7 +16,7 @@ import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.ArrayAdapter
 import android.widget.TextView
-import jp.kght6123.multiwindow.utils.UnitUtils
+import jp.kght6123.multiwindowframework.utils.UnitUtils
 
 /**
  * HTTP送信のIntentを受け取ってブラウザを選択させるActivity、ブラウザチェンジャー

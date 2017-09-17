@@ -1,4 +1,4 @@
-package jp.kght6123.multiwindow.utils
+package jp.kght6123.multiwindowframework.utils
 
 import android.content.Context
 

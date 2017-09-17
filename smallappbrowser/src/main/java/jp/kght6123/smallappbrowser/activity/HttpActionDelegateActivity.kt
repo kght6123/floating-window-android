@@ -3,9 +3,8 @@ package jp.kght6123.smallappbrowser.activity
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import jp.kght6123.multiwindow.MultiFloatWindowApplication
 import jp.kght6123.multiwindow.MultiFloatWindowApplicationActivity
-import jp.kght6123.smallappbrowser.SmallBrowserApplicationService
+import jp.kght6123.multiwindowframework.MultiWindowOpenType
 import jp.kght6123.smallappbrowser.application.SharedDataApplication
 
 
@@ -14,7 +13,7 @@ import jp.kght6123.smallappbrowser.application.SharedDataApplication
  *
  * Created by kght6123 on 2017/08/04.
  */
-class HttpActionDelegateActivity : MultiFloatWindowApplicationActivity<SmallBrowserApplicationService>(SmallBrowserApplicationService::class.java) {
+class HttpActionDelegateActivity : MultiFloatWindowApplicationActivity() {
 
     private val initIntent by lazy {
         val intent = Intent()
@@ -29,7 +28,7 @@ class HttpActionDelegateActivity : MultiFloatWindowApplicationActivity<SmallBrow
 
             startMultiFloatWindowService()
 
-            openMultiFloatWindowView(++application.windowIndex, MultiFloatWindowApplication.MultiWindowOpenType.NEW)
+            openMultiFloatWindowView(++application.windowIndex, MultiWindowOpenType.NEW)
 
             startMultiFloatWindowView(application.windowIndex, initIntent)
         }

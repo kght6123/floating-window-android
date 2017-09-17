@@ -1,24 +1,19 @@
 package jp.kght6123.smallappbrowser.activity
 
-import android.content.Context
 import android.widget.Button
 import android.content.Intent
 import android.net.Uri
 import android.os.*
-import android.view.View
-import android.widget.LinearLayout
-import android.widget.Toast
-import jp.kght6123.multiwindow.MultiFloatWindowApplication
 import jp.kght6123.multiwindow.MultiFloatWindowApplicationActivity
+import jp.kght6123.multiwindowframework.MultiWindowOpenType
 import jp.kght6123.smallappbrowser.R
-import jp.kght6123.smallappbrowser.SmallBrowserApplicationService
 
 /**
  * スモールブラウザの起動／停止を行う、テスト用Activity
  *
  * Created by kght6123 on 2017/05/09.
  */
-class SmallBrowserApplicationTestActivity: MultiFloatWindowApplicationActivity<SmallBrowserApplicationService>(SmallBrowserApplicationService::class.java) {
+class SmallBrowserApplicationTestActivity: MultiFloatWindowApplicationActivity() {
 
     private val multi_window_start_button: Button by lazy {
 		findViewById(R.id.multi_window_start_button) as Button
@@ -49,7 +44,7 @@ class SmallBrowserApplicationTestActivity: MultiFloatWindowApplicationActivity<S
                 startMultiFloatWindowService()
             })
             multi_window_open_button.setOnClickListener({
-                openMultiFloatWindowView(++index, MultiFloatWindowApplication.MultiWindowOpenType.NEW)
+                openMultiFloatWindowView(++index, MultiWindowOpenType.NEW)
 
                 val intent = Intent()
                 intent.data = Uri.parse("http://google.co.jp/")
@@ -57,7 +52,7 @@ class SmallBrowserApplicationTestActivity: MultiFloatWindowApplicationActivity<S
                 startMultiFloatWindowView(index, intent)
             })
             multi_window_update_button.setOnClickListener({
-                openMultiFloatWindowView(index, MultiFloatWindowApplication.MultiWindowOpenType.UPDATE)
+                openMultiFloatWindowView(index, MultiWindowOpenType.UPDATE)
 
                 val intent = Intent()
                 intent.data = Uri.parse("http://google.co.jp/")
@@ -75,40 +70,32 @@ class SmallBrowserApplicationTestActivity: MultiFloatWindowApplicationActivity<S
                 startAppWidgetWindowView(++index)
             })
 
-            val sharedContext = this.createPackageContext("jp.kght6123.smalllittleappviewer", Context.CONTEXT_INCLUDE_CODE)
-            val classObj = Class.forName("jp.kght6123.smalllittleappviewer.MultiFloatWindowDelegateViewTest", true, sharedContext.classLoader)
-
-            Toast.makeText(applicationContext, "className=${classObj.name}.", Toast.LENGTH_SHORT).show()
-
-            val delegate = classObj.getConstructor(Context::class.java).newInstance(sharedContext)
-
-            Toast.makeText(applicationContext, "delegate=$delegate.", Toast.LENGTH_SHORT).show()
-
-            val view = classObj.getMethod("onCreate").invoke(delegate) as View
-
-            Toast.makeText(applicationContext, "view=$view.", Toast.LENGTH_SHORT).show()
-
-            val buttonGroup = findViewById(R.id.buttonGroup) as LinearLayout
-            buttonGroup.addView(view)
-
-//            val windowManager = applicationContext.getSystemService(Context.WINDOW_SERVICE) as WindowManager
-//            val otherAppContext = createPackageContext(
-//                    "jp.kght6123.smalllittleappviewer",
-//                    Context.CONTEXT_INCLUDE_CODE/* or Context.CONTEXT_IGNORE_SECURITY*/)
+//            val packageInfoList =
+//                    this.packageManager.getPackagesHoldingPermissions(arrayOf("jp.kght6123.multiwindow.permission.APPS"), PackageManager.GET_SERVICES)
 //
-//            val mMainThreadField = otherAppContext.javaClass.getDeclaredField("mMainThread")
-//            mMainThreadField.isAccessible = true
+//            for (packageInfo in packageInfoList) {
+//                for (serviceInfo in packageInfo.services) {
+//                    Toast.makeText(applicationContext, "$serviceInfo.name.", Toast.LENGTH_SHORT).show()
+//                }
+//            }
 //
-//            val mMainThread = mMainThreadField.get(otherAppContext)
+//            val sharedContext = this.createPackageContext("jp.kght6123.smalllittleappviewer", Context.CONTEXT_INCLUDE_CODE)
+//            val classObj = Class.forName("jp.kght6123.smalllittleappviewer.MultiFloatWindowDelegateViewTest", true, sharedContext.classLoader)
 //
-//            val mInitialApplicationField = mMainThread.javaClass.getDeclaredField("mInitialApplication")
-//            mInitialApplicationField.isAccessible = true
+//            Toast.makeText(applicationContext, "className=${classObj.name}.", Toast.LENGTH_SHORT).show()
 //
-//            val mInitialApplication = mInitialApplicationField.get(mMainThread)
+//            val delegate = classObj.getConstructor(Context::class.java, Context::class.java).newInstance(sharedContext, applicationContext)
 //
-//            val otherApplication = mInitialApplication as Application
+//            Toast.makeText(applicationContext, "delegate=$delegate.", Toast.LENGTH_SHORT).show()
 //
-//            Toast.makeText(applicationContext, "className=${otherApplication.applicationInfo.className}.", Toast.LENGTH_SHORT).show()
+//            val view = classObj.getMethod("onCreate").invoke(delegate) as View
+//            val webView = classObj.getMethod("onCreateWebView").invoke(delegate) as View
+//
+//            Toast.makeText(applicationContext, "view=$view,webView=$webView.", Toast.LENGTH_SHORT).show()
+//
+//            val buttonGroup = findViewById(R.id.buttonGroup) as LinearLayout
+//            buttonGroup.addView(view)
+//            buttonGroup.addView(webView)
         }
     }
 	override fun onCreate(savedInstanceState: Bundle?) {

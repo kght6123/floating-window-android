@@ -16,6 +16,12 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme" >
 
+        <service android:name="jp.kght6123.multiwindow.MultiFloatWindowApplicationService"
+            android:enabled="true"
+            android:exported="false"
+            android:process=":local">
+        </service>
+
         <activity
             android:name=".activity.HttpActionDelegateActivity"
             android:label="@string/app_browser_name"
@@ -54,10 +60,10 @@
 
         <service android:name=".SmallBrowserApplicationService"
             android:enabled="true"
-            android:exported="true"
-            android:process=":local">
+            android:exported="true">
             <intent-filter>
-                <action android:name="jp.kght6123.smallappbrowser.SmallBrowserApplicationService" />
+                <action android:name="jp.kght6123.multiwindow.intent.action.MAIN" />
+                <category android:name="jp.kght6123.multiwindow.intent.category.LAUNCHER" />
             </intent-filter>
         </service>
 

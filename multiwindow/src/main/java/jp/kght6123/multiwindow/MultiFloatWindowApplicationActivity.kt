@@ -16,13 +16,17 @@ import android.os.Messenger
 import android.provider.Settings
 import android.util.Log
 import android.widget.Toast
+import jp.kght6123.multiwindowframework.MultiFloatWindowConstants
+import jp.kght6123.multiwindowframework.MultiWindowControlCommand
+import jp.kght6123.multiwindowframework.MultiWindowControlParam
+import jp.kght6123.multiwindowframework.MultiWindowOpenType
 
 /**
  * スモールブラウザの起動／停止とOverlay権限のチェック結果イベント発行を行う、Activity
  *
  * Created by kght6123 on 2017/08/22.
  */
-abstract class MultiFloatWindowApplicationActivity<in S: MultiFloatWindowApplication>(serviceClass: Class<S>) : Activity() {
+abstract class MultiFloatWindowApplicationActivity : Activity() {
 
     companion object {
         private val REQUEST_CODE_SYSTEM_OVERLAY :Int = 1234
@@ -33,7 +37,7 @@ abstract class MultiFloatWindowApplicationActivity<in S: MultiFloatWindowApplica
     private val TAG = MultiFloatWindowApplicationActivity::class.java.simpleName
 
     private val serviceIntent: Intent by lazy {
-        Intent(this, serviceClass)
+        Intent(this, MultiFloatWindowApplicationService::class.java)
     }
     private var mService : Messenger? = null
     private val mConnection = object: ServiceConnection {
@@ -48,7 +52,7 @@ abstract class MultiFloatWindowApplicationActivity<in S: MultiFloatWindowApplica
     }
 
     private val appWidgetHost by lazy {
-        AppWidgetHost(this, MultiFloatWindowApplication.APP_WIDGET_HOST_ID)
+        AppWidgetHost(this, MultiFloatWindowConstants.APP_WIDGET_HOST_ID)
     }
     private var appWidgetIndex :Int = -1
 
@@ -56,20 +60,22 @@ abstract class MultiFloatWindowApplicationActivity<in S: MultiFloatWindowApplica
         Log.i(TAG, "Start Service")
         startService(serviceIntent)
         bindService(serviceIntent, mConnection, Context.BIND_AUTO_CREATE)
+
+        sendMessage(MultiWindowControlCommand.HELLO, 0, MultiWindowOpenType.NEW)
     }
-    protected fun openMultiFloatWindowView(index: Int, openType: MultiFloatWindowApplication.MultiWindowOpenType) {
+    protected fun openMultiFloatWindowView(index: Int, openType: MultiWindowOpenType) {
         Log.i(TAG, "Open Window")
-        sendMessage(MultiFloatWindowApplication.MultiWindowControlCommand.OPEN, index, openType)
+        sendMessage(MultiWindowControlCommand.OPEN, index, openType)
     }
     protected fun startMultiFloatWindowView(index: Int, intent: Intent) {
         Log.i(TAG, "Start Window")
         // FIXME WINDOW_INDEX渡しは不要、args1として渡せばOK、Intentを渡せるか検証のため
-        intent.putExtra(MultiFloatWindowApplication.MultiWindowControlParam.WINDOW_INDEX.name, index)
-        sendMessage(MultiFloatWindowApplication.MultiWindowControlCommand.START, index, 0, intent)
+        intent.putExtra(MultiWindowControlParam.WINDOW_INDEX.name, index)
+        sendMessage(MultiWindowControlCommand.START, index, 0, intent)
     }
     protected fun closeMultiFloatWindowView(index: Int, intent: Intent) {
         Log.i(TAG, "Close Window")
-        sendMessage(MultiFloatWindowApplication.MultiWindowControlCommand.CLOSE, index, 0, intent)
+        sendMessage(MultiWindowControlCommand.CLOSE, index, 0, intent)
     }
     protected fun stopMultiFloatWindowService() {
         Log.i(TAG, "Stop Service")
@@ -94,13 +100,13 @@ abstract class MultiFloatWindowApplicationActivity<in S: MultiFloatWindowApplica
         startActivityForResult(intent, REQUEST_CODE_PICK_APPWIDGET)
     }
 
-    private fun sendMessage(command: MultiFloatWindowApplication.MultiWindowControlCommand, index: Int, arg2: Int) {
-        mService?.send(Message.obtain(null, command.ordinal, index, arg2))
-    }
-    private fun sendMessage(command: MultiFloatWindowApplication.MultiWindowControlCommand, index: Int, openType: MultiFloatWindowApplication.MultiWindowOpenType) {
+//    private fun sendMessage(command: MultiWindowControlCommand, index: Int, arg2: Int) {
+//        mService?.send(Message.obtain(null, command.ordinal, index, arg2))
+//    }
+    private fun sendMessage(command: MultiWindowControlCommand, index: Int, openType: MultiWindowOpenType) {
         mService?.send(Message.obtain(null, command.ordinal, index, openType.ordinal))
     }
-    private fun sendMessage(command: MultiFloatWindowApplication.MultiWindowControlCommand, index: Int, arg2: Int, obj: Any) {
+    private fun sendMessage(command: MultiWindowControlCommand, index: Int, arg2: Int, obj: Any) {
         mService?.send(Message.obtain(null, command.ordinal, index, arg2, obj))
     }
 
@@ -151,7 +157,7 @@ abstract class MultiFloatWindowApplicationActivity<in S: MultiFloatWindowApplica
                                 data.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, -1)
                         val appWidgetIndex: Int = data.getIntExtra("EXTRA_APPWIDGET_INDEX", appWidgetIndex)
 
-                        sendMessage(MultiFloatWindowApplication.MultiWindowControlCommand.ADD_APP_WIDGET, appWidgetIndex, appWidgetId, data)
+                        sendMessage(MultiWindowControlCommand.ADD_APP_WIDGET, appWidgetIndex, appWidgetId, data)
                     }
                 }
             }

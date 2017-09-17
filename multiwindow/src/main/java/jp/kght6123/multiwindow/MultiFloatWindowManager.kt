@@ -1,15 +1,20 @@
 package jp.kght6123.multiwindow
 
+import android.appwidget.AppWidgetHost
+import android.appwidget.AppWidgetManager
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.PixelFormat
 import android.util.Log
 import android.view.*
 import android.widget.LinearLayout
+import android.widget.RemoteViews
 import jp.kght6123.multiwindow.recycler.CardAppListRecyclerView
 import jp.kght6123.multiwindow.recycler.IconAppListRecyclerView
-import jp.kght6123.multiwindow.utils.UnitUtils
 import jp.kght6123.multiwindow.viewgroup.MultiFloatWindowOverlayLayout
+import jp.kght6123.multiwindowframework.MultiFloatWindowApplication
+import jp.kght6123.multiwindowframework.MultiFloatWindowConstants
+import jp.kght6123.multiwindowframework.utils.UnitUtils
 import kotlin.concurrent.withLock
 
 /**
@@ -142,7 +147,7 @@ class MultiFloatWindowManager(val context: Context) {
 
     val ctrlListParams: WindowManager.LayoutParams by lazy {
         val params = WindowManager.LayoutParams(
-                WindowManager.LayoutParams.WRAP_CONTENT,
+                WindowManager.LayoutParams.WRAP_CONTENT,//UnitUtils.convertDp2Px(150f, context).toInt(),
                 WindowManager.LayoutParams.MATCH_PARENT,
                 0, // X
                 0, // Y
@@ -165,15 +170,15 @@ class MultiFloatWindowManager(val context: Context) {
                 LinearLayout.LayoutParams.MATCH_PARENT)
         params
     }
-    var cardAppListView: CardAppListRecyclerView = createCardAppListView()
+    val cardAppListView: CardAppListRecyclerView by lazy { createCardAppListView() }
 
     val iconAppListParams by lazy {
         val params = LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
-                UnitUtils.convertDp2Px(75f, context).toInt())
+                UnitUtils.convertDp2Px(95f, context).toInt())
         params
     }
-    var iconAppListView: IconAppListRecyclerView = IconAppListRecyclerView(context, this)
+    val iconAppListView: IconAppListRecyclerView by lazy { IconAppListRecyclerView(context, this) }
 
     private val controlLayer by lazy {
         val controlLayer =
@@ -218,6 +223,7 @@ class MultiFloatWindowManager(val context: Context) {
                         controlLayer.setBackgroundResource(R.drawable.shape_rounded_corners)
                         controlIconLayer.visibility = View.VISIBLE
                         controlAppListLayer.visibility = View.GONE
+                        controlAppListLayer.minimumWidth = 0
 
                         windowManager.updateViewLayout(controlLayer, ctrlIconParams)
                     }
@@ -231,6 +237,7 @@ class MultiFloatWindowManager(val context: Context) {
                         controlLayer.setBackgroundResource(R.color.app_list_background_color)
                         controlIconLayer.visibility = View.GONE
                         controlAppListLayer.visibility = View.VISIBLE
+                        controlAppListLayer.minimumWidth = UnitUtils.convertDp2Px(200f, context).toInt()
 
                         windowManager.updateViewLayout(controlLayer, ctrlListParams)
                     }
@@ -286,6 +293,13 @@ class MultiFloatWindowManager(val context: Context) {
     }
 
     val overlayWindowMap: MutableMap<String, MultiFloatWindowInfo> = LinkedHashMap()
+    val factoryMap: MutableMap<Int, MultiFloatWindowApplication.MultiFloatWindowFactory> = HashMap<Int, MultiFloatWindowApplication.MultiFloatWindowFactory>()
+
+    val appWidgetHost by lazy {
+        val appWidgetHost = AppWidgetHost(context, MultiFloatWindowConstants.APP_WIDGET_HOST_ID)
+        appWidgetHost.startListening()
+        appWidgetHost
+    }
 
     init {
         windowManager.addView(overlayView, getActiveParams())   // WindowManagerに追加
@@ -480,5 +494,153 @@ class MultiFloatWindowManager(val context: Context) {
 
     interface AllChangeActiveEventListener {
         fun onChangeAll()
+    }
+
+    fun openWindow(windowIndex: Int, packageName: String, serviceClassName: String, update: Boolean) {
+
+        val sharedContext = context.createPackageContext(packageName, Context.CONTEXT_INCLUDE_CODE)
+        val classObj = Class.forName(serviceClassName, true, sharedContext.classLoader)
+        val application = classObj.newInstance()// as MultiFloatWindowApplication
+
+        val attachBaseContextMethod =
+                classObj.getMethod("attachBaseContext", Context::class.java, Context::class.java)
+        val onCreateFactoryMethod =
+                classObj.getMethod("onCreateFactory", Int::class.java)
+        val onCreateSettingsFactoryMethod =
+                classObj.getMethod("onCreateSettingsFactory", Int::class.java)
+
+        //application.attachBaseContext(sharedContext, context)
+        attachBaseContextMethod.invoke(application, sharedContext, context)
+
+        // FIXME class cast exception
+        val factory = MultiFloatWindowApplication.MultiFloatWindowFactory(
+                //application.onCreateFactory(windowIndex),
+                onCreateFactoryMethod.invoke(application, windowIndex),// as MultiFloatWindowApplication.MultiFloatWindowViewFactory,
+                //application.onCreateSettingsFactory(windowIndex)
+                onCreateSettingsFactoryMethod.invoke(application, windowIndex)// as MultiFloatWindowApplication.MultiFloatWindowSettingsFactory
+        )
+        factoryMap.put(windowIndex, factory)
+
+        val initSettings = factory.createInitSettings(windowIndex)
+        val info =
+                if(update)
+                    update(
+                            windowIndex,
+                            initSettings.miniMode,
+                            initSettings.backgroundColor,
+                            initSettings.width,
+                            initSettings.height,
+                            initSettings.active)
+                else
+                    add(
+                            windowIndex,
+                            initSettings.miniMode,
+                            initSettings.x,
+                            initSettings.y,
+                            initSettings.backgroundColor,
+                            initSettings.width,
+                            initSettings.height,
+                            initSettings.active)
+
+        if(update) {
+            info.windowInlineFrame.removeAllViews()
+            info.miniWindowFrame.removeAllViews()
+        }
+        info.windowInlineFrame.addView(
+                factory.createWindowView(windowIndex),
+                factory.createWindowLayoutParams(windowIndex))
+        info.miniWindowFrame.addView(
+                factory.createMinimizedView(windowIndex),
+                factory.createMinimizedLayoutParams(windowIndex))
+    }
+    fun openRemoteWindow(windowIndex: Int, remoteWindowViews: RemoteViews, remoteMiniViews: RemoteViews, update: Boolean) {
+
+        val windowSettingsFactory = MultiFloatWindowApplication.MultiFloatWindowSettingsRemoteViewFactory(context)
+        val initSettings = windowSettingsFactory.createInitSettings(windowIndex)
+
+        val info = if(update)
+            update(
+                    windowIndex,
+                    initSettings.miniMode,
+                    initSettings.backgroundColor,
+                    initSettings.width,
+                    initSettings.height,
+                    initSettings.active)
+        else
+            add(
+                    windowIndex,
+                    initSettings.miniMode,
+                    initSettings.x,
+                    initSettings.y,
+                    initSettings.backgroundColor,
+                    initSettings.width,
+                    initSettings.height,
+                    initSettings.active)
+
+        val windowViewFactory = MultiFloatWindowApplication.MultiFloatWindowViewRemoteViewFactory(
+                context,
+                remoteWindowViews,
+                remoteMiniViews,
+                info.windowInlineFrame,
+                info.miniWindowFrame)
+
+        if(update) {
+            info.windowInlineFrame.removeAllViews()
+            info.miniWindowFrame.removeAllViews()
+        }
+        info.windowInlineFrame.addView(
+                windowViewFactory.createWindowView(windowIndex),
+                windowViewFactory.createWindowLayoutParams(windowIndex))
+        info.miniWindowFrame.addView(
+                windowViewFactory.createMinimizedView(windowIndex),
+                windowViewFactory.createMinimizedLayoutParams(windowIndex))
+
+        val factory = MultiFloatWindowApplication.MultiFloatWindowFactory(windowViewFactory, windowSettingsFactory)
+        factoryMap.put(windowIndex, factory)
+    }
+    fun openAppWidgetWindow(windowIndex: Int, appWidgetId: Int, update: Boolean) {
+
+        val appWidgetProviderInfo =
+                AppWidgetManager.getInstance(context).getAppWidgetInfo(appWidgetId)
+
+        val windowViewFactory =
+                MultiFloatWindowApplication.MultiFloatWindowViewAppWidgetFactory(context, appWidgetHost, appWidgetId, appWidgetProviderInfo)
+
+        val windowSettingsFactory =
+                MultiFloatWindowApplication.MultiFloatWindowSettingsAppWidgetFactory(appWidgetProviderInfo)
+        val initSettings = windowSettingsFactory.createInitSettings(windowIndex)
+
+        val factory = MultiFloatWindowApplication.MultiFloatWindowFactory(windowViewFactory, windowSettingsFactory)
+        factoryMap.put(windowIndex, factory)
+
+        val info = if(update)
+            update(
+                    windowIndex,
+                    initSettings.miniMode,
+                    initSettings.backgroundColor,
+                    initSettings.width,
+                    initSettings.height,
+                    initSettings.active)
+        else
+            add(
+                    windowIndex,
+                    initSettings.miniMode,
+                    initSettings.x,
+                    initSettings.y,
+                    initSettings.backgroundColor,
+                    initSettings.width,
+                    initSettings.height,
+                    initSettings.active)
+
+        if(update) {
+            info.windowInlineFrame.removeAllViews()
+            info.miniWindowFrame.removeAllViews()
+        }
+        info.windowInlineFrame.addView(
+                windowViewFactory.createWindowView(windowIndex),
+                windowViewFactory.createWindowLayoutParams(windowIndex))
+        info.miniWindowFrame.addView(
+                windowViewFactory.createMinimizedView(windowIndex),
+                windowViewFactory.createMinimizedLayoutParams(windowIndex))
     }
 }
