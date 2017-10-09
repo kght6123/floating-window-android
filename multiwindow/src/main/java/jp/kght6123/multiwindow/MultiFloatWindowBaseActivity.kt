@@ -5,28 +5,21 @@ import android.appwidget.AppWidgetHost
 import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProviderInfo
 import android.content.ComponentName
-import android.content.Context
 import android.content.Intent
-import android.content.ServiceConnection
 import android.net.Uri
 import android.os.Bundle
 import android.os.IBinder
-import android.os.Message
-import android.os.Messenger
 import android.provider.Settings
-import android.util.Log
 import android.widget.Toast
 import jp.kght6123.multiwindowframework.MultiFloatWindowConstants
 import jp.kght6123.multiwindowframework.MultiWindowControlCommand
-import jp.kght6123.multiwindowframework.MultiWindowControlParam
-import jp.kght6123.multiwindowframework.MultiWindowOpenType
 
 /**
  * スモールブラウザの起動／停止とOverlay権限のチェック結果イベント発行を行う、Activity
  *
  * Created by kght6123 on 2017/08/22.
  */
-abstract class MultiFloatWindowApplicationActivity : Activity() {
+abstract class MultiFloatWindowBaseActivity : Activity() {
 
     companion object {
         private val REQUEST_CODE_SYSTEM_OVERLAY :Int = 1234
@@ -34,59 +27,20 @@ abstract class MultiFloatWindowApplicationActivity : Activity() {
         private val REQUEST_CODE_CONFIGURE_APPWIDGET :Int = 9012
     }
 
-    private val TAG = MultiFloatWindowApplicationActivity::class.java.simpleName
-
-    private val serviceIntent: Intent by lazy {
-        Intent(this, MultiFloatWindowApplicationService::class.java)
-    }
-    private var mService : Messenger? = null
-    private val mConnection = object: ServiceConnection {
-        override fun onServiceDisconnected(name: ComponentName?) {
-            mService = null
-        }
-        override fun onServiceConnected(name: ComponentName?, binder: IBinder?) {
-            if(binder != null) {
-                mService = Messenger(binder)
-            }
-        }
-    }
+    lateinit protected var launcher :MultiFloatWindowLauncher
 
     private val appWidgetHost by lazy {
         AppWidgetHost(this, MultiFloatWindowConstants.APP_WIDGET_HOST_ID)
     }
     private var appWidgetIndex :Int = -1
 
-    protected fun startMultiFloatWindowService() {
-        Log.i(TAG, "Start Service")
-        startService(serviceIntent)
-        bindService(serviceIntent, mConnection, Context.BIND_AUTO_CREATE)
-
-        sendMessage(MultiWindowControlCommand.HELLO, 0, MultiWindowOpenType.NEW)
-    }
-    protected fun openMultiFloatWindowView(index: Int, openType: MultiWindowOpenType) {
-        Log.i(TAG, "Open Window")
-        sendMessage(MultiWindowControlCommand.OPEN, index, openType)
-    }
-    protected fun startMultiFloatWindowView(index: Int, intent: Intent) {
-        Log.i(TAG, "Start Window")
-        // FIXME WINDOW_INDEX渡しは不要、args1として渡せばOK、Intentを渡せるか検証のため
-        intent.putExtra(MultiWindowControlParam.WINDOW_INDEX.name, index)
-        sendMessage(MultiWindowControlCommand.START, index, 0, intent)
-    }
-    protected fun closeMultiFloatWindowView(index: Int, intent: Intent) {
-        Log.i(TAG, "Close Window")
-        sendMessage(MultiWindowControlCommand.CLOSE, index, 0, intent)
-    }
-    protected fun stopMultiFloatWindowService() {
-        Log.i(TAG, "Stop Service")
-        unbindService(mConnection)
-        stopService(serviceIntent)
-    }
+    private var permission = false
+    private var serviceConnected = false
 
     protected fun startAppWidgetWindowView(index: Int) {
         // ウィジェット毎ユニークIDを取得
         val appWidgetId = appWidgetHost.allocateAppWidgetId()
-        appWidgetIndex = index
+        this.appWidgetIndex = index
 
         val appWidgetProviderInfoList = ArrayList<AppWidgetProviderInfo>()
         val bundleList = ArrayList<Bundle>()
@@ -100,33 +54,32 @@ abstract class MultiFloatWindowApplicationActivity : Activity() {
         startActivityForResult(intent, REQUEST_CODE_PICK_APPWIDGET)
     }
 
-//    private fun sendMessage(command: MultiWindowControlCommand, index: Int, arg2: Int) {
-//        mService?.send(Message.obtain(null, command.ordinal, index, arg2))
-//    }
-    private fun sendMessage(command: MultiWindowControlCommand, index: Int, openType: MultiWindowOpenType) {
-        mService?.send(Message.obtain(null, command.ordinal, index, openType.ordinal))
-    }
-    private fun sendMessage(command: MultiWindowControlCommand, index: Int, arg2: Int, obj: Any) {
-        mService?.send(Message.obtain(null, command.ordinal, index, arg2, obj))
-    }
+    open fun onCheckOverlayPermissionResult(result: Boolean) {
 
-    abstract fun onCheckOverlayPermissionResult(result: Boolean)
+    }
 
     private fun judgeOverlayPermission() {
         if (checkOverlayPermission()) {
             Toast.makeText(applicationContext, "OverlayPermission OK.", Toast.LENGTH_SHORT).show()
-            onCheckOverlayPermissionResult(true)
+            this.permission = true
+            onCheckOverlayPermissionResult(this.permission)
+            onChangePreparationStatus(this.permission, this.serviceConnected)
 
         } else {
             Toast.makeText(applicationContext, "OverlayPermission NG.", Toast.LENGTH_SHORT).show()
-            onCheckOverlayPermissionResult(false)
+            onCheckOverlayPermissionResult(this.permission)
             requestOverlayPermission()
-
         }
     }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        judgeOverlayPermission()
+
+        this.launcher = object : MultiFloatWindowLauncher(this){
+            override fun onServiceConnected(name: ComponentName?, binder: IBinder?) {
+                super.onServiceConnected(name, binder)
+                this@MultiFloatWindowBaseActivity.onLauncherServiceConnected(name, binder)
+            }
+        }
     }
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         when (resultCode) {
@@ -157,7 +110,7 @@ abstract class MultiFloatWindowApplicationActivity : Activity() {
                                 data.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, -1)
                         val appWidgetIndex: Int = data.getIntExtra("EXTRA_APPWIDGET_INDEX", appWidgetIndex)
 
-                        sendMessage(MultiWindowControlCommand.ADD_APP_WIDGET, appWidgetIndex, appWidgetId, data)
+                        launcher.sendMessage(MultiWindowControlCommand.ADD_APP_WIDGET, appWidgetIndex, appWidgetId, data)
                     }
                 }
             }
@@ -188,5 +141,24 @@ abstract class MultiFloatWindowApplicationActivity : Activity() {
         val intent =
                 Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:$packageName")) // packageNameは、getPackageName()を呼び出している
         this.startActivityForResult(intent, REQUEST_CODE_SYSTEM_OVERLAY)
+    }
+    override fun onStart() {
+        super.onStart()
+        judgeOverlayPermission()
+        launcher.bind()
+    }
+    override fun onStop() {
+        super.onStop()
+        launcher.unbind()
+    }
+    open fun onLauncherServiceConnected(name: ComponentName?, binder: IBinder?) {
+        serviceConnected = true
+        Toast.makeText(applicationContext, "Service Connected OK.", Toast.LENGTH_SHORT).show()
+
+        onChangePreparationStatus(this.permission, this.serviceConnected)
+    }
+    open fun onChangePreparationStatus(permission: Boolean, serviceConnected: Boolean) {
+        if(permission && serviceConnected)
+            launcher.hello()
     }
 }

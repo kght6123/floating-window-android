@@ -28,6 +28,7 @@ abstract class MultiFloatWindowApplication : Service() {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
+    @Suppress("unused")
     fun attachBaseContext(sharedContext: Context, applicationContext: Context) {
         attachBaseContext(applicationContext)
         this.sharedContext = sharedContext
@@ -49,7 +50,7 @@ abstract class MultiFloatWindowApplication : Service() {
             val active: Boolean = false
     )
 
-    class MultiFloatWindowFactory(private val windowViewFactory: Any, private val windowSettingsFactory: Any) {
+    class MultiFloatWindowFactory(val classObj: Class<*>, private val windowViewFactory: Any, private val windowSettingsFactory: Any) {
 
         private val windowViewFactoryClass = windowViewFactory.javaClass
         private val createWindowViewMethod = windowViewFactoryClass.getMethod("createWindowView", Int::class.java)
@@ -119,10 +120,10 @@ abstract class MultiFloatWindowApplication : Service() {
     }
     class MultiFloatWindowViewRemoteViewFactory(
             val context: Context,
-            val remoteWindowViews: RemoteViews,
-            val remoteMiniViews: RemoteViews,
+            private val remoteWindowViews: RemoteViews,
+            private val remoteMiniViews: RemoteViews,
             val windowInlineFrame: ViewGroup,
-            val miniWindowFrame: ViewGroup): MultiFloatWindowViewFactory() {
+            private val miniWindowFrame: ViewGroup): MultiFloatWindowViewFactory() {
 
         override fun createWindowView(arg: Int): View {
             return remoteWindowViews.apply(context, windowInlineFrame)
@@ -154,7 +155,12 @@ abstract class MultiFloatWindowApplication : Service() {
             )
         }
     }
-    class MultiFloatWindowViewAppWidgetFactory(val context: Context, val appWidgetHost: AppWidgetHost, val appWidgetId: Int, val appWidgetProviderInfo: AppWidgetProviderInfo): MultiFloatWindowViewFactory() {
+    class MultiFloatWindowViewAppWidgetFactory(
+            val context: Context,
+            private val appWidgetHost: AppWidgetHost,
+            private val appWidgetId: Int,
+            private val appWidgetProviderInfo: AppWidgetProviderInfo): MultiFloatWindowViewFactory() {
+
         override fun createWindowView(arg: Int): View {
             val appWidgetHostView = appWidgetHost.createView(context, appWidgetId, appWidgetProviderInfo)
             appWidgetHostView.layoutParams = LinearLayout.LayoutParams(
@@ -181,7 +187,8 @@ abstract class MultiFloatWindowApplication : Service() {
         }
         override fun start(intent: Intent?) {}
     }
-    class MultiFloatWindowSettingsAppWidgetFactory(val appWidgetProviderInfo: AppWidgetProviderInfo): MultiFloatWindowSettingsFactory {
+    class MultiFloatWindowSettingsAppWidgetFactory(
+            private val appWidgetProviderInfo: AppWidgetProviderInfo): MultiFloatWindowSettingsFactory {
         override fun createInitSettings(arg: Int): MultiFloatWindowInitSettings {
             return MultiFloatWindowInitSettings(
                     x = 50,

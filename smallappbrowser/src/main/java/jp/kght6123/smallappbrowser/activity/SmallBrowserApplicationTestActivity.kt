@@ -3,8 +3,7 @@ package jp.kght6123.smallappbrowser.activity
 import android.widget.Button
 import android.content.Intent
 import android.net.Uri
-import android.os.*
-import jp.kght6123.multiwindow.MultiFloatWindowApplicationActivity
+import jp.kght6123.multiwindow.MultiFloatWindowBaseActivity
 import jp.kght6123.multiwindowframework.MultiWindowOpenType
 import jp.kght6123.smallappbrowser.R
 
@@ -13,11 +12,8 @@ import jp.kght6123.smallappbrowser.R
  *
  * Created by kght6123 on 2017/05/09.
  */
-class SmallBrowserApplicationTestActivity: MultiFloatWindowApplicationActivity() {
+class SmallBrowserApplicationTestActivity : MultiFloatWindowBaseActivity() {
 
-    private val multi_window_start_button: Button by lazy {
-		findViewById(R.id.multi_window_start_button) as Button
-	}
     private val multi_window_open_button: Button by lazy {
 		findViewById(R.id.multi_window_open_button) as Button
 	}
@@ -28,8 +24,8 @@ class SmallBrowserApplicationTestActivity: MultiFloatWindowApplicationActivity()
 		findViewById(R.id.multi_window_close_button) as Button
 	}
     private val multi_window_exit_button: Button by lazy {
-		findViewById(R.id.multi_window_exit_button) as Button
-	}
+        findViewById(R.id.multi_window_exit_button) as Button
+    }
     private val multi_window_widget_button: Button by lazy {
         findViewById(R.id.multi_window_widget_button) as Button
     }
@@ -40,31 +36,28 @@ class SmallBrowserApplicationTestActivity: MultiFloatWindowApplicationActivity()
         if(result) {
             this.setContentView(R.layout.activity_smallapp_browser_test)
 
-            multi_window_start_button.setOnClickListener({
-                startMultiFloatWindowService()
-            })
             multi_window_open_button.setOnClickListener({
-                openMultiFloatWindowView(++index, MultiWindowOpenType.NEW)
+                launcher.openWindow(++index, MultiWindowOpenType.NEW)
 
                 val intent = Intent()
                 intent.data = Uri.parse("http://google.co.jp/")
 
-                startMultiFloatWindowView(index, intent)
+                launcher.startWindow(index, intent)
             })
             multi_window_update_button.setOnClickListener({
-                openMultiFloatWindowView(index, MultiWindowOpenType.UPDATE)
+                launcher.openWindow(index, MultiWindowOpenType.UPDATE)
 
                 val intent = Intent()
                 intent.data = Uri.parse("http://google.co.jp/")
 
-                startMultiFloatWindowView(index, intent)
+                launcher.startWindow(index, intent)
             })
             multi_window_close_button.setOnClickListener({
-                closeMultiFloatWindowView(index--, Intent())
-                //closeMultiFloatWindowView(index, Intent())
+                launcher.closeWindow(index--, Intent())
             })
             multi_window_exit_button.setOnClickListener({
-                stopMultiFloatWindowService()
+                launcher.unbind()
+                launcher.stop()
             })
             multi_window_widget_button.setOnClickListener({
                 startAppWidgetWindowView(++index)
@@ -97,17 +90,5 @@ class SmallBrowserApplicationTestActivity: MultiFloatWindowApplicationActivity()
 //            buttonGroup.addView(view)
 //            buttonGroup.addView(webView)
         }
-    }
-	override fun onCreate(savedInstanceState: Bundle?) {
-		super.onCreate(savedInstanceState)
-	}
-	override fun onStart() {
-		super.onStart()
-	}
-	override fun onStop() {
-		super.onStop()
-	}
-    override fun onDestroy() {
-        super.onDestroy()
     }
 }

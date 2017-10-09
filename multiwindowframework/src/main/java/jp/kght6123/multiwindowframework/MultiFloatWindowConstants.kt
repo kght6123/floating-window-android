@@ -24,7 +24,7 @@ enum class MultiWindowControlCommand {
     HELLO,
     START,
     OPEN,
-    ADD_REMOTE_VIEWS,
+    //ADD_REMOTE_VIEWS,
     ADD_APP_WIDGET,
     CLOSE,
     EXIT,

@@ -94,7 +94,7 @@ class ResolveInfoListAdapter(val activity: Activity, resource: Int = android.R.l
         val tv: TextView = v.findViewById(android.R.id.text1) as TextView
 
         Log.d(TAG, item.activityInfo.name)
-//        if(item.activityInfo.name == BrowserChangerActivity::class.java.name)
+//        if(item.activityInfo.name == BrowserChangerActivity::class.java.key)
 //            v.visibility = View.GONE    // 自アプリは非表示に
 
         //Put the image on the TextView

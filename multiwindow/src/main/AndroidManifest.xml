@@ -1,9 +1,38 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="jp.kght6123.multiwindow"
     android:sharedUserId="jp.kght6123">
+
     <permission android:name="jp.kght6123.multiwindow.manifest.permission.APPS"
         android:label="@string/app_name"
         android:description="@string/app_name"
         android:protectionLevel="normal" /><!-- dangerousはnormalの方が良いかも -->
 
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+
+    <application>
+        <service android:name=".MultiFloatWindowService"
+            android:enabled="true"
+            android:exported="true"
+            android:process=":local">
+        </service>
+
+        <receiver android:name=".receiver.RestartBroadcastReceiver" android:exported="true" android:permission="android.permission.RECEIVE_BOOT_COMPLETED">
+            <intent-filter>
+                <action android:name="com.android.vending.INSTALL_REFERRER" />
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.INSTALL_PACKAGE" />
+                <action android:name="android.intent.action.PACKAGE_INSTALL" />
+                <action android:name="android.intent.action.PACKAGE_ADDED" />
+                <action android:name="android.intent.action.PACKAGE_CHANGED" />
+                <action android:name="android.intent.action.PACKAGE_REPLACED" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+                <action android:name="android.intent.action.PACKAGE_FULLY_REMOVED" />
+                <action android:name="android.intent.action.PACKAGE_REMOVED" />
+            </intent-filter>
+            <!--data android:scheme="package" /-->
+        </receiver>
+
+        <activity android:name=".MultiFloatWindowMainActivity" />
+
+    </application>
 </manifest>

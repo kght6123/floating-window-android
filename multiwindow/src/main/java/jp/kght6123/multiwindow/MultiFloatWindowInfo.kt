@@ -1,5 +1,6 @@
 package jp.kght6123.multiwindow
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Point
 import android.util.Log
@@ -17,14 +18,15 @@ import jp.kght6123.multiwindowframework.utils.UnitUtils
 class MultiFloatWindowInfo(
         val context: Context,
         val manager: MultiFloatWindowManager,
-        val name: String,
+        val key: String,
         var miniMode: Boolean,
         val backgroundColor: Int,
         private val initWidth: Int,
-        private val initHeight: Int
+        private val initHeight: Int,
+        val name: String
 ) {
 
-    private val TAG = this.javaClass.name
+    private val tag = this.javaClass.name
 
     private enum class Stroke {
         UNKNOWN, TOP, BOTTOM, LEFT, RIGHT, TOP_LEFT, TOP_RIGHT, BOTTOM_LEFT, BOTTOM_RIGHT,
@@ -71,6 +73,7 @@ class MultiFloatWindowInfo(
             var initialTouchY: Float = 0f
             var windowMode: Mode = Mode.UNKNOWN
 
+            @SuppressLint("ClickableViewAccessibility")
             override fun onTouch(view: View, event: MotionEvent): Boolean {
                 Log.d(TAG, "miniWindowFrame event.action = ${event.action}")
 
@@ -82,7 +85,7 @@ class MultiFloatWindowInfo(
                 when (event.action) {
                     MotionEvent.ACTION_UP -> {
                         if(windowMode != Mode.MOVE )
-                            manager.changeMode(this@MultiFloatWindowInfo.name, false)
+                            manager.changeMode(this@MultiFloatWindowInfo.key, false)
                         windowMode = Mode.FINISH
                     }
                     MotionEvent.ACTION_MOVE -> {
@@ -159,15 +162,15 @@ class MultiFloatWindowInfo(
         }
         val switchMiniMode = fun() {
             if(strokeMode != Stroke.UNKNOWN) {
-                manager.changeMode(this.name, true)
+                manager.changeMode(this.key, true)
             }
         }
         windowOutlineFrame.setOnTouchListener(object: View.OnTouchListener {
             var onGestureListener: GestureDetector.OnGestureListener = object: GestureDetector.SimpleOnGestureListener() {
 
                 override fun onDoubleTap(event: MotionEvent): Boolean {
-                    Log.d(TAG, "SimpleOnGestureListener onDoubleTap")
-                    Log.d(TAG, "SimpleOnGestureListener onDoubleTap $strokeMode")
+                    Log.d(tag, "SimpleOnGestureListener onDoubleTap")
+                    Log.d(tag, "SimpleOnGestureListener onDoubleTap $strokeMode")
 
                     when (strokeMode) {
                         Stroke.TOP, Stroke.BOTTOM, Stroke.LEFT, Stroke.RIGHT -> {
@@ -194,18 +197,19 @@ class MultiFloatWindowInfo(
             private var initialTouchX: Float = 0f
             private var initialTouchY: Float = 0f
 
+            @SuppressLint("ClickableViewAccessibility")
             override fun onTouch(view: View, event: MotionEvent): Boolean {
 
-                Log.d(TAG, "motionEvent.action = ${event.action}")
-                Log.d(TAG, "motionEvent.rawX, rawY = ${event.rawX}, ${event.rawY}")
-                Log.d(TAG, "motionEvent.x, y = ${event.x}, ${event.y}")
+                Log.d(tag, "motionEvent.action = ${event.action}")
+                Log.d(tag, "motionEvent.rawX, rawY = ${event.rawX}, ${event.rawY}")
+                Log.d(tag, "motionEvent.x, y = ${event.x}, ${event.y}")
 
                 val rx: Float = event.rawX
                 val ry: Float = event.rawY
 
                 val params = getActiveWindowLayoutParams()
-                Log.d(TAG, "params.width, height=${params.width}, ${params.height}")
-                Log.d(TAG, "params.x, y = ${params.leftMargin}, ${params.topMargin}")
+                Log.d(tag, "params.width, height=${params.width}, ${params.height}")
+                Log.d(tag, "params.x, y = ${params.leftMargin}, ${params.topMargin}")
 
                 when (event.action) {
                     MotionEvent.ACTION_CANCEL -> {
@@ -217,8 +221,8 @@ class MultiFloatWindowInfo(
                         windowMode = Mode.UNKNOWN
                         strokeMode = Stroke.UNKNOWN
 
-                        Log.d(TAG, "params.width-this.strokeWidth = ${params.width-this.strokeWidth}")
-                        Log.d(TAG, "params.height-this.strokeWidth = ${params.height-this.strokeWidth}")
+                        Log.d(tag, "params.width-this.strokeWidth = ${params.width-this.strokeWidth}")
+                        Log.d(tag, "params.height-this.strokeWidth = ${params.height-this.strokeWidth}")
 
                         val left = event.x in 0..this.strokeWidth
                         val right = event.x in (params.width-this.strokeWidth)..params.width
@@ -227,35 +231,35 @@ class MultiFloatWindowInfo(
 
                         if(left){
                             strokeMode = Stroke.LEFT
-                            Log.d(TAG, "dispatchTouchEvent $strokeMode strokeWidth=$strokeWidth")
+                            Log.d(tag, "dispatchTouchEvent $strokeMode strokeWidth=$strokeWidth")
                         }
                         if(right) {
                             strokeMode = Stroke.RIGHT
-                            Log.d(TAG, "dispatchTouchEvent $strokeMode strokeWidth=$strokeWidth")
+                            Log.d(tag, "dispatchTouchEvent $strokeMode strokeWidth=$strokeWidth")
                         }
                         if(top) {
                             strokeMode = Stroke.TOP
-                            Log.d(TAG, "dispatchTouchEvent $strokeMode strokeWidth=$strokeWidth")
+                            Log.d(tag, "dispatchTouchEvent $strokeMode strokeWidth=$strokeWidth")
                         }
                         if(bottom) {
                             strokeMode = Stroke.BOTTOM
-                            Log.d(TAG, "dispatchTouchEvent $strokeMode strokeWidth=$strokeWidth")
+                            Log.d(tag, "dispatchTouchEvent $strokeMode strokeWidth=$strokeWidth")
                         }
                         if(top && left) {
                             strokeMode = Stroke.TOP_LEFT
-                            Log.d(TAG, "dispatchTouchEvent $strokeMode strokeWidth=$strokeWidth")
+                            Log.d(tag, "dispatchTouchEvent $strokeMode strokeWidth=$strokeWidth")
                         }
                         if(top && right) {
                             strokeMode = Stroke.TOP_RIGHT
-                            Log.d(TAG, "dispatchTouchEvent $strokeMode strokeWidth=$strokeWidth")
+                            Log.d(tag, "dispatchTouchEvent $strokeMode strokeWidth=$strokeWidth")
                         }
                         if(bottom && left) {
                             strokeMode = Stroke.BOTTOM_LEFT
-                            Log.d(TAG, "dispatchTouchEvent $strokeMode strokeWidth=$strokeWidth")
+                            Log.d(tag, "dispatchTouchEvent $strokeMode strokeWidth=$strokeWidth")
                         }
                         if(bottom && right) {
                             strokeMode = Stroke.BOTTOM_RIGHT
-                            Log.d(TAG, "dispatchTouchEvent $strokeMode strokeWidth=$strokeWidth")
+                            Log.d(tag, "dispatchTouchEvent $strokeMode strokeWidth=$strokeWidth")
                         }
                         if(strokeMode != Stroke.UNKNOWN) {
                             // 移動・拡大縮小のための初期値設定
@@ -273,11 +277,11 @@ class MultiFloatWindowInfo(
 
                         if(windowMode == Mode.MOVE && strokeMode != Stroke.UNKNOWN) {
                             // 移動完了
-                            Log.d(TAG, "displaySize.x, y = ${defaultDisplaySize.x}, ${defaultDisplaySize.y}")
-                            Log.d(TAG, "motionEvent.rawX, rawY = $rx, $ry")
-                            Log.d(TAG, "motionEvent.x, y = ${event.x}, ${event.y}")
-                            Log.d(TAG, "params.width, height=${params.width}, ${params.height}")
-                            Log.d(TAG, "params.x, y = ${params.leftMargin}, ${params.topMargin}")
+                            Log.d(tag, "displaySize.x, y = ${defaultDisplaySize.x}, ${defaultDisplaySize.y}")
+                            Log.d(tag, "motionEvent.rawX, rawY = $rx, $ry")
+                            Log.d(tag, "motionEvent.x, y = ${event.x}, ${event.y}")
+                            Log.d(tag, "params.width, height=${params.width}, ${params.height}")
+                            Log.d(tag, "params.x, y = ${params.leftMargin}, ${params.topMargin}")
 
                             windowMode = Mode.FINISH    // フリック誤作動防止
                         }
@@ -296,7 +300,7 @@ class MultiFloatWindowInfo(
                             params.leftMargin = initialX + (rx - initialTouchX).toInt()
                             params.topMargin = initialY + (ry - initialTouchY).toInt()
 
-                            Log.d(TAG, "params.x, y = ${params.leftMargin}, ${params.topMargin}")
+                            Log.d(tag, "params.x, y = ${params.leftMargin}, ${params.topMargin}")
 
                             windowMode = Mode.MOVE
                         }
@@ -365,8 +369,8 @@ class MultiFloatWindowInfo(
                         getActiveOverlay().layoutParams = params
                     }
                     MotionEvent.ACTION_OUTSIDE -> {
-                        Log.d(TAG, "ACTION_OUTSIDE event.x, y = ${event.x}, ${event.y}")
-                        Log.d(TAG, "ACTION_OUTSIDE event.rawX, rawY = ${event.rawX}, ${event.rawY}")
+                        Log.d(tag, "ACTION_OUTSIDE event.x, y = ${event.x}, ${event.y}")
+                        Log.d(tag, "ACTION_OUTSIDE event.rawX, rawY = ${event.rawX}, ${event.rawY}")
                     }
                 }
                 gestureDetector.onTouchEvent(event)// ジェスチャー機能を使う

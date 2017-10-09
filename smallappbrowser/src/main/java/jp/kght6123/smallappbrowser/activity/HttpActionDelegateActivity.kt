@@ -2,8 +2,7 @@ package jp.kght6123.smallappbrowser.activity
 
 import android.content.Intent
 import android.net.Uri
-import android.os.Bundle
-import jp.kght6123.multiwindow.MultiFloatWindowApplicationActivity
+import jp.kght6123.multiwindow.MultiFloatWindowBaseActivity
 import jp.kght6123.multiwindowframework.MultiWindowOpenType
 import jp.kght6123.smallappbrowser.application.SharedDataApplication
 
@@ -13,7 +12,7 @@ import jp.kght6123.smallappbrowser.application.SharedDataApplication
  *
  * Created by kght6123 on 2017/08/04.
  */
-class HttpActionDelegateActivity : MultiFloatWindowApplicationActivity() {
+class HttpActionDelegateActivity : MultiFloatWindowBaseActivity() {
 
     private val initIntent by lazy {
         val intent = Intent()
@@ -26,26 +25,10 @@ class HttpActionDelegateActivity : MultiFloatWindowApplicationActivity() {
             // FIXME 作成中・・・ブラウザを起動する、アプリ一覧から呼び出すため
             val application = this.application as SharedDataApplication
 
-            startMultiFloatWindowService()
+            launcher.openWindow(++application.windowIndex, MultiWindowOpenType.NEW)
+            launcher.startWindow(application.windowIndex, initIntent)
 
-            openMultiFloatWindowView(++application.windowIndex, MultiWindowOpenType.NEW)
-
-            startMultiFloatWindowView(application.windowIndex, initIntent)
+            finish()
         }
-    }
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-//        val intent = Intent(intent)
-//        intent.setClass(this, SmallBrowserApplication::class.java)
-//
-//        try {
-//            SmallApplicationManager.startApplication(this, intent)
-//        } catch (e: SmallAppNotFoundException) {
-//            Toast.makeText(this, e.getMessage(),
-//                    Toast.LENGTH_SHORT).show()
-//        }
-        finish()
     }
 }

@@ -1,5 +1,6 @@
 package jp.kght6123.multiwindow
 
+import android.annotation.SuppressLint
 import android.appwidget.AppWidgetHost
 import android.appwidget.AppWidgetManager
 import android.content.Context
@@ -8,7 +9,6 @@ import android.graphics.PixelFormat
 import android.util.Log
 import android.view.*
 import android.widget.LinearLayout
-import android.widget.RemoteViews
 import jp.kght6123.multiwindow.recycler.CardAppListRecyclerView
 import jp.kght6123.multiwindow.recycler.IconAppListRecyclerView
 import jp.kght6123.multiwindow.viewgroup.MultiFloatWindowOverlayLayout
@@ -24,7 +24,7 @@ import kotlin.concurrent.withLock
  */
 class MultiFloatWindowManager(val context: Context) {
 
-    val TAG = this.javaClass.name
+    private val tag = this.javaClass.name
 
     private enum class ControlViewMode {
         MINI_ICON, APP_LIST,
@@ -51,6 +51,7 @@ class MultiFloatWindowManager(val context: Context) {
                     return true
                 }
             })
+            @SuppressLint("ClickableViewAccessibility")
             override fun onTouch(view: View, event: MotionEvent): Boolean {
                 when (event.action) {
                     MotionEvent.ACTION_OUTSIDE -> {
@@ -68,7 +69,7 @@ class MultiFloatWindowManager(val context: Context) {
         overlayView
     }
 
-    val activeFlags = WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN or //座標系をスクリーンに合わせる
+    private val activeFlags = WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN or //座標系をスクリーンに合わせる
             WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH or // Viewの外のタッチイベントにも反応する？
             //WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or  // タッチイベントを拾わない。ロック画面を邪魔しない
             //WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or  // ウィンドウにフォーカスが当たった時だけ、無効にしたい
@@ -82,10 +83,10 @@ class MultiFloatWindowManager(val context: Context) {
             WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS or
             WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED
 
-    val activeDimAmount = 0.09f
-    val activeAlpha = 0.95f
+    private val activeDimAmount = 0.09f
+    private val activeAlpha = 0.95f
 
-    val inactiveFlags = WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN or
+    private val inactiveFlags = WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN or
             WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH or
             WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or
             WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
@@ -96,11 +97,11 @@ class MultiFloatWindowManager(val context: Context) {
             WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE// or
     //WindowManager.LayoutParams.FLAG_LAYOUT_INSET_DECOR
 
-    val inactiveAlpha = 0.5f
-    val inactiveDimAmount = 0.0f
+    private val inactiveAlpha = 0.5f
+    private val inactiveDimAmount = 0.0f
 
     // WindowManagerに設定するレイアウトパラメータ、オーバーレイViewの設定をする
-    val params: WindowManager.LayoutParams by lazy {
+    private val params: WindowManager.LayoutParams by lazy {
         val params = WindowManager.LayoutParams(
                 WindowManager.LayoutParams.MATCH_PARENT,
                 WindowManager.LayoutParams.MATCH_PARENT,
@@ -119,7 +120,7 @@ class MultiFloatWindowManager(val context: Context) {
         params
     }
 
-    val ctrlActiveFlags = WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN or
+    private val ctrlActiveFlags = WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN or
             WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH or
             WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or
             WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
@@ -156,7 +157,7 @@ class MultiFloatWindowManager(val context: Context) {
                 //WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY, // Android-O以降
                 ctrlActiveFlags,
                 PixelFormat.TRANSLUCENT)
-        params.gravity = Gravity.TOP or Gravity.RIGHT// RIGHTをLEFTにすると左寄せ
+        params.gravity = Gravity.TOP or Gravity.END//Gravity.RIGHT// RIGHTをLEFTにすると左寄せ
         params.dimAmount = 0.0f
         params.alpha = 0.90f
         params
@@ -164,21 +165,21 @@ class MultiFloatWindowManager(val context: Context) {
 
     private var mode: ControlViewMode = ControlViewMode.MINI_ICON
 
-    val cardAppListParams by lazy {
+    private val cardAppListParams by lazy {
         val params = LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.WRAP_CONTENT,
                 LinearLayout.LayoutParams.MATCH_PARENT)
         params
     }
-    val cardAppListView: CardAppListRecyclerView by lazy { createCardAppListView() }
+    private val cardAppListView: CardAppListRecyclerView by lazy { createCardAppListView() }
 
-    val iconAppListParams by lazy {
+    private val iconAppListParams by lazy {
         val params = LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
                 UnitUtils.convertDp2Px(95f, context).toInt())
         params
     }
-    val iconAppListView: IconAppListRecyclerView by lazy { IconAppListRecyclerView(context, this) }
+    private val iconAppListView: IconAppListRecyclerView by lazy { IconAppListRecyclerView(context, this) }
 
     private val controlLayer by lazy {
         val controlLayer =
@@ -257,6 +258,7 @@ class MultiFloatWindowManager(val context: Context) {
                 }
             })
 
+            @SuppressLint("ClickableViewAccessibility")
             override fun onTouch(view: View, event: MotionEvent): Boolean {
                 when (event.action) {
                     MotionEvent.ACTION_OUTSIDE -> {
@@ -274,8 +276,7 @@ class MultiFloatWindowManager(val context: Context) {
     }
 
     private fun createCardAppListView(): CardAppListRecyclerView {
-        val cardAppListView = CardAppListRecyclerView(context, this)
-        return cardAppListView
+        return CardAppListRecyclerView(context, this)
     }
 
     private fun getActiveParams(): WindowManager.LayoutParams {
@@ -293,9 +294,9 @@ class MultiFloatWindowManager(val context: Context) {
     }
 
     val overlayWindowMap: MutableMap<String, MultiFloatWindowInfo> = LinkedHashMap()
-    val factoryMap: MutableMap<Int, MultiFloatWindowApplication.MultiFloatWindowFactory> = HashMap<Int, MultiFloatWindowApplication.MultiFloatWindowFactory>()
+    val factoryMap: MutableMap<Int, MultiFloatWindowApplication.MultiFloatWindowFactory> = HashMap()
 
-    val appWidgetHost by lazy {
+    private val appWidgetHost by lazy {
         val appWidgetHost = AppWidgetHost(context, MultiFloatWindowConstants.APP_WIDGET_HOST_ID)
         appWidgetHost.startListening()
         appWidgetHost
@@ -308,16 +309,16 @@ class MultiFloatWindowManager(val context: Context) {
     private fun indexToName(index: Int): String {
         return "${context.packageName}.$index"
     }
-    fun add(index: Int, miniMode: Boolean, x: Int?, y: Int?, backgroundColor: Int, initWidth: Int, initHeight: Int, initActive: Boolean): MultiFloatWindowInfo {
+    fun add(index: Int, miniMode: Boolean, x: Int?, y: Int?, backgroundColor: Int, initWidth: Int, initHeight: Int, initActive: Boolean, className: String): MultiFloatWindowInfo {
         val name = indexToName(index)
-        val overlayWindowInfo = MultiFloatWindowInfo(context, this, name, miniMode, backgroundColor, initWidth, initHeight)
+        val overlayWindowInfo = MultiFloatWindowInfo(context, this, name, miniMode, backgroundColor, initWidth, initHeight, className)
         put(name, overlayWindowInfo, initActive)
         moveFixed(name, x!!, y!!)
         return overlayWindowInfo
     }
-    fun update(index: Int, miniMode: Boolean, backgroundColor: Int, initWidth: Int, initHeight: Int, initActive: Boolean): MultiFloatWindowInfo {
+    private fun update(index: Int, miniMode: Boolean, backgroundColor: Int, initWidth: Int, initHeight: Int, initActive: Boolean, className: String): MultiFloatWindowInfo {
         val name = indexToName(index)
-        val overlayInfo = MultiFloatWindowInfo(context, this, name, miniMode, backgroundColor, initWidth, initHeight)
+        val overlayInfo = MultiFloatWindowInfo(context, this, name, miniMode, backgroundColor, initWidth, initHeight, className)
 
         val overlayInfoOld = overlayWindowMap.getValue(name)
         overlayWindowMap.put(name, overlayInfo)  // 管理を上書き
@@ -355,11 +356,11 @@ class MultiFloatWindowManager(val context: Context) {
     private fun remove(name: String) {
          val overlayInfo = overlayWindowMap[name]
         if(overlayInfo != null){
-            Log.d(TAG, "remove is not null. name=$name")
+            Log.d(tag, "remove is not null. name=$name")
             overlayWindowMap.remove(name)
             overlayView.removeView(overlayInfo.getActiveOverlay())
         } else
-            Log.d(TAG, "remove is null. name=$name")
+            Log.d(tag, "remove is null. name=$name")
 
         updateDeActive(name)
     }
@@ -415,10 +416,10 @@ class MultiFloatWindowManager(val context: Context) {
         return windowInlineFrame?.drawingCache
     }
     fun changeActive(seq: Int) {
-        changeActive(getMultiFloatWindowInfo(seq)?.name)
+        changeActive(getMultiFloatWindowInfo(seq)?.key)
     }
     fun removeSeq(seq: Int) {
-        getMultiFloatWindowInfo(seq)?.name?.let { remove(it) }
+        getMultiFloatWindowInfo(seq)?.key?.let { remove(it) }
     }
     private fun getMultiFloatWindowInfo(seq: Int) :MultiFloatWindowInfo? {
         if(seq < overlayWindowMap.size) {
@@ -461,11 +462,11 @@ class MultiFloatWindowManager(val context: Context) {
         windowManager.removeViewImmediate(controlLayer)
     }
 
-    var onActiveEvent: ChangeActiveEventListener? = null
-    var onDeActiveEvent: ChangeActiveEventListener? = null
-    var onDeActiveAllEvent: AllChangeActiveEventListener? = null
+    private var onActiveEvent: ChangeActiveEventListener? = null
+    private var onDeActiveEvent: ChangeActiveEventListener? = null
+    private var onDeActiveAllEvent: AllChangeActiveEventListener? = null
 
-    fun onActive(info: MultiFloatWindowInfo) {
+    private fun onActive(info: MultiFloatWindowInfo) {
         if(mode == ControlViewMode.MINI_ICON)
             controlLayer.setBackgroundResource(R.drawable.shape_rounded_corners)
         else
@@ -473,13 +474,13 @@ class MultiFloatWindowManager(val context: Context) {
 
         onActiveEvent?.onChange(info)
     }
-    fun onDeActive(info: MultiFloatWindowInfo) {
+    private fun onDeActive(info: MultiFloatWindowInfo) {
         if(mode == ControlViewMode.APP_LIST)
             cardAppListView.adapter?.notifyDataSetChanged()
 
         onDeActiveEvent?.onChange(info)
     }
-    fun onDeActiveAll() {
+    private fun onDeActiveAll() {
         if(mode == ControlViewMode.MINI_ICON)
             controlLayer.setBackgroundResource(R.drawable.shape_rounded_corners_accent)
         else
@@ -514,6 +515,7 @@ class MultiFloatWindowManager(val context: Context) {
 
         // FIXME class cast exception
         val factory = MultiFloatWindowApplication.MultiFloatWindowFactory(
+                classObj,
                 //application.onCreateFactory(windowIndex),
                 onCreateFactoryMethod.invoke(application, windowIndex),// as MultiFloatWindowApplication.MultiFloatWindowViewFactory,
                 //application.onCreateSettingsFactory(windowIndex)
@@ -530,7 +532,8 @@ class MultiFloatWindowManager(val context: Context) {
                             initSettings.backgroundColor,
                             initSettings.width,
                             initSettings.height,
-                            initSettings.active)
+                            initSettings.active,
+                            classObj.name)
                 else
                     add(
                             windowIndex,
@@ -540,7 +543,8 @@ class MultiFloatWindowManager(val context: Context) {
                             initSettings.backgroundColor,
                             initSettings.width,
                             initSettings.height,
-                            initSettings.active)
+                            initSettings.active,
+                            classObj.name)
 
         if(update) {
             info.windowInlineFrame.removeAllViews()
@@ -553,51 +557,51 @@ class MultiFloatWindowManager(val context: Context) {
                 factory.createMinimizedView(windowIndex),
                 factory.createMinimizedLayoutParams(windowIndex))
     }
-    fun openRemoteWindow(windowIndex: Int, remoteWindowViews: RemoteViews, remoteMiniViews: RemoteViews, update: Boolean) {
-
-        val windowSettingsFactory = MultiFloatWindowApplication.MultiFloatWindowSettingsRemoteViewFactory(context)
-        val initSettings = windowSettingsFactory.createInitSettings(windowIndex)
-
-        val info = if(update)
-            update(
-                    windowIndex,
-                    initSettings.miniMode,
-                    initSettings.backgroundColor,
-                    initSettings.width,
-                    initSettings.height,
-                    initSettings.active)
-        else
-            add(
-                    windowIndex,
-                    initSettings.miniMode,
-                    initSettings.x,
-                    initSettings.y,
-                    initSettings.backgroundColor,
-                    initSettings.width,
-                    initSettings.height,
-                    initSettings.active)
-
-        val windowViewFactory = MultiFloatWindowApplication.MultiFloatWindowViewRemoteViewFactory(
-                context,
-                remoteWindowViews,
-                remoteMiniViews,
-                info.windowInlineFrame,
-                info.miniWindowFrame)
-
-        if(update) {
-            info.windowInlineFrame.removeAllViews()
-            info.miniWindowFrame.removeAllViews()
-        }
-        info.windowInlineFrame.addView(
-                windowViewFactory.createWindowView(windowIndex),
-                windowViewFactory.createWindowLayoutParams(windowIndex))
-        info.miniWindowFrame.addView(
-                windowViewFactory.createMinimizedView(windowIndex),
-                windowViewFactory.createMinimizedLayoutParams(windowIndex))
-
-        val factory = MultiFloatWindowApplication.MultiFloatWindowFactory(windowViewFactory, windowSettingsFactory)
-        factoryMap.put(windowIndex, factory)
-    }
+//    fun openRemoteWindow(windowIndex: Int, remoteWindowViews: RemoteViews, remoteMiniViews: RemoteViews, update: Boolean) {
+//
+//        val windowSettingsFactory = MultiFloatWindowApplication.MultiFloatWindowSettingsRemoteViewFactory(context)
+//        val initSettings = windowSettingsFactory.createInitSettings(windowIndex)
+//
+//        val info = if(update)
+//            update(
+//                    windowIndex,
+//                    initSettings.miniMode,
+//                    initSettings.backgroundColor,
+//                    initSettings.width,
+//                    initSettings.height,
+//                    initSettings.active)
+//        else
+//            add(
+//                    windowIndex,
+//                    initSettings.miniMode,
+//                    initSettings.x,
+//                    initSettings.y,
+//                    initSettings.backgroundColor,
+//                    initSettings.width,
+//                    initSettings.height,
+//                    initSettings.active)
+//
+//        val windowViewFactory = MultiFloatWindowApplication.MultiFloatWindowViewRemoteViewFactory(
+//                context,
+//                remoteWindowViews,
+//                remoteMiniViews,
+//                info.windowInlineFrame,
+//                info.miniWindowFrame)
+//
+//        if(update) {
+//            info.windowInlineFrame.removeAllViews()
+//            info.miniWindowFrame.removeAllViews()
+//        }
+//        info.windowInlineFrame.addView(
+//                windowViewFactory.createWindowView(windowIndex),
+//                windowViewFactory.createWindowLayoutParams(windowIndex))
+//        info.miniWindowFrame.addView(
+//                windowViewFactory.createMinimizedView(windowIndex),
+//                windowViewFactory.createMinimizedLayoutParams(windowIndex))
+//
+//        val factory = MultiFloatWindowApplication.MultiFloatWindowFactory(windowViewFactory, windowSettingsFactory)
+//        factoryMap.put(windowIndex, factory)
+//    }
     fun openAppWidgetWindow(windowIndex: Int, appWidgetId: Int, update: Boolean) {
 
         val appWidgetProviderInfo =
@@ -610,7 +614,7 @@ class MultiFloatWindowManager(val context: Context) {
                 MultiFloatWindowApplication.MultiFloatWindowSettingsAppWidgetFactory(appWidgetProviderInfo)
         val initSettings = windowSettingsFactory.createInitSettings(windowIndex)
 
-        val factory = MultiFloatWindowApplication.MultiFloatWindowFactory(windowViewFactory, windowSettingsFactory)
+        val factory = MultiFloatWindowApplication.MultiFloatWindowFactory(appWidgetProviderInfo.javaClass, windowViewFactory, windowSettingsFactory)
         factoryMap.put(windowIndex, factory)
 
         val info = if(update)
@@ -620,7 +624,8 @@ class MultiFloatWindowManager(val context: Context) {
                     initSettings.backgroundColor,
                     initSettings.width,
                     initSettings.height,
-                    initSettings.active)
+                    initSettings.active,
+                    appWidgetProviderInfo.provider.className)
         else
             add(
                     windowIndex,
@@ -630,7 +635,8 @@ class MultiFloatWindowManager(val context: Context) {
                     initSettings.backgroundColor,
                     initSettings.width,
                     initSettings.height,
-                    initSettings.active)
+                    initSettings.active,
+                    appWidgetProviderInfo.provider.className)
 
         if(update) {
             info.windowInlineFrame.removeAllViews()
