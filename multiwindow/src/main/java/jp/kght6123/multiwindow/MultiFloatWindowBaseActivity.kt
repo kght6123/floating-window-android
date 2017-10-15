@@ -79,6 +79,14 @@ abstract class MultiFloatWindowBaseActivity : Activity() {
                 super.onServiceConnected(name, binder)
                 this@MultiFloatWindowBaseActivity.onLauncherServiceConnected(name, binder)
             }
+            override fun onFindNextIndex(nextIndex: Int, returnCommand: Int) {
+                super.onFindNextIndex(nextIndex, returnCommand)
+                this@MultiFloatWindowBaseActivity.onFindNextIndex(nextIndex, returnCommand)
+            }
+            override fun onFindPrevIndex(prevIndex: Int, returnCommand: Int) {
+                super.onFindPrevIndex(prevIndex, returnCommand)
+                this@MultiFloatWindowBaseActivity.onFindPrevIndex(prevIndex, returnCommand)
+            }
         }
     }
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -160,5 +168,11 @@ abstract class MultiFloatWindowBaseActivity : Activity() {
     open fun onChangePreparationStatus(permission: Boolean, serviceConnected: Boolean) {
         if(permission && serviceConnected)
             launcher.hello()
+    }
+    open fun onFindNextIndex(nextIndex: Int, returnCommand: Int) {
+
+    }
+    open fun onFindPrevIndex(prevIndex: Int, returnCommand: Int) {
+
     }
 }

@@ -20,10 +20,10 @@ import jp.kght6123.multiwindowframework.MultiFloatWindowConstants
  *
  * Created by kght6123 on 2017/07/28.
  */
-class IconAppListRecyclerAdapter(val context: Context, val manager: MultiFloatWindowManager) : RecyclerView.Adapter<IconAppListRecyclerAdapter.ViewHolder>() {
+class IconAppListRecyclerAdapter(val context: Context, private val manager: MultiFloatWindowManager) : RecyclerView.Adapter<IconAppListRecyclerAdapter.ViewHolder>() {
 
-    val resolveInfoAllList: MutableList<ResolveInfo> = mutableListOf()
-    val packageManager by lazy { context.packageManager }
+    private val resolveInfoAllList: MutableList<ResolveInfo> = mutableListOf()
+    private val packageManager by lazy { context.packageManager }
 
     init {
         val packageInfoList =
@@ -49,11 +49,14 @@ class IconAppListRecyclerAdapter(val context: Context, val manager: MultiFloatWi
         val resolveInfo = resolveInfoAllList[position]
         holder?.thumbIconButton?.setImageDrawable(resolveInfo.loadIcon(packageManager))
         holder?.thumbIconButton?.setOnClickListener {
-            // 選択されたアプリを開く（更新）
-            if(manager.factoryMap.containsKey(1))
-                manager.openWindow(1, resolveInfo.serviceInfo.packageName, resolveInfo.serviceInfo.name, true)
+            // 選択されたアプリを開く（次インデックス）
+            val nextIndex = manager.nextIndex()
+            if(manager.factoryMap.containsKey(nextIndex))
+                manager.openWindow(nextIndex, resolveInfo.serviceInfo.packageName, resolveInfo.serviceInfo.name, true)
             else
-                manager.openWindow(1, resolveInfo.serviceInfo.packageName, resolveInfo.serviceInfo.name, false)
+                manager.openWindow(nextIndex, resolveInfo.serviceInfo.packageName, resolveInfo.serviceInfo.name, false)
+
+            manager.factoryMap.getValue(nextIndex).start(null)
 
             // FIXME 今後、MetaDataでフレームワークの動きを設定したい
             //val bundle = resolveInfo.serviceInfo.metaData
@@ -66,7 +69,7 @@ class IconAppListRecyclerAdapter(val context: Context, val manager: MultiFloatWi
         return resolveInfoAllList.size
     }
 
-    class ViewHolder(val thumbIconView: View?) : RecyclerView.ViewHolder(thumbIconView) {
+    class ViewHolder(private val thumbIconView: View?) : RecyclerView.ViewHolder(thumbIconView) {
         val thumbIconButton : ImageView by lazy {
             thumbIconView?.findViewById(R.id.thumbIconButton) as ImageView
         }

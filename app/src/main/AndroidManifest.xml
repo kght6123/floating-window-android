@@ -3,11 +3,11 @@
 	xmlns:tools="http://schemas.android.com/tools"
 	package="jp.kght6123.smalllittleappviewer"
 	android:sharedUserId="jp.kght6123">
-	
-	<uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+
+	<!--<uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
 	<uses-permission android:name="android.permission.INTERNET" />
 	<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
-	<!--uses-permission android:name="android.permission.BIND_APPWIDGET" /-->
+	<uses-permission android:name="android.permission.BIND_APPWIDGET" />-->
 
 	<uses-permission android:name="jp.kght6123.multiwindow.manifest.permission.APPS" />
 
@@ -28,7 +28,7 @@
 		tools:ignoreは指定された lint の issue が無視
 			tools:ignore="ExportedActivity"
 		-->
-		<!-- excludeFromRecentsは指定したActivityをRootにもつアプリを履歴（Recent Apps）に残さない -->
+		<!-- excludeFromRecentsは指定したActivityをRootにもつアプリを履歴（Recent Apps）に残さない
 		<activity
 			android:name=".MultiFloatWindowTestActivity"
 			android:configChanges="orientation|screenSize"
@@ -41,14 +41,10 @@
 				<action android:name="android.intent.action.MAIN" />
 				<category android:name="android.intent.category.LAUNCHER" />
 			</intent-filter>
-		</activity>
-
-		<service android:name=".MultiFloatWidgetTestService"
-			android:enabled="true"
-			android:exported="false"
-			android:process=":local"/>
+		</activity> -->
 
 		<service android:name=".SmallBrowserTestOtherApplication"
+			android:label="@string/app_name"
 			android:enabled="true"
 			android:exported="true"
 			android:icon="@mipmap/ic_launcher"

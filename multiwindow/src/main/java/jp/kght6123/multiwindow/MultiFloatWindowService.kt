@@ -7,11 +7,11 @@ import android.content.Intent
 import android.graphics.drawable.Icon
 import android.os.Handler
 import android.os.IBinder
+import android.os.Message
 import android.os.Messenger
 import android.widget.Toast
-import jp.kght6123.multiwindowframework.MultiWindowControlCommand
-import jp.kght6123.multiwindowframework.MultiWindowControlParam
-import jp.kght6123.multiwindowframework.MultiWindowOpenType
+import jp.kght6123.multiwindowframework.*
+import kotlin.collections.ArrayList
 
 /**
  * マルチウィンドウアプリケーションの本体サービス
@@ -53,6 +53,45 @@ class MultiFloatWindowService : Service() {
                         val intent = msg.obj as Intent
                         val index = intent.getIntExtra(MultiWindowControlParam.WINDOW_INDEX.name, 0)
                         manager.factoryMap.getValue(index).start(intent)
+                        true
+                    }
+                    MultiWindowControlCommand.UPDATE -> {
+                        val intent = msg.obj as Intent
+                        val index = intent.getIntExtra(MultiWindowControlParam.WINDOW_INDEX.name, -1)
+                        val classNames = intent.getStringArrayExtra(MultiWindowControlParam.WINDOW_CLASS_NAMES.name)
+                        if (index != -1){
+                            // indexで更新
+                            manager.factoryMap.getValue(index).update(intent, index, MultiWindowUpdatePosition.INDEX.name)
+
+                        } else if (classNames != null && classNames.isNotEmpty()){
+                            // classNamesで更新
+                            val targetFactoryList = ArrayList<Map.Entry<Int, MultiFloatWindowApplication.MultiFloatWindowFactory>>()
+                            classNames.forEach { className ->
+                                manager.factoryMap.forEach { entry ->
+                                    if(entry.value.classObj.name == className) {
+                                        targetFactoryList.add(entry)
+                                    }
+                                }
+                            }
+                            targetFactoryList.forEachIndexed { factoryIndex, entry ->
+                                when (factoryIndex) {
+                                    0 ->
+                                        entry.value.update(intent, entry.key, MultiWindowUpdatePosition.FIRST.name)
+                                    targetFactoryList.size - 1 ->
+                                        entry.value.update(intent, entry.key, MultiWindowUpdatePosition.LAST.name)
+                                    else ->
+                                        entry.value.update(intent, entry.key, MultiWindowUpdatePosition.MIDDLE.name)
+                                }
+                            }
+                        }
+                        true
+                    }
+                    MultiWindowControlCommand.NEXT_INDEX -> {
+                        msg.replyTo.send(Message.obtain(null, MultiWindowControlCommand.NEXT_INDEX.ordinal, manager.nextIndex(), msg.arg2, null))
+                        true
+                    }
+                    MultiWindowControlCommand.PREV_INDEX -> {
+                        msg.replyTo.send(Message.obtain(null, MultiWindowControlCommand.PREV_INDEX.ordinal, manager.nextIndex()-1, msg.arg2, null))
                         true
                     }
                     MultiWindowControlCommand.CLOSE -> {

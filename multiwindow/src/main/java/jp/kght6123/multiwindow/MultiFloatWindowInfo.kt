@@ -18,7 +18,7 @@ import jp.kght6123.multiwindowframework.utils.UnitUtils
 class MultiFloatWindowInfo(
         val context: Context,
         val manager: MultiFloatWindowManager,
-        val key: String,
+        val index: Int,
         var miniMode: Boolean,
         val backgroundColor: Int,
         private val initWidth: Int,
@@ -85,7 +85,7 @@ class MultiFloatWindowInfo(
                 when (event.action) {
                     MotionEvent.ACTION_UP -> {
                         if(windowMode != Mode.MOVE )
-                            manager.changeMode(this@MultiFloatWindowInfo.key, false)
+                            manager.changeMode(this@MultiFloatWindowInfo.index, false)
                         windowMode = Mode.FINISH
                     }
                     MotionEvent.ACTION_MOVE -> {
@@ -162,7 +162,7 @@ class MultiFloatWindowInfo(
         }
         val switchMiniMode = fun() {
             if(strokeMode != Stroke.UNKNOWN) {
-                manager.changeMode(this.key, true)
+                manager.changeMode(this.index, true)
             }
         }
         windowOutlineFrame.setOnTouchListener(object: View.OnTouchListener {
@@ -388,10 +388,10 @@ class MultiFloatWindowInfo(
         windowInlineFrame
     }
     fun getActiveOverlay(): ViewGroup {
-        if(this.miniMode)
-            return this.miniWindowFrame
+        return if(this.miniMode)
+            this.miniWindowFrame
         else
-            return this.windowOutlineFrame
+            this.windowOutlineFrame
     }
     private fun getLayoutParams(viewGroup: ViewGroup): FrameLayout.LayoutParams {
         return (viewGroup.layoutParams as FrameLayout.LayoutParams)

@@ -25,6 +25,9 @@ enum class MultiWindowControlCommand {
     START,
     OPEN,
     //ADD_REMOTE_VIEWS,
+    UPDATE,
+    NEXT_INDEX,
+    PREV_INDEX,
     ADD_APP_WIDGET,
     CLOSE,
     EXIT,
@@ -32,8 +35,9 @@ enum class MultiWindowControlCommand {
 
 enum class MultiWindowControlParam {
     WINDOW_INDEX,
-    REMOTE_WINDOW_VIEWS,
-    REMOTE_MINI_VIEWS,
+    WINDOW_CLASS_NAMES,
+    //REMOTE_WINDOW_VIEWS,
+    //REMOTE_MINI_VIEWS,
     APP_PACKAGE_NAME,
     APP_SERVICE_CLASS_NAME,
 }
@@ -41,4 +45,11 @@ enum class MultiWindowControlParam {
 enum class MultiWindowOpenType {
     UPDATE,
     NEW,
+}
+
+enum class MultiWindowUpdatePosition {
+    INDEX,
+    FIRST,
+    LAST,
+    MIDDLE
 }

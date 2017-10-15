@@ -28,7 +28,7 @@ class CardAppListRecyclerAdapter(val context: Context, val manager: MultiFloatWi
         val bitmap = manager.getThumb(position)
         holder?.thumbImageView?.setOnClickListener({
             Log.d(TAG, "thumbImageView setOnClickListener onClick")
-            manager.changeActive(position)
+            manager.changeActiveSeq(position)
             notifyDataSetChanged()
         })
         holder?.btnThumbClose?.setOnClickListener({

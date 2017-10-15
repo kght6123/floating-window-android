@@ -15,6 +15,7 @@ import jp.kght6123.multiwindow.viewgroup.MultiFloatWindowOverlayLayout
 import jp.kght6123.multiwindowframework.MultiFloatWindowApplication
 import jp.kght6123.multiwindowframework.MultiFloatWindowConstants
 import jp.kght6123.multiwindowframework.utils.UnitUtils
+import java.util.*
 import kotlin.concurrent.withLock
 
 /**
@@ -293,8 +294,8 @@ class MultiFloatWindowManager(val context: Context) {
         return params
     }
 
-    val overlayWindowMap: MutableMap<String, MultiFloatWindowInfo> = LinkedHashMap()
-    val factoryMap: MutableMap<Int, MultiFloatWindowApplication.MultiFloatWindowFactory> = HashMap()
+    val overlayWindowMap: MutableMap<Int, MultiFloatWindowInfo> = LinkedHashMap()
+    val factoryMap: MutableMap<Int, MultiFloatWindowApplication.MultiFloatWindowFactory> = LinkedHashMap()
 
     private val appWidgetHost by lazy {
         val appWidgetHost = AppWidgetHost(context, MultiFloatWindowConstants.APP_WIDGET_HOST_ID)
@@ -306,43 +307,38 @@ class MultiFloatWindowManager(val context: Context) {
         windowManager.addView(overlayView, getActiveParams())   // WindowManagerに追加
         windowManager.addView(controlLayer, ctrlIconParams)
     }
-    private fun indexToName(index: Int): String {
-        return "${context.packageName}.$index"
-    }
     fun add(index: Int, miniMode: Boolean, x: Int?, y: Int?, backgroundColor: Int, initWidth: Int, initHeight: Int, initActive: Boolean, className: String): MultiFloatWindowInfo {
-        val name = indexToName(index)
-        val overlayWindowInfo = MultiFloatWindowInfo(context, this, name, miniMode, backgroundColor, initWidth, initHeight, className)
-        put(name, overlayWindowInfo, initActive)
-        moveFixed(name, x!!, y!!)
+        val overlayWindowInfo = MultiFloatWindowInfo(context, this, index, miniMode, backgroundColor, initWidth, initHeight, className)
+        put(index, overlayWindowInfo, initActive)
+        moveFixed(index, x!!, y!!)
         return overlayWindowInfo
     }
     private fun update(index: Int, miniMode: Boolean, backgroundColor: Int, initWidth: Int, initHeight: Int, initActive: Boolean, className: String): MultiFloatWindowInfo {
-        val name = indexToName(index)
-        val overlayInfo = MultiFloatWindowInfo(context, this, name, miniMode, backgroundColor, initWidth, initHeight, className)
+        val overlayInfo = MultiFloatWindowInfo(context, this, index, miniMode, backgroundColor, initWidth, initHeight, className)
 
-        val overlayInfoOld = overlayWindowMap.getValue(name)
-        overlayWindowMap.put(name, overlayInfo)  // 管理を上書き
+        val overlayInfoOld = overlayWindowMap.getValue(index)
+        overlayWindowMap.put(index, overlayInfo)  // 管理を上書き
 
         overlayView.removeView(overlayInfoOld.getActiveOverlay())
         overlayView.addView(overlayInfo.getActiveOverlay())
 
         if(initActive)
-            changeActive(name)
+            changeActiveIndex(index)
 
         return overlayInfo
     }
-    private fun put(name: String, overlayInfo: MultiFloatWindowInfo, active: Boolean) {
-        if(overlayWindowMap[name] != null)
+    private fun put(index: Int, overlayInfo: MultiFloatWindowInfo, active: Boolean) {
+        if(overlayWindowMap[index] != null)
             return
 
-        overlayWindowMap.put(name, overlayInfo)  // 管理に追加
+        overlayWindowMap.put(index, overlayInfo)  // 管理に追加
         overlayView.addView(overlayInfo.getActiveOverlay())
 
         if(active)
-            changeActive(name)
+            changeActiveIndex(index)
     }
-    private fun moveFixed(name: String, x: Int, y: Int) {
-        val overlayInfo = overlayWindowMap[name]
+    private fun moveFixed(index: Int, x: Int, y: Int) {
+        val overlayInfo = overlayWindowMap[index]
         if(overlayInfo != null) {
             val params = overlayInfo.getActiveWindowLayoutParams()
             params.leftMargin = x
@@ -351,53 +347,64 @@ class MultiFloatWindowManager(val context: Context) {
         }
     }
     fun remove(index: Int) {
-        remove(indexToName(index))
-    }
-    private fun remove(name: String) {
-         val overlayInfo = overlayWindowMap[name]
+         val overlayInfo = overlayWindowMap[index]
         if(overlayInfo != null){
-            Log.d(tag, "remove is not null. name=$name")
-            overlayWindowMap.remove(name)
+            Log.d(tag, "remove is not null. index=$index")
+            overlayWindowMap.remove(index)
             overlayView.removeView(overlayInfo.getActiveOverlay())
+            factoryMap.remove(index)
         } else
-            Log.d(tag, "remove is null. name=$name")
+            Log.d(tag, "remove is null. index=$index")
 
-        updateDeActive(name)
+        updateDeActive(index)
     }
-    fun changeMode(name: String, miniMode: Boolean) {
-        val overlayInfo = overlayWindowMap[name]
+    fun changeMode(index: Int, miniMode: Boolean) {
+        val overlayInfo = overlayWindowMap[index]
         if(overlayInfo != null){
-            remove(name)
+            remove(index)
             overlayInfo.miniMode = miniMode
-            put(name, overlayInfo, true)
+            put(index, overlayInfo, true)
         }
     }
+    fun nextIndex(): Int {
+        val indexList = ArrayList(factoryMap.keys)
+        val nextIndex: Int =
+                if(indexList.isEmpty())
+                    (0 + 1)
+                else {
+                    Collections.reverse(indexList)
+                    (indexList.first() + 1)
+                }
+        return nextIndex
+    }
+    private fun changeActiveIndex(index: Int) {
+        val overlayInfo = overlayWindowMap[index]
 
-    private fun changeActive(name: String?) {
-        if(name == null) return
-
-        val overlayInfo = overlayWindowMap[name]
         if(overlayInfo != null) {
-            updateActive(name)  // 追加したWindowをActiveに
-            updateOtherDeActive(name)  // 追加したWindow以外をDeActiveに
+            // 対象のViewを一番上へ移動する
+            overlayView.removeView(overlayInfo.getActiveOverlay())
+            overlayView.addView(overlayInfo.getActiveOverlay())
+
+            updateActive(index)  // 追加したWindowをActiveに
+            updateOtherDeActive(index)  // 追加したWindow以外をDeActiveに
         }
     }
-    private fun updateActive(name: String) {
-        val overlayInfo = overlayWindowMap[name]
+    private fun updateActive(index: Int) {
+        val overlayInfo = overlayWindowMap[index]
         overlayInfo?.activeFlag = true
         onActive(overlayInfo!!)
     }
-    private fun updateDeActive(name: String) {
+    private fun updateDeActive(index: Int) {
         overlayWindowMap.forEach { entry ->
-            if(entry.key == name) {
+            if(entry.key == index) {
                 entry.value.activeFlag = false
                 onDeActive(entry.value)
             }
         }
     }
-    private fun updateOtherDeActive(name: String) {
+    private fun updateOtherDeActive(index: Int) {
         overlayWindowMap.forEach { entry ->
-            if(entry.key != name) {
+            if(entry.key != index) {
                 entry.value.activeFlag = false
                 onDeActive(entry.value)
             }
@@ -405,7 +412,7 @@ class MultiFloatWindowManager(val context: Context) {
     }
     fun changeForciblyActiveEvent() {
         if(!overlayWindowMap.isEmpty()) {
-            changeActive(overlayWindowMap.keys.last())
+            changeActiveIndex(overlayWindowMap.keys.last())
             windowManager.updateViewLayout(overlayView, getActiveParams())
         }
     }
@@ -415,11 +422,11 @@ class MultiFloatWindowManager(val context: Context) {
         windowInlineFrame?.destroyDrawingCache()
         return windowInlineFrame?.drawingCache
     }
-    fun changeActive(seq: Int) {
-        changeActive(getMultiFloatWindowInfo(seq)?.key)
+    fun changeActiveSeq(seq: Int) {
+        getMultiFloatWindowInfo(seq)?.index?.let { changeActiveIndex(it) }
     }
     fun removeSeq(seq: Int) {
-        getMultiFloatWindowInfo(seq)?.key?.let { remove(it) }
+        getMultiFloatWindowInfo(seq)?.index?.let { remove(it) }
     }
     private fun getMultiFloatWindowInfo(seq: Int) :MultiFloatWindowInfo? {
         if(seq < overlayWindowMap.size) {
@@ -428,28 +435,28 @@ class MultiFloatWindowManager(val context: Context) {
         return null
     }
     private fun changeActiveEvent(event: MotionEvent) :Boolean {
-        var changeActiveName: String? = null
-        for ((overlayName, overlayInfo) in overlayWindowMap) {
+        var changeActiveIndex: Int = -2
+        for ((overlayIndex, overlayInfo) in overlayWindowMap) {
             val onTouch = overlayInfo.isOnTouchEvent(event)
             if (!onTouch/* || changeActiveName != null*/) {
                 // タッチされていない、他をActive済
-                updateDeActive(overlayName)
+                updateDeActive(overlayIndex)
             } else if (!overlayInfo.activeFlag) {
                 // タッチされ、Active以外、他をActiveにしていない
-                changeActiveName = overlayName
+                changeActiveIndex = overlayIndex
             } else if (overlayInfo.activeFlag) {
                 // タッチされ、Active、他をActiveにしていない
-                changeActiveName = ""
+                changeActiveIndex = -1
             }
         }
-        if(changeActiveName == null) {
+        if(changeActiveIndex == -2) {
             // nullの時、何もタッチされてないので、全体をinActiveへ
             windowManager.updateViewLayout(overlayView, getInActiveParams())
             onDeActiveAll()
         }
-        else if(changeActiveName != "") {
+        else if(changeActiveIndex != -1) {
             // 他のinActiveなウィンドウをタッチされた時、Activeへ
-            changeActive(changeActiveName)
+            changeActiveIndex(changeActiveIndex)
             windowManager.updateViewLayout(overlayView, getActiveParams())
         }
         return false
@@ -513,7 +520,6 @@ class MultiFloatWindowManager(val context: Context) {
         //application.attachBaseContext(sharedContext, context)
         attachBaseContextMethod.invoke(application, sharedContext, context)
 
-        // FIXME class cast exception
         val factory = MultiFloatWindowApplication.MultiFloatWindowFactory(
                 classObj,
                 //application.onCreateFactory(windowIndex),

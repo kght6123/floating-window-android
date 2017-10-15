@@ -4,6 +4,7 @@ import android.content.Intent
 import android.net.Uri
 import jp.kght6123.multiwindow.MultiFloatWindowBaseActivity
 import jp.kght6123.multiwindowframework.MultiWindowOpenType
+import jp.kght6123.smallappbrowser.SmallBrowserApplicationService
 import jp.kght6123.smallappbrowser.application.SharedDataApplication
 
 
@@ -20,15 +21,24 @@ class HttpActionDelegateActivity : MultiFloatWindowBaseActivity() {
         intent
     }
 
+    override fun onFindNextIndex(nextIndex: Int, returnCommand: Int) {
+        super.onFindNextIndex(nextIndex, returnCommand)
+
+        if (returnCommand == 0) {
+            // ブラウザを起動する
+            launcher.openWindow(nextIndex, MultiWindowOpenType.NEW, SmallBrowserApplicationService::class.java)
+
+            if(intent.dataString == null) {
+                launcher.startWindow(nextIndex, initIntent) // アプリ一覧から呼び出すとき
+            } else {
+                launcher.startWindow(nextIndex, intent) // 他のアプリから呼び出されるとき
+            }
+        }
+    }
+
     override fun onCheckOverlayPermissionResult(result: Boolean) {
         if (result) {
-            // FIXME 作成中・・・ブラウザを起動する、アプリ一覧から呼び出すため
-            val application = this.application as SharedDataApplication
-
-            launcher.openWindow(++application.windowIndex, MultiWindowOpenType.NEW)
-            launcher.startWindow(application.windowIndex, initIntent)
-
-            finish()
+            launcher.nextIndex(0)
         }
     }
 }

@@ -9,10 +9,8 @@ import android.os.IBinder
 import android.util.DisplayMetrics
 import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.LinearLayout
-import android.widget.RemoteViews
 import jp.kght6123.multiwindowframework.utils.UnitUtils
 
 /**
@@ -58,6 +56,7 @@ abstract class MultiFloatWindowApplication : Service() {
         private val createWindowLayoutParamsMethod = windowViewFactoryClass.getMethod("createWindowLayoutParams", Int::class.java)
         private val createMinimizedLayoutParamsMethod = windowViewFactoryClass.getMethod("createMinimizedLayoutParams", Int::class.java)
         private val startMethod = windowViewFactoryClass.getMethod("start", Intent::class.java)
+        private val updateMethod = windowViewFactoryClass.getMethod("update", Intent::class.java, Int::class.java, String::class.java)
 
         private val windowSettingsFactoryClass = windowSettingsFactory.javaClass
         private val createInitSettingsMethod = windowSettingsFactoryClass.getMethod("createInitSettings", Int::class.java)
@@ -76,6 +75,9 @@ abstract class MultiFloatWindowApplication : Service() {
         }
         fun start(intent: Intent?) {
             startMethod.invoke(windowViewFactory, intent)
+        }
+        fun update(intent: Intent?, index: Int, positionName: String) {
+            updateMethod.invoke(windowViewFactory, intent, index, positionName)
         }
         fun createInitSettings(arg: Int): MultiFloatWindowInitSettings {
             val settings = createInitSettingsMethod.invoke(windowSettingsFactory, arg)
@@ -104,6 +106,7 @@ abstract class MultiFloatWindowApplication : Service() {
         abstract fun createMinimizedLayoutParams(arg: Int): LinearLayout.LayoutParams
 
         abstract fun start(intent: Intent?)
+        abstract fun update(intent: Intent?, index: Int, positionName: String)
 
 //        inner class MultiFloatWindowSettings {
 //            var x: Int = 100
@@ -118,43 +121,44 @@ abstract class MultiFloatWindowApplication : Service() {
     interface MultiFloatWindowSettingsFactory {
         fun createInitSettings(arg: Int): MultiFloatWindowInitSettings
     }
-    class MultiFloatWindowViewRemoteViewFactory(
-            val context: Context,
-            private val remoteWindowViews: RemoteViews,
-            private val remoteMiniViews: RemoteViews,
-            val windowInlineFrame: ViewGroup,
-            private val miniWindowFrame: ViewGroup): MultiFloatWindowViewFactory() {
-
-        override fun createWindowView(arg: Int): View {
-            return remoteWindowViews.apply(context, windowInlineFrame)
-        }
-        override fun createMinimizedView(arg: Int): View {
-            return remoteMiniViews.apply(context, miniWindowFrame)
-        }
-        override fun createMinimizedLayoutParams(arg: Int): LinearLayout.LayoutParams {
-            return LinearLayout.LayoutParams(
-                    UnitUtils.convertDp2Px(75f, context).toInt(),
-                    UnitUtils.convertDp2Px(75f, context).toInt())
-        }
-        override fun createWindowLayoutParams(arg: Int): LinearLayout.LayoutParams {
-            return LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.MATCH_PARENT,
-                    LinearLayout.LayoutParams.MATCH_PARENT)
-        }
-        override fun start(intent: Intent?) {}
-    }
-    class MultiFloatWindowSettingsRemoteViewFactory(val context: Context): MultiFloatWindowSettingsFactory {
-        override fun createInitSettings(arg: Int): MultiFloatWindowInitSettings {
-            return MultiFloatWindowInitSettings(
-                    x = 50,
-                    y = 50,
-                    width = UnitUtils.convertDp2Px(75f, context).toInt(),
-                    height = UnitUtils.convertDp2Px(75f, context).toInt(),
-                    backgroundColor = MultiFloatWindowConstants.Theme.Dark.rgb,
-                    active = false
-            )
-        }
-    }
+//    class MultiFloatWindowViewRemoteViewFactory(
+//            val context: Context,
+//            private val remoteWindowViews: RemoteViews,
+//            private val remoteMiniViews: RemoteViews,
+//            val windowInlineFrame: ViewGroup,
+//            private val miniWindowFrame: ViewGroup): MultiFloatWindowViewFactory() {
+//
+//        override fun createWindowView(arg: Int): View {
+//            return remoteWindowViews.apply(context, windowInlineFrame)
+//        }
+//        override fun createMinimizedView(arg: Int): View {
+//            return remoteMiniViews.apply(context, miniWindowFrame)
+//        }
+//        override fun createMinimizedLayoutParams(arg: Int): LinearLayout.LayoutParams {
+//            return LinearLayout.LayoutParams(
+//                    UnitUtils.convertDp2Px(75f, context).toInt(),
+//                    UnitUtils.convertDp2Px(75f, context).toInt())
+//        }
+//        override fun createWindowLayoutParams(arg: Int): LinearLayout.LayoutParams {
+//            return LinearLayout.LayoutParams(
+//                    LinearLayout.LayoutParams.MATCH_PARENT,
+//                    LinearLayout.LayoutParams.MATCH_PARENT)
+//        }
+//        override fun start(intent: Intent?, index: Int) {}
+//        override fun update(intent: Intent?) {}
+//    }
+//    class MultiFloatWindowSettingsRemoteViewFactory(val context: Context): MultiFloatWindowSettingsFactory {
+//        override fun createInitSettings(arg: Int): MultiFloatWindowInitSettings {
+//            return MultiFloatWindowInitSettings(
+//                    x = 50,
+//                    y = 50,
+//                    width = UnitUtils.convertDp2Px(75f, context).toInt(),
+//                    height = UnitUtils.convertDp2Px(75f, context).toInt(),
+//                    backgroundColor = MultiFloatWindowConstants.Theme.Dark.rgb,
+//                    active = false
+//            )
+//        }
+//    }
     class MultiFloatWindowViewAppWidgetFactory(
             val context: Context,
             private val appWidgetHost: AppWidgetHost,
@@ -186,6 +190,7 @@ abstract class MultiFloatWindowApplication : Service() {
                     LinearLayout.LayoutParams.MATCH_PARENT)
         }
         override fun start(intent: Intent?) {}
+        override fun update(intent: Intent?, index: Int, positionName: String) {}
     }
     class MultiFloatWindowSettingsAppWidgetFactory(
             private val appWidgetProviderInfo: AppWidgetProviderInfo): MultiFloatWindowSettingsFactory {

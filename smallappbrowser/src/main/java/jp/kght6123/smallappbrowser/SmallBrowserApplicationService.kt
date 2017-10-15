@@ -14,6 +14,7 @@ import android.view.*
 import android.webkit.*
 import android.widget.*
 import jp.kght6123.multiwindowframework.MultiFloatWindowApplication
+import jp.kght6123.multiwindowframework.MultiWindowUpdatePosition
 import jp.kght6123.multiwindowframework.utils.UnitUtils
 import jp.kght6123.smallappbrowser.adapter.WebHistoryItemAdapter
 import jp.kght6123.smallappbrowser.application.SharedDataApplication
@@ -284,8 +285,6 @@ class SmallBrowserApplicationService : MultiFloatWindowApplication() {
                 ws.loadWithOverviewMode = true
                 ws.useWideViewPort = true
 
-                webView.loadUrl("http://www.google.com")
-
                 setupOptionMenu(webView)
                 setupActionBar(webView, R.id.moveControlAreaBottom, R.id.webviewControlAreaBottom2, R.id.smallappControlAreaBottom2, MoveControlArea.Bottom2)
                 setupActionBar(webView, R.id.moveControlAreaBottom, R.id.webviewControlAreaBottom, R.id.smallappControlAreaBottom, MoveControlArea.Bottom)
@@ -321,15 +320,21 @@ class SmallBrowserApplicationService : MultiFloatWindowApplication() {
                     defaultCacheMode = WebSettings.LOAD_CACHE_ELSE_NETWORK
                 ws.cacheMode = defaultCacheMode
 
-                if (intent != null && intent.getExtras() != null)
-                    ws.javaScriptEnabled = intent.getExtras().getBoolean(EXTRA_JAVASCRIPT_DISABLED, false)
+                if (intent?.extras != null)
+                    ws.javaScriptEnabled = intent.extras.getBoolean(EXTRA_JAVASCRIPT_DISABLED, false)
                 else
                     ws.javaScriptEnabled = true
 
                 if (intent != null)
-                    webView.loadUrl(intent.getDataString(), additionalHttpHeaders)
+                    webView.loadUrl(intent.dataString, additionalHttpHeaders)
                 else {
                     webView.loadUrl("https://www.google.com/", additionalHttpHeaders)
+                }
+            }
+            override fun update(intent: Intent?, index: Int, positionName: String) {
+                if(positionName == MultiWindowUpdatePosition.FIRST.name
+                        || positionName == MultiWindowUpdatePosition.INDEX.name) {
+                    start(intent)
                 }
             }
             private fun setFaviconToMinimizedView(icon: Bitmap?) {

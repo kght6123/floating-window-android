@@ -6,6 +6,7 @@ import android.net.Uri
 import jp.kght6123.multiwindow.MultiFloatWindowBaseActivity
 import jp.kght6123.multiwindowframework.MultiWindowOpenType
 import jp.kght6123.smallappbrowser.R
+import jp.kght6123.smallappbrowser.SmallBrowserApplicationService
 
 /**
  * スモールブラウザの起動／停止を行う、テスト用Activity
@@ -30,37 +31,25 @@ class SmallBrowserApplicationTestActivity : MultiFloatWindowBaseActivity() {
         findViewById(R.id.multi_window_widget_button) as Button
     }
 
-	private var index: Int = 0
-
     override fun onCheckOverlayPermissionResult(result: Boolean) {
         if(result) {
             this.setContentView(R.layout.activity_smallapp_browser_test)
 
             multi_window_open_button.setOnClickListener({
-                launcher.openWindow(++index, MultiWindowOpenType.NEW)
-
-                val intent = Intent()
-                intent.data = Uri.parse("http://google.co.jp/")
-
-                launcher.startWindow(index, intent)
+                launcher.nextIndex(0)
             })
             multi_window_update_button.setOnClickListener({
-                launcher.openWindow(index, MultiWindowOpenType.UPDATE)
-
-                val intent = Intent()
-                intent.data = Uri.parse("http://google.co.jp/")
-
-                launcher.startWindow(index, intent)
+                launcher.prevIndex(0)
             })
             multi_window_close_button.setOnClickListener({
-                launcher.closeWindow(index--, Intent())
+                launcher.prevIndex(1)
             })
             multi_window_exit_button.setOnClickListener({
                 launcher.unbind()
                 launcher.stop()
             })
             multi_window_widget_button.setOnClickListener({
-                startAppWidgetWindowView(++index)
+                launcher.nextIndex(1)
             })
 
 //            val packageInfoList =
@@ -89,6 +78,38 @@ class SmallBrowserApplicationTestActivity : MultiFloatWindowBaseActivity() {
 //            val buttonGroup = findViewById(R.id.buttonGroup) as LinearLayout
 //            buttonGroup.addView(view)
 //            buttonGroup.addView(webView)
+        }
+    }
+
+    override fun onFindNextIndex(nextIndex: Int, returnCommand: Int) {
+        super.onFindNextIndex(nextIndex, returnCommand)
+
+        if (returnCommand == 0) {
+            launcher.openWindow(nextIndex, MultiWindowOpenType.NEW, SmallBrowserApplicationService::class.java)
+
+            val intent = Intent()
+            intent.data = Uri.parse("http://google.co.jp/")
+
+            launcher.startWindow(nextIndex, intent)
+
+        } else if (returnCommand == 1) {
+            startAppWidgetWindowView(nextIndex)
+        }
+    }
+
+    override fun onFindPrevIndex(prevIndex: Int, returnCommand: Int) {
+        super.onFindPrevIndex(prevIndex, returnCommand)
+
+        if (returnCommand == 0) {
+            launcher.openWindow(prevIndex, MultiWindowOpenType.UPDATE, SmallBrowserApplicationService::class.java)
+
+            val intent = Intent()
+            intent.data = Uri.parse("http://google.co.jp/")
+
+            launcher.startWindow(prevIndex, intent)
+
+        } else if (returnCommand == 1) {
+            launcher.closeWindow(prevIndex, Intent())
         }
     }
 }
