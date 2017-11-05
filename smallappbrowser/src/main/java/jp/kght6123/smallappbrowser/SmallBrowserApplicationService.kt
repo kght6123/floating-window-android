@@ -15,7 +15,6 @@ import android.webkit.*
 import android.widget.*
 import jp.kght6123.multiwindowframework.MultiFloatWindowApplication
 import jp.kght6123.multiwindowframework.MultiWindowUpdatePosition
-import jp.kght6123.multiwindowframework.utils.UnitUtils
 import jp.kght6123.smallappbrowser.adapter.WebHistoryItemAdapter
 import jp.kght6123.smallappbrowser.application.SharedDataApplication
 import jp.kght6123.smallappbrowser.utils.PrefUtils
@@ -29,7 +28,7 @@ import java.util.*
  */
 class SmallBrowserApplicationService : MultiFloatWindowApplication() {
 
-	private val TAG = SmallBrowserApplicationService::class.java.simpleName
+    private val TAG = SmallBrowserApplicationService::class.java.simpleName
 
 	private enum class MoveControlArea {
 		Left,
@@ -48,8 +47,9 @@ class SmallBrowserApplicationService : MultiFloatWindowApplication() {
 
 	private var defaultCacheMode = WebSettings.LOAD_CACHE_ELSE_NETWORK
 
+
     override fun onCreateFactory(index: Int): MultiFloatWindowViewFactory {
-        return object : MultiFloatWindowViewFactory() {
+        return object : MultiFloatWindowViewFactory(multiWindowContext) {
 
             private val mainView by lazy { View.inflate(applicationContext, R.layout.smallapp_browser_main, null) }
             private val webView by lazy { mainView.findViewById(R.id.webview) as WebView }
@@ -300,16 +300,6 @@ class SmallBrowserApplicationService : MultiFloatWindowApplication() {
                 this.mMinimizedView!!.isFocusable = true
                 return this.mMinimizedView!!
             }
-            override fun createMinimizedLayoutParams(arg: Int): LinearLayout.LayoutParams {
-                return LinearLayout.LayoutParams(
-                        UnitUtils.convertDp2Px(75f, applicationContext).toInt(),
-                        UnitUtils.convertDp2Px(75f, applicationContext).toInt())
-            }
-            override fun createWindowLayoutParams(arg: Int): LinearLayout.LayoutParams {
-                return LinearLayout.LayoutParams(
-                        LinearLayout.LayoutParams.MATCH_PARENT,
-                        LinearLayout.LayoutParams.MATCH_PARENT)
-            }
             override fun start(intent: Intent?) {
                 // キャッシュモードをネットワークの接続状況によって切り替え
                 val ws = webView.settings
@@ -549,13 +539,13 @@ class SmallBrowserApplicationService : MultiFloatWindowApplication() {
     }
 
     override fun onCreateSettingsFactory(index: Int): MultiFloatWindowSettingsFactory {
-		return object :  MultiFloatWindowSettingsFactory {
+		return object : MultiFloatWindowSettingsFactory(multiWindowContext) {
             override fun createInitSettings(arg: Int): MultiFloatWindowInitSettings {
 				return MultiFloatWindowInitSettings(
-                        x = getResources().getDimensionPixelSize(R.dimen.x),
-                        y = getResources().getDimensionPixelSize(R.dimen.y),
-                        width = getResources().getDimensionPixelSize(R.dimen.width),
-                        height = getResources().getDimensionPixelSize(R.dimen.height),
+                        x = getDimensionPixelSize(R.dimen.x),
+                        y = getDimensionPixelSize(R.dimen.y),
+                        width = getDimensionPixelSize(R.dimen.width),
+                        height = getDimensionPixelSize(R.dimen.height),
                         backgroundColor = getColor(android.R.color.background_light)
                 )
 			}

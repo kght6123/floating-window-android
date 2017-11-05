@@ -35,6 +35,8 @@ class MultiFloatWindowInfo(
         UNKNOWN, MOVE, RESIZE, FINISH
     }
 
+    private val notificationBarSize = 50 + 40/* ぼかしの分 */
+
     private var strokeMode: Stroke = Stroke.UNKNOWN
     private var windowMode: Mode = Mode.UNKNOWN
 
@@ -42,6 +44,17 @@ class MultiFloatWindowInfo(
     private val defaultDisplaySize: Point by lazy {
         DisplayUtils.defaultDisplaySize(context)
     }
+
+    // ディスプレイの最大値を設定
+    var maxWidth: Int = defaultDisplaySize.x - 0
+    var maxHeight: Int = defaultDisplaySize.y - notificationBarSize
+
+    // ディスプレイの最小値を設定
+    var minWidth: Int = UnitUtils.convertDp2Px(150f, context).toInt()
+    var minHeight: Int = UnitUtils.convertDp2Px(150f, context).toInt()
+
+    // リサイズ可・不可を設定
+    var resize: Boolean = true
 
     val miniWindowFrame: ViewGroup by lazy {
 
@@ -124,10 +137,10 @@ class MultiFloatWindowInfo(
 
         val windowInFrame =
                 windowOutlineFrame.findViewById(R.id.windowInlineFrame) as ViewGroup
-        windowInFrame.setBackgroundColor(backgroundColor)
+        windowInFrame.setBackgroundColor(backgroundColor)   // FIXME 色のみ指定可、背景そのものの変更は出来ない
 
         windowOutlineFrame.setOnLongClickListener {
-            if(strokeMode != Stroke.UNKNOWN && windowMode == Mode.UNKNOWN) {
+            if(strokeMode != Stroke.UNKNOWN && windowMode == Mode.UNKNOWN && resize) {
                 // リサイズモードの背景色に変える
                 when (strokeMode) {
                     Stroke.TOP -> {
@@ -168,6 +181,75 @@ class MultiFloatWindowInfo(
         windowOutlineFrame.setOnTouchListener(object: View.OnTouchListener {
             var onGestureListener: GestureDetector.OnGestureListener = object: GestureDetector.SimpleOnGestureListener() {
 
+                private var tempX = 0
+                private var tempY = 0
+                private var tempWidth = 0
+                private var tempHeight = 0
+
+                inner class ChangeSizeModeUpdater(val modeWidth: Int, val modeHeight: Int, val modeX: Int, val modeY: Int) {
+
+                    fun update() {
+                        val params = getActiveWindowLayoutParams()
+                        if(modeWidth != 0 && modeHeight != 0) {
+                            if(tempWidth != 0
+                                    && tempHeight != 0
+                                    && params.width == modeWidth
+                                    && params.height == modeHeight) {
+                                // 元のサイズが残ってれば元に戻す
+                                // 元のサイズに戻す
+                                params.width = tempWidth
+                                params.height = tempHeight
+                                tempWidth = 0
+                                tempHeight = 0
+
+                                // 元の位置に戻す
+                                params.topMargin = tempX
+                                params.leftMargin = tempY
+                                tempX = 0
+                                tempY = 0
+
+                            } else if(tempWidth != 0
+                                    && tempHeight != 0) {
+                                // 元のサイズが残ってれば元を更新しない
+                                params.width = modeWidth
+                                params.height = modeHeight
+
+                                if(modeX != 0 && modeY != 0) {
+                                    // 位置指定があれば、その位置に
+                                    params.topMargin = modeX
+                                    params.leftMargin = modeY
+
+                                } else if(tempX != 0 && tempY != 0) {
+                                    // 位置指定がなく元の位置が保持されてれば、元の位置に
+                                    params.topMargin = tempX
+                                    params.leftMargin = tempY
+                                }
+
+                            } else {
+                                // 指定された大きさにする
+                                tempWidth = params.width
+                                tempHeight = params.height
+                                params.width = modeWidth
+                                params.height = modeHeight
+
+                                // 元の位置は常に保持（元のサイズに戻す時、位置も戻したい）
+                                tempX = params.topMargin
+                                tempY = params.leftMargin
+
+                                if(modeX != 0 && modeY != 0) {
+                                    // 位置指定があれば、その位置に
+                                    params.topMargin = modeX
+                                    params.leftMargin = modeY
+                                }
+                            }
+                        }
+                        getActiveOverlay().layoutParams = params
+                    }
+                }
+
+                val changeMaxSizeModeUpdater: ChangeSizeModeUpdater = ChangeSizeModeUpdater(maxWidth, maxHeight, notificationBarSize,-1)
+                val changeMinSizeModeUpdater: ChangeSizeModeUpdater = ChangeSizeModeUpdater(minWidth, minHeight,0,0)
+
                 override fun onDoubleTap(event: MotionEvent): Boolean {
                     Log.d(tag, "SimpleOnGestureListener onDoubleTap")
                     Log.d(tag, "SimpleOnGestureListener onDoubleTap $strokeMode")
@@ -176,8 +258,13 @@ class MultiFloatWindowInfo(
                         Stroke.TOP, Stroke.BOTTOM, Stroke.LEFT, Stroke.RIGHT -> {
                             switchMiniMode()
                         }
-                        Stroke.TOP_LEFT, Stroke.TOP_RIGHT, Stroke.BOTTOM_LEFT, Stroke.BOTTOM_RIGHT -> {
-                            // FIXME
+                        Stroke.TOP_LEFT, Stroke.TOP_RIGHT -> {
+                            // 角のダブルタップで最大化
+                            changeMaxSizeModeUpdater.update()
+                        }
+                        Stroke.BOTTOM_LEFT, Stroke.BOTTOM_RIGHT -> {
+                            // 角のダブルタップで最小化
+                            changeMinSizeModeUpdater.update()
                         }
                         else -> {}
                     }
@@ -294,7 +381,7 @@ class MultiFloatWindowInfo(
                         }
                     }
                     MotionEvent.ACTION_MOVE -> {
-                        val space = 0
+
                         if(windowMode != Mode.RESIZE && strokeMode != Stroke.UNKNOWN) {
                             // 移動中の処理
                             params.leftMargin = initialX + (rx - initialTouchX).toInt()
@@ -304,35 +391,51 @@ class MultiFloatWindowInfo(
 
                             windowMode = Mode.MOVE
                         }
-                        if(windowMode == Mode.RESIZE && strokeMode != Stroke.UNKNOWN) {
+                        if(windowMode == Mode.RESIZE && strokeMode != Stroke.UNKNOWN && resize) {
 
-                            val limitMaxWidth = fun(){
-                                if(defaultDisplaySize.x < params.width)
-                                    params.width = defaultDisplaySize.x
+                            val limitWidth = fun(): Boolean {
+                                return when {
+                                    maxWidth < params.width -> {
+                                        params.width = maxWidth
+                                        true
+                                    }
+                                    minWidth > params.width -> {
+                                        params.width = minWidth
+                                        true
+                                    }
+                                    else -> false
+                                }
                             }
-                            val limitMaxHeight = fun(){
-                                if(defaultDisplaySize.y - space < params.height)
-                                    params.height = defaultDisplaySize.y - space // 通知バー、ナビゲーションバーの考慮(space)
+                            val limitHeight = fun(): Boolean {
+                                return when {
+                                    maxHeight < params.height -> {
+                                        params.height = maxHeight
+                                        true
+                                    }
+                                    minHeight > params.height -> {
+                                        params.height = minHeight
+                                        true
+                                    }
+                                    else -> false
+                                }
                             }
                             val resizeTop = fun(){
                                 params.height = (initialHeight - (ry - initialTouchY).toInt())
-                                params.topMargin = initialY + (ry - initialTouchY).toInt()
-                                limitMaxHeight()
-                                //limitMaxY()
+                                if(!limitHeight())
+                                    params.topMargin = initialY + (ry - initialTouchY).toInt()
                             }
                             val resizeBottom = fun(){
                                 params.height = (initialHeight + (ry - initialTouchY).toInt())
-                                limitMaxHeight()
+                                limitHeight()
                             }
                             val resizeLeft = fun(){
                                 params.width = (initialWidth - (rx - initialTouchX).toInt())
-                                params.leftMargin = initialX + (rx - initialTouchX).toInt()
-                                limitMaxWidth()
-                                //limitMaxX()
+                                if(!limitWidth())
+                                    params.leftMargin = initialX + (rx - initialTouchX).toInt()
                             }
                             val resizeRight = fun(){
                                 params.width = (initialWidth + (rx - initialTouchX).toInt())
-                                limitMaxWidth()
+                                limitWidth()
                             }
                             when(strokeMode){
                                 Stroke.TOP -> {

@@ -6,11 +6,9 @@ import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.ImageView
-import android.widget.LinearLayout
 import android.widget.Toast
 import jp.kght6123.multiwindowframework.MultiFloatWindowApplication
 import jp.kght6123.multiwindowframework.MultiWindowUpdatePosition
-import jp.kght6123.multiwindowframework.utils.UnitUtils
 import java.util.*
 
 /**
@@ -19,6 +17,7 @@ import java.util.*
  * Created by kght6123 on 2017/09/16.
  */
 class SmallBrowserTestOtherApplication : MultiFloatWindowApplication() {
+
     companion object {
         private val additionalHttpHeaders = TreeMap<String, String>()
         init {
@@ -26,7 +25,7 @@ class SmallBrowserTestOtherApplication : MultiFloatWindowApplication() {
         }
     }
     override fun onCreateFactory(index: Int): MultiFloatWindowViewFactory {
-        return object : MultiFloatWindowViewFactory() {
+        return object : MultiFloatWindowViewFactory(multiWindowContext) {
 
             val view by lazy { createContentView(R.layout.small_webview) }
             val webView by lazy { view.findViewById(R.id.webView) as WebView }
@@ -49,16 +48,6 @@ class SmallBrowserTestOtherApplication : MultiFloatWindowApplication() {
                 mMinimizedView.isFocusable = true
                 return mMinimizedView
             }
-            override fun createMinimizedLayoutParams(arg: Int): LinearLayout.LayoutParams {
-                return LinearLayout.LayoutParams(
-                        UnitUtils.convertDp2Px(75f, sharedContext!!).toInt(),
-                        UnitUtils.convertDp2Px(75f, sharedContext!!).toInt())
-            }
-            override fun createWindowLayoutParams(arg: Int): LinearLayout.LayoutParams {
-                return LinearLayout.LayoutParams(
-                        LinearLayout.LayoutParams.MATCH_PARENT,
-                        LinearLayout.LayoutParams.MATCH_PARENT)
-            }
             override fun start(intent: Intent?) {
                 if (intent != null && intent.dataString != null) {
                     Toast.makeText(applicationContext, "hello!! small browser test. ${intent.dataString}", Toast.LENGTH_SHORT).show()
@@ -74,18 +63,33 @@ class SmallBrowserTestOtherApplication : MultiFloatWindowApplication() {
                     start(intent)
                 }
             }
+            override fun onActive() {
+                //Toast.makeText(applicationContext, "onActive", Toast.LENGTH_SHORT).show()
+            }
+            override fun onDeActive() {
+                //Toast.makeText(applicationContext, "onDeActive", Toast.LENGTH_SHORT).show()
+            }
+            override fun onDeActiveAll() {
+                //Toast.makeText(applicationContext, "onDeActiveAll", Toast.LENGTH_SHORT).show()
+            }
+            override fun onChangeMiniMode() {
+                //Toast.makeText(applicationContext, "onChangeMiniMode", Toast.LENGTH_SHORT).show()
+            }
+            override fun onChangeWindowMode() {
+                //Toast.makeText(applicationContext, "onChangeWindowMode", Toast.LENGTH_SHORT).show()
+            }
         }
     }
 
     override fun onCreateSettingsFactory(index: Int): MultiFloatWindowSettingsFactory {
-        return object :  MultiFloatWindowSettingsFactory {
+        return object : MultiFloatWindowSettingsFactory(multiWindowContext) {
             override fun createInitSettings(arg: Int): MultiFloatWindowInitSettings {
                 return MultiFloatWindowInitSettings(
-                        sharedContext!!.getResources().getDimensionPixelSize(R.dimen.x),
-                        sharedContext!!.getResources().getDimensionPixelSize(R.dimen.y),
-                        sharedContext!!.getResources().getDimensionPixelSize(R.dimen.width),
-                        sharedContext!!.getResources().getDimensionPixelSize(R.dimen.height),
-                        sharedContext!!.getColor(android.R.color.background_light)
+                        getDimensionPixelSize(R.dimen.x),
+                        getDimensionPixelSize(R.dimen.y),
+                        getDimensionPixelSize(R.dimen.width),
+                        getDimensionPixelSize(R.dimen.height),
+                        getColor(android.R.color.background_light)
                 )
             }
         }

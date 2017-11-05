@@ -36,6 +36,7 @@ class CardAppListRecyclerAdapter(val context: Context, val manager: MultiFloatWi
             manager.removeSeq(position)
             notifyDataSetChanged()
         })
+        holder?.thumbImageView?.setImageDrawable(null)  // 解放（BitmapをImageViewに設定するとき）
         holder?.thumbImageView?.setImageBitmap(bitmap)
     }
 

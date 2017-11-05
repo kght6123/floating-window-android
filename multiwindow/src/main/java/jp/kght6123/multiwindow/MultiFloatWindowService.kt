@@ -11,6 +11,7 @@ import android.os.Message
 import android.os.Messenger
 import android.widget.Toast
 import jp.kght6123.multiwindowframework.*
+import jp.kght6123.multiwindowframework.MultiFloatWindowConstants.Companion.API_VERSION
 import kotlin.collections.ArrayList
 
 /**
@@ -28,7 +29,7 @@ class MultiFloatWindowService : Service() {
                 val command = MultiWindowControlCommand.values()[msg.what]
                 when (command) {
                     MultiWindowControlCommand.HELLO -> {
-                        Toast.makeText(applicationContext, "hello!! multi window framework.", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(applicationContext, "hello!! multi window framework ${API_VERSION.name}.", Toast.LENGTH_SHORT).show()
                         manager // startWindow Manager.
                         true
                     }

@@ -60,7 +60,7 @@ abstract class MultiFloatWindowBaseActivity : Activity() {
 
     private fun judgeOverlayPermission() {
         if (checkOverlayPermission()) {
-            Toast.makeText(applicationContext, "OverlayPermission OK.", Toast.LENGTH_SHORT).show()
+            //Toast.makeText(applicationContext, "OverlayPermission OK.", Toast.LENGTH_SHORT).show()
             this.permission = true
             onCheckOverlayPermissionResult(this.permission)
             onChangePreparationStatus(this.permission, this.serviceConnected)
@@ -92,7 +92,7 @@ abstract class MultiFloatWindowBaseActivity : Activity() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         when (resultCode) {
             RESULT_OK -> {
-                Toast.makeText(applicationContext, "RESULT_OK.", Toast.LENGTH_SHORT).show()
+                //Toast.makeText(applicationContext, "RESULT_OK.", Toast.LENGTH_SHORT).show()
                 when (requestCode) {
                     REQUEST_CODE_SYSTEM_OVERLAY -> {
                         // もう一度権限を確認して、権限があれば処理をする
@@ -123,7 +123,7 @@ abstract class MultiFloatWindowBaseActivity : Activity() {
                 }
             }
             RESULT_CANCELED -> {
-                Toast.makeText(applicationContext, "RESULT_CANCELED.", Toast.LENGTH_SHORT).show()
+                //Toast.makeText(applicationContext, "RESULT_CANCELED.", Toast.LENGTH_SHORT).show()
                 when (requestCode) {
                     REQUEST_CODE_SYSTEM_OVERLAY -> {
                         // もう一度権限を確認して、権限があれば処理をする
@@ -161,13 +161,18 @@ abstract class MultiFloatWindowBaseActivity : Activity() {
     }
     open fun onLauncherServiceConnected(name: ComponentName?, binder: IBinder?) {
         serviceConnected = true
-        Toast.makeText(applicationContext, "Service Connected OK.", Toast.LENGTH_SHORT).show()
+        //Toast.makeText(applicationContext, "Service Connected OK.", Toast.LENGTH_SHORT).show()
 
         onChangePreparationStatus(this.permission, this.serviceConnected)
     }
     open fun onChangePreparationStatus(permission: Boolean, serviceConnected: Boolean) {
-        if(permission && serviceConnected)
+        if(permission && serviceConnected) {
             launcher.hello()
+            onServiceConnected()
+        }
+    }
+    open fun onServiceConnected() {
+
     }
     open fun onFindNextIndex(nextIndex: Int, returnCommand: Int) {
 

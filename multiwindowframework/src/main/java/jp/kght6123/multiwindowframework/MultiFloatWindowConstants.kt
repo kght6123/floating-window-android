@@ -17,7 +17,13 @@ class MultiFloatWindowConstants {
         val PERMISSION_MULTI_WINDOW_APPS = "jp.kght6123.multiwindow.manifest.permission.APPS"
         val ACTION_MULTI_WINDOW_MAIN = "jp.kght6123.multiwindow.intent.action.MAIN"
         val CATEGORY_MULTI_WINDOW_LAUNCHER = "jp.kght6123.multiwindow.intent.category.LAUNCHER"
+
+        val API_VERSION = MultiWindowApiVersion.DEV_1
     }
+}
+
+enum class MultiWindowApiVersion {
+    DEV_1,
 }
 
 enum class MultiWindowControlCommand {

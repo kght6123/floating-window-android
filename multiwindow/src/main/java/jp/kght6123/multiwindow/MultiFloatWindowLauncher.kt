@@ -77,7 +77,7 @@ open class MultiFloatWindowLauncher(val context: Context) {
     }
     fun startWindow(index: Int, intent: Intent) {
         Log.i(tag, "Start Window")
-        // FIXME WINDOW_INDEX渡しは不要、args1として渡せばOK、Intentを渡せるか検証のため
+        // WINDOW_INDEX渡しは不要、args1として渡せばOK、Intentを渡せるか検証のため
         intent.putExtra(MultiWindowControlParam.WINDOW_INDEX.name, index)
         sendMessage(MultiWindowControlCommand.START, index, 0, intent)
     }

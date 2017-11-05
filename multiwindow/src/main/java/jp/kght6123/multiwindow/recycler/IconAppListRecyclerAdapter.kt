@@ -47,7 +47,6 @@ class IconAppListRecyclerAdapter(val context: Context, private val manager: Mult
 
     override fun onBindViewHolder(holder: ViewHolder?, position: Int) {
         val resolveInfo = resolveInfoAllList[position]
-        holder?.thumbIconButton?.setImageDrawable(resolveInfo.loadIcon(packageManager))
         holder?.thumbIconButton?.setOnClickListener {
             // 選択されたアプリを開く（次インデックス）
             val nextIndex = manager.nextIndex()
@@ -63,6 +62,9 @@ class IconAppListRecyclerAdapter(val context: Context, private val manager: Mult
             //val value = getResources().getString(bundle.getInt("your.key"))
         }
         holder?.thumbLabel?.text = resolveInfo.loadLabel(packageManager)
+
+        holder?.thumbIconButton?.setImageDrawable(null)  // 解放（BitmapをImageViewに設定するとき）
+        holder?.thumbIconButton?.setImageDrawable(resolveInfo.loadIcon(packageManager))
     }
 
     override fun getItemCount(): Int {

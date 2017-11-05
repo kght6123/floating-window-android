@@ -3,8 +3,8 @@
     android:sharedUserId="jp.kght6123">
 
     <permission android:name="jp.kght6123.multiwindow.manifest.permission.APPS"
-        android:label="@string/app_name"
-        android:description="@string/app_name"
+        android:label="@string/multiwindow_core_permission_name"
+        android:description="@string/multiwindow_core_permission_desc"
         android:protectionLevel="normal" /><!-- dangerousはnormalの方が良いかも -->
 
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
@@ -32,7 +32,27 @@
             <!--data android:scheme="package" /-->
         </receiver>
 
-        <activity android:name=".MultiFloatWindowMainActivity" />
+        <activity android:name=".MultiFloatWindowMainActivity"
+            android:noHistory="true"
+            android:excludeFromRecents="true"
+            android:label="@string/multiwindow_core_name"
+            >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <activity android:name=".MultiFloatWindowWidgetActivity"
+            android:noHistory="true"
+            android:excludeFromRecents="true"
+            android:label="@string/multiwindow_core_widget_name"
+            >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
 
     </application>
 </manifest>

@@ -11,6 +11,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.widget.ImageView
 import android.widget.LinearLayout
+import jp.kght6123.multiwindowframework.context.res.Resources
+import jp.kght6123.multiwindowframework.context.res.ResourcesImpl
 import jp.kght6123.multiwindowframework.utils.UnitUtils
 
 /**
@@ -20,47 +22,80 @@ import jp.kght6123.multiwindowframework.utils.UnitUtils
  */
 abstract class MultiFloatWindowApplication : Service() {
 
-    var sharedContext: Context? = null
+    val multiWindowContext by lazy { MultiFloatWindowContext() }
+
+    protected var sharedContext: Context? = null
+    fun attachBaseContext(sharedContext: Context, applicationContext: Context) {
+        attachBaseContext(applicationContext)
+        this.sharedContext = sharedContext
+    }
+
+    private var manager: MultiFloatWindowManagerUpdater? = null
+    fun attachManager(manager: Any) {
+        this.manager = MultiFloatWindowManagerUpdaterImpl(manager)
+    }
+
+    protected fun createContentView(layoutResId: Int): View {
+        val parser = sharedContext!!.resources.getLayout(layoutResId)
+        return LayoutInflater.from(applicationContext).inflate(parser, null)
+    }
+
+    abstract fun onCreateFactory(index: Int): MultiFloatWindowViewFactory
+    abstract fun onCreateSettingsFactory(index: Int): MultiFloatWindowSettingsFactory
+
+    inner class MultiFloatWindowContext(val sharedContext: Context = this@MultiFloatWindowApplication.sharedContext!!,
+                                        val manager: MultiFloatWindowManagerUpdater = this@MultiFloatWindowApplication.manager!!,
+                                        val resourcesImpl: ResourcesImpl = ResourcesImpl(sharedContext.resources))
 
     override fun onBind(p0: Intent?): IBinder {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
-    @Suppress("unused")
-    fun attachBaseContext(sharedContext: Context, applicationContext: Context) {
-        attachBaseContext(applicationContext)
-        this.sharedContext = sharedContext
-    }
-    protected fun createContentView(layoutResId: Int): View {
-        val parser = sharedContext!!.resources.getLayout(layoutResId)
-        return LayoutInflater.from(applicationContext).inflate(parser, null)
-    }
-    abstract fun onCreateFactory(index: Int): MultiFloatWindowViewFactory
-    abstract fun onCreateSettingsFactory(index: Int): MultiFloatWindowSettingsFactory
-
     class MultiFloatWindowInitSettings(
-            val x: Int,
-            val y: Int,
-            val width: Int,
-            val height: Int,
-            val backgroundColor: Int = MultiFloatWindowConstants.Theme.Light.rgb,
-            val miniMode: Boolean = false,
-            val active: Boolean = false
+            var x: Int = 0,
+            var y: Int = 0,
+            var width: Int,
+            var height: Int,
+            var backgroundColor: Int = MultiFloatWindowConstants.Theme.Light.rgb,
+            var miniMode: Boolean = false,
+            var active: Boolean = false
     )
+    class MultiFloatWindowFactory(
+            val classObj: Class<*>,
+            private val windowViewFactory: Any,
+            private val windowSettingsFactory: Any) {
 
-    class MultiFloatWindowFactory(val classObj: Class<*>, private val windowViewFactory: Any, private val windowSettingsFactory: Any) {
-
-        private val windowViewFactoryClass = windowViewFactory.javaClass
-        private val createWindowViewMethod = windowViewFactoryClass.getMethod("createWindowView", Int::class.java)
-        private val createMinimizedViewMethod = windowViewFactoryClass.getMethod("createMinimizedView", Int::class.java)
-        private val createWindowLayoutParamsMethod = windowViewFactoryClass.getMethod("createWindowLayoutParams", Int::class.java)
+        private val windowViewFactoryClass            = windowViewFactory.javaClass
+        private val createWindowViewMethod            = windowViewFactoryClass.getMethod("createWindowView",            Int::class.java)
+        private val createMinimizedViewMethod         = windowViewFactoryClass.getMethod("createMinimizedView",         Int::class.java)
+        private val createWindowLayoutParamsMethod    = windowViewFactoryClass.getMethod("createWindowLayoutParams",    Int::class.java)
         private val createMinimizedLayoutParamsMethod = windowViewFactoryClass.getMethod("createMinimizedLayoutParams", Int::class.java)
-        private val startMethod = windowViewFactoryClass.getMethod("start", Intent::class.java)
-        private val updateMethod = windowViewFactoryClass.getMethod("update", Intent::class.java, Int::class.java, String::class.java)
+        private val startMethod                       = windowViewFactoryClass.getMethod("start",                       Intent::class.java)
+        private val updateMethod                      = windowViewFactoryClass.getMethod("update",                      Intent::class.java, Int::class.java, String::class.java)
+        private val onActiveMethod                    = windowViewFactoryClass.getMethod("onActive")
+        private val onDeActiveMethod                  = windowViewFactoryClass.getMethod("onDeActive")
+        private val onDeActiveAllMethod               = windowViewFactoryClass.getMethod("onDeActiveAll")
+        private val onChangeMiniModeMethod            = windowViewFactoryClass.getMethod("onChangeMiniMode")
+        private val onChangeWindowModeMethod          = windowViewFactoryClass.getMethod("onChangeWindowMode")
 
-        private val windowSettingsFactoryClass = windowSettingsFactory.javaClass
-        private val createInitSettingsMethod = windowSettingsFactoryClass.getMethod("createInitSettings", Int::class.java)
+        private val windowSettingsFactoryClass        = windowSettingsFactory.javaClass
+        private val createInitSettingsMethod          = windowSettingsFactoryClass.getMethod("createInitSettings", Int::class.java)
 
+        fun onActive() {
+            onActiveMethod.invoke(windowViewFactory)
+        }
+        fun onDeActive() {
+            onDeActiveMethod.invoke(windowViewFactory)
+        }
+        fun onDeActiveAll() {
+            onDeActiveAllMethod.invoke(windowViewFactory)
+        }
+        fun onChangeMode(miniMode: Boolean) {
+            if(miniMode)
+                onChangeMiniModeMethod.invoke(windowViewFactory)
+            else
+                onChangeWindowModeMethod.invoke(windowViewFactory)
+        }
         fun createWindowView(arg: Int): View {
             return createWindowViewMethod.invoke(windowViewFactory, arg) as View
         }
@@ -96,30 +131,32 @@ abstract class MultiFloatWindowApplication : Service() {
             return MultiFloatWindowInitSettings(x, y, width, height, backgroundColor, miniMode, active)
         }
     }
-    abstract class MultiFloatWindowViewFactory {
-
-//        val windowSettings = MultiFloatWindowSettings()
+    abstract class MultiFloatWindowViewFactory(private val context: MultiFloatWindowContext): Resources by context.resourcesImpl, MultiFloatWindowManagerUpdater by context.manager {
 
         abstract fun createWindowView(arg: Int): View
         abstract fun createMinimizedView(arg: Int): View
-        abstract fun createWindowLayoutParams(arg: Int): LinearLayout.LayoutParams
-        abstract fun createMinimizedLayoutParams(arg: Int): LinearLayout.LayoutParams
 
-        abstract fun start(intent: Intent?)
-        abstract fun update(intent: Intent?, index: Int, positionName: String)
+        open fun createMinimizedLayoutParams(arg: Int): LinearLayout.LayoutParams {
+            return LinearLayout.LayoutParams(
+                    UnitUtils.convertDp2Px(75f, context.sharedContext).toInt(),
+                    UnitUtils.convertDp2Px(75f, context.sharedContext).toInt())
+        }
+        open fun createWindowLayoutParams(arg: Int): LinearLayout.LayoutParams {
+            return LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.MATCH_PARENT)
+        }
+        open fun start(intent: Intent?) {}
+        open fun update(intent: Intent?, index: Int, positionName: String) {}
 
-//        inner class MultiFloatWindowSettings {
-//            var x: Int = 100
-//            var y: Int = 100
-//            var width: Int = 800
-//            var height: Int = 600
-//            var backgroundColor: Int = MultiFloatWindowConstants.Theme.Light.rgb
-//            var miniMode: Boolean = false
-//            var active: Boolean = true
-//        }
+        open fun onActive() {}
+        open fun onDeActive() {}
+        open fun onDeActiveAll() {}
+        open fun onChangeMiniMode() {}
+        open fun onChangeWindowMode() {}
     }
-    interface MultiFloatWindowSettingsFactory {
-        fun createInitSettings(arg: Int): MultiFloatWindowInitSettings
+    abstract class MultiFloatWindowSettingsFactory(private val context: MultiFloatWindowContext): Resources by context.resourcesImpl {
+        abstract fun createInitSettings(arg: Int): MultiFloatWindowInitSettings
     }
 //    class MultiFloatWindowViewRemoteViewFactory(
 //            val context: Context,
@@ -160,46 +197,36 @@ abstract class MultiFloatWindowApplication : Service() {
 //        }
 //    }
     class MultiFloatWindowViewAppWidgetFactory(
-            val context: Context,
+            private val context: MultiFloatWindowContext,
             private val appWidgetHost: AppWidgetHost,
             private val appWidgetId: Int,
-            private val appWidgetProviderInfo: AppWidgetProviderInfo): MultiFloatWindowViewFactory() {
+            private val appWidgetProviderInfo: AppWidgetProviderInfo): MultiFloatWindowViewFactory(context) {
 
         override fun createWindowView(arg: Int): View {
-            val appWidgetHostView = appWidgetHost.createView(context, appWidgetId, appWidgetProviderInfo)
+            val appWidgetHostView = appWidgetHost.createView(context.sharedContext, appWidgetId, appWidgetProviderInfo)
             appWidgetHostView.layoutParams = LinearLayout.LayoutParams(
                     LinearLayout.LayoutParams.MATCH_PARENT, //appWidgetProviderInfo.minWidth,
                     LinearLayout.LayoutParams.MATCH_PARENT)//appWidgetProviderInfo.minHeight)
+            // FIXME Widgetのmax,min値を設定すること、あとで
             appWidgetHostView.setAppWidget(appWidgetId, appWidgetProviderInfo)
             //appWidgetHostView.setBackgroundResource(R.color.float_window_background_color)
             return appWidgetHostView
         }
         override fun createMinimizedView(arg: Int): View {
-            val iconView = ImageView(context)
-            iconView.setImageDrawable(appWidgetProviderInfo.loadIcon(context, DisplayMetrics.DENSITY_HIGH))
+            val iconView = ImageView(context.sharedContext)
+            iconView.setImageDrawable(appWidgetProviderInfo.loadIcon(context.sharedContext, DisplayMetrics.DENSITY_HIGH))
             return iconView
         }
-        override fun createMinimizedLayoutParams(arg: Int): LinearLayout.LayoutParams {
-            return LinearLayout.LayoutParams(
-                    UnitUtils.convertDp2Px(75f, context).toInt(),
-                    UnitUtils.convertDp2Px(75f, context).toInt())
-        }
-        override fun createWindowLayoutParams(arg: Int): LinearLayout.LayoutParams {
-            return LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.MATCH_PARENT,
-                    LinearLayout.LayoutParams.MATCH_PARENT)
-        }
-        override fun start(intent: Intent?) {}
-        override fun update(intent: Intent?, index: Int, positionName: String) {}
     }
     class MultiFloatWindowSettingsAppWidgetFactory(
-            private val appWidgetProviderInfo: AppWidgetProviderInfo): MultiFloatWindowSettingsFactory {
+            context: MultiFloatWindowContext,
+            private val appWidgetProviderInfo: AppWidgetProviderInfo): MultiFloatWindowSettingsFactory(context) {
         override fun createInitSettings(arg: Int): MultiFloatWindowInitSettings {
             return MultiFloatWindowInitSettings(
                     x = 50,
                     y = 50,
-                    width = appWidgetProviderInfo.minWidth,//UnitUtils.convertDp2Px(300f, context).toInt(),
-                    height = appWidgetProviderInfo.minHeight,//UnitUtils.convertDp2Px(450f, context).toInt(),
+                    width = appWidgetProviderInfo.minWidth,
+                    height = appWidgetProviderInfo.minHeight,
                     backgroundColor = MultiFloatWindowConstants.Theme.Dark.rgb,
                     active = false
             )

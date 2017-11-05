@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="multiwindow_core_name">FloatWindow</string>
+    <string name="multiwindow_core_widget_name">FloatWidget</string>
+
+    <string name="multiwindow_core_permission_name">MultiFloatWindowAppsPermission</string>
+    <string name="multiwindow_core_permission_desc">MultiFloatWindow Apps, Original Permission.</string>
+</resources>
