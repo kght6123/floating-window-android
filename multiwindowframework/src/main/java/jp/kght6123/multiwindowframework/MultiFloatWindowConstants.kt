@@ -3,7 +3,9 @@ package jp.kght6123.multiwindowframework
 /**
  * 定数クラス
  *
- * Created by kght6123 on 2017/08/01.
+ * @author    kght6123
+ * @copyright 2017/08/01 Hirotaka Koga
+ * @license   http://www.apache.org/licenses/LICENSE-2.0 Apache-2.0
  */
 class MultiFloatWindowConstants {
     enum class Theme(val rgb: Int) {

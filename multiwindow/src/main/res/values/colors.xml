@@ -1,4 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+
+
+ @author    kght6123
+ @copyright 2017/05/09 Hirotaka Koga
+ @license   http://www.apache.org/licenses/LICENSE-2.0 Apache-2.0
+ -->
 <resources>
     <color name="colorAccent">#FF4081</color>
     <color name="app_list_background_color">#88000000</color>

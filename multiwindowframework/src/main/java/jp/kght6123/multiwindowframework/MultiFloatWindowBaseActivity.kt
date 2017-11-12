@@ -15,7 +15,9 @@ import android.widget.Toast
 /**
  * スモールブラウザの起動／停止とOverlay権限のチェック結果イベント発行を行う、Activity
  *
- * Created by kght6123 on 2017/08/22.
+ * @author    kght6123
+ * @copyright 2017/08/22 Hirotaka Koga
+ * @license   http://www.apache.org/licenses/LICENSE-2.0 Apache-2.0
  */
 abstract class MultiFloatWindowBaseActivity : Activity() {
 

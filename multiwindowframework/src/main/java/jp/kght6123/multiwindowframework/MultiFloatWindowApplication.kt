@@ -16,8 +16,10 @@ import jp.kght6123.multiwindowframework.utils.UnitUtils
 
 /**
  * マルチウィンドウサービスの実装を簡易化するクラス
- *
- * Created by kght6123 on 2017/07/30.
+ * 
+ * @author    kght6123
+ * @copyright 2017/07/30 Hirotaka Koga
+ * @license   http://www.apache.org/licenses/LICENSE-2.0 Apache-2.0
  */
 abstract class MultiFloatWindowApplication : Service() {
 

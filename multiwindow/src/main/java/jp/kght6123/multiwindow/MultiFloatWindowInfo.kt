@@ -13,7 +13,9 @@ import jp.kght6123.multiwindowframework.utils.UnitUtils
 /**
  * マルチウィンドウの状態を保持するクラス
  *
- * Created by kght6123 on 2017/07/11.
+ * @author    kght6123
+ * @copyright 2017/07/11 Hirotaka Koga
+ * @license   http://www.apache.org/licenses/LICENSE-2.0 Apache-2.0
  */
 class MultiFloatWindowInfo(
         val context: Context,

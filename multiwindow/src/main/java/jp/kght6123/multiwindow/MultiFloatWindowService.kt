@@ -17,7 +17,9 @@ import kotlin.collections.ArrayList
 /**
  * マルチウィンドウアプリケーションの本体サービス
  *
- * Created by kght6123 on 2017/09/10.
+ * @author    kght6123
+ * @copyright 2017/09/10 Hirotaka Koga
+ * @license   http://www.apache.org/licenses/LICENSE-2.0 Apache-2.0
  */
 class MultiFloatWindowService : Service() {
 

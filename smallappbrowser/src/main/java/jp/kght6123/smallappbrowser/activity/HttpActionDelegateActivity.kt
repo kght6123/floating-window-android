@@ -9,7 +9,9 @@ import jp.kght6123.smallappbrowser.SmallBrowserApplication
 /**
  * Activity経由でスモールブラウザを起動するためのデリゲーター
  *
- * Created by kght6123 on 2017/08/04.
+ * @author    kght6123
+ * @copyright 2017/08/04 Hirotaka Koga
+ * @license   http://www.apache.org/licenses/LICENSE-2.0 Apache-2.0
  */
 class HttpActionDelegateActivity : MultiFloatWindowBaseActivity() {
 
@@ -31,6 +33,7 @@ class HttpActionDelegateActivity : MultiFloatWindowBaseActivity() {
             } else {
                 launcher.startWindow(nextIndex, intent) // 他のアプリから呼び出されるとき
             }
+            finish()
         }
     }
 

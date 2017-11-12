@@ -21,7 +21,9 @@ import jp.kght6123.multiwindowframework.utils.UnitUtils
 /**
  * HTTP送信のIntentを受け取ってブラウザを選択させるActivity、ブラウザチェンジャー
  *
- * Created by kght6123 on 2017/08/04.
+ * @author    kght6123
+ * @copyright 2017/08/04 Hirotaka Koga
+ * @license   http://www.apache.org/licenses/LICENSE-2.0 Apache-2.0
  */
 class BrowserChangerActivity : Activity() {
 
@@ -73,6 +75,10 @@ class BrowserChangerActivity : Activity() {
 }
 /**
  * アイコン付き用リストのアダプター
+ *
+ * @author    kght6123
+ * @copyright 2017/08/04 Hirotaka Koga
+ * @license   http://www.apache.org/licenses/LICENSE-2.0 Apache-2.0
  */
 class ResolveInfoListAdapter(val activity: Activity, resource: Int = android.R.layout.select_dialog_item, objects: MutableList<ResolveInfo>?)
     : ArrayAdapter<ResolveInfo>(activity, resource, objects) {

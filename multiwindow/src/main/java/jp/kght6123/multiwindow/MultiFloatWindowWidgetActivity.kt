@@ -5,7 +5,9 @@ import jp.kght6123.multiwindowframework.MultiFloatWindowBaseActivity
 /**
  * MultiFloatWindowApplicationのWidget追加用のActivity
  *
- * Created by kght6123 on 2017/10/01.
+ * @author    kght6123
+ * @copyright 2017/10/01 Hirotaka Koga
+ * @license   http://www.apache.org/licenses/LICENSE-2.0 Apache-2.0
  */
 class MultiFloatWindowWidgetActivity : MultiFloatWindowBaseActivity() {
     override fun onServiceConnected() {
@@ -15,6 +17,7 @@ class MultiFloatWindowWidgetActivity : MultiFloatWindowBaseActivity() {
         super.onFindNextIndex(nextIndex, returnCommand)
         if (returnCommand == 1) {
             startAppWidgetWindowView(nextIndex)
+            finish()
         }
     }
 }

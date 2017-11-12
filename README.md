@@ -1,35 +1,32 @@
-http://deeeet.com/writing/2014/07/31/readme/
 
-Multiple Floting Window Framework α1
+# **Floting Multiple Window Framework α1**
 ====
 
-androidでマルチウィンドウを実現し、片手操作に最適化したライブラリです。ルート権限は不要です。
-It is a framework that realizes multi-window with android. No root authority is required.
+**現在は、実験的なリリースです。多くのバグを含む可能性が高いです。**
 
-XperiaのSmall App APIに感化されました。Xperia以外やXperia X以降でも動作する見込みです。
-I was inspired by Xperia's small app.
-Small App APIと互換性はありません。
+android（ルート権限不要）でフローティングウィンドウを実現し、片手操作に最適化したライブラリです。
 
-このライブラリは将来を見据えて、Kotlinで実装しています。
+よく似たフレームワークは、Xperiaの*Small App API*ですが、より多くの端末で動作します。
 
+言語は*Kotlin*を採用しています。
 
-## Description
+## **Description**
 容易にマルチウィンドウのアプリを作成し、追加することが出来ます。
-ウィンドウの操作は片手に最適化し、ウィンドウの拡大縮小や移動は四隅の縁に対しての操作で行います。
+ウィンドウの操作は片手に最適化し、ウィンドウの拡大／縮小、移動は四隅の縁に対しての操作で行います。
 
 小窓でフレームワークに実装したアプリを表示することが出来ます。
 アプリ一覧やアプリ履歴はコアに含まれるランチャーから呼び出しします。
 Activityから特定のマルチウィンドウアプリを呼び出したりことが出来ます。
 
-コア（マルチウィンドウ機能の実装）とフレームワーク（追加アプリの為のライブラリ）にモジュールが分かれています。
+Coreアプリ（マルチウィンドウ機能）と、フレームワーク（アプリ追加用）にモジュールが分かれています。
 
+## **Demo**
+サンプルアプリケーションのデモになります
+FIXME アニメGIFでサンプルが動作しているところを表示
 
-## Demo
-FIXME アニメGIFで動作しているところを表示
-
-## VS. 
-### 改善した機能
-1. Xperia以外の端末でも動作
+## **特徴**
+このフレームワークの基本的な特徴になります
+1. Xperia以外の端末で動作
 1. マルチウィンドウで動作（同じアプリを複数開ける）
 1. 片手操作への最適化（ウィンドウの拡大縮小、移動）
 1. 端末の領域外に移動しても、最小化しない
@@ -38,47 +35,33 @@ FIXME アニメGIFで動作しているところを表示
 1. 四隅のフチはダブルタップで最小化、上の角は最大化、下の角は最小化
 1. Kotlinで実装
 
-### 存在しない機能
-今後も、可能な範囲で同等の機能を追加したいと思っています。
-
-1. 実装、利用方法を独自手法に変更（プログラムの修正が必要）
-1. 常にタイトルバーを追加するAPIはない
-1. ●ウィンドウの状態変更（最大化、最小化）のイベントをトリガーに処理をするAPIはない
-1. ●ウィンドウへのフォーカスイベントをトリガーに処理をするAPIはない
-1. ●現在のウィンドウの状態（最大化、最小化）を取得／変更するAPIはない
-1. 入力モードを変更するAPIはない
-1. ●背景を変更するAPIはない
-1. ●`minWidth`,`minHeight`,`maxWidth`,`maxHeight`は無い
-1. ●ウィンドウをリサイズ不可にできない
-1. ●APIのバージョンを取得するAPIはない
-1. テーマはない
-
-## 制約
+## **制約**
 非システムアプリの為、利用しているWindowManager（`TYPE_SYSTEM_ALERT`、`TYPE_APPLICATION_OVERLAY`）に制限があり、幾つかの機能に制約があります。
 1. ウィンドウが全て非アクティブになった場合、ランチャーを選択しないと復帰できない。
 1. コア機能を持つアプリのインストールが必須
 1. 「他のアプリの上に重ねて描画」の許可が必要
+1. layoutにincludeタグが使えない
 
-## Requirement
+## **Requirement**
 * Android 6.0 marshmallow 以上
 * マルチウィンドウ機能の利用について
     - コアのインストール必須
 * アプリ追加について
     - フレームワーク必須
 
-## Development environment
+## **Development environment**
 * Android
-    - Android Emulator 8.0〜6.0 
-    - Nexus6 XT1100
+    - Android Emulator 6.0〜8.0 
+    - Galaxy Note8
 
 * Develop Machine
     - macOS High Sierra 10.13
     - Android Studio 3.0
 
-## Install
-* 必要なaarはGitHub Pagesとして公開する予定。準備中。（公開前に先に準備するか？）
+## **Install**
+* **インストール用のライブラリ（aar）は準備中。**
 
-## Usage
+## **Usage**
 全体像はsampleモジュールを参考にしてください。
 1. MultiFloatWindowApplicationを実装するクラスを作成
     1. `onCreateFactory(index: Int): MultiFloatWindowViewFactory`メソッドを実装
@@ -124,7 +107,7 @@ FIXME アニメGIFで動作しているところを表示
 	    </intent-filter>
         ```
 
-## Contribution
+## **Contribution**
 Licenceに「Apache License Version 2.0」を選択しており、修正いただいた場合は「Pull Request」をお願いします。
 1. Fork ([https://github.com/tcnksm/tool/fork](https://github.com/tcnksm/tool/fork))
 2. Create a feature branch
@@ -133,23 +116,14 @@ Licenceに「Apache License Version 2.0」を選択しており、修正いた�
 5. Run and Test
 6. Create new Pull Request
 
-## Licence
-* [Apache License Version 2.0, January 2004](./LICENSE)
+## **Licence**
+* [**Apache License Version 2.0, January 2004**](./LICENSE)
 
-## Author
-* [@kght6123](https://twitter.com/kght6123)
+## **Author**
+* [**@kght6123**](https://twitter.com/kght6123)
 
-## Copyright
-```
-Copyright (c) 2017 Hirotaka Koga 
-```
+## **Contacts**
+公開内容の詳細に関しては[**@kght6123**](https://twitter.com/kght6123)まで、お気軽にお問い合わせ下さい。
 
-## Donate
-活動は、皆様からのPull Request、個人のAndroidアプリの売り上げなどの個人資金から行う予定です。
-今後の活動の為に、少額でも寄付を頂ければ幸いです。（任意）
-
-github pages Donate
-https://github.com/patharanordev/donate-in-git
-
-クレジットカード課金の寄付サイトを10分で作る Google In App Payments APIとJWTのサンプル
-https://kanasys.com/tech/154
+## **Copyright**
+**```Copyright (c) 2017 Hirotaka Koga```**

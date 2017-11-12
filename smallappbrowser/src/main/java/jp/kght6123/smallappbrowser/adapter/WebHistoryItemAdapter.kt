@@ -14,6 +14,13 @@ import android.widget.Toast
 import jp.kght6123.smallappbrowser.R
 import jp.kght6123.smallappbrowser.application.SharedDataApplication
 
+/**
+ *
+ *
+ * @author    kght6123
+ * @copyright 2017/08/04 Hirotaka Koga
+ * @license   http://www.apache.org/licenses/LICENSE-2.0 Apache-2.0
+ */
 class WebHistoryItemAdapter(
         private val webView :WebView,
         context :Context,

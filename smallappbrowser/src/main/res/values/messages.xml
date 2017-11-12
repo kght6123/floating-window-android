@@ -1,4 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+
+
+ @author    kght6123
+ @copyright 2017/05/09 Hirotaka Koga
+ @license   http://www.apache.org/licenses/LICENSE-2.0 Apache-2.0
+ -->
 <resources>
     <string name="pin_completed">ピン止めしました。</string>
     <string name="pin_deleted">ピンを削除しました。</string>

@@ -9,7 +9,10 @@ import jp.kght6123.multiwindow.MultiFloatWindowMainActivity
 
 /**
  * MultiFloatWindowApplicationServiceの自動再起動、関連アプリの追加・削除を通知する
- * Created by kght6123 on 2017/09/17.
+ *
+ * @author    kght6123
+ * @copyright 2017/09/17 Hirotaka Koga
+ * @license   http://www.apache.org/licenses/LICENSE-2.0 Apache-2.0
  */
 class RestartBroadcastReceiver : BroadcastReceiver() {
 

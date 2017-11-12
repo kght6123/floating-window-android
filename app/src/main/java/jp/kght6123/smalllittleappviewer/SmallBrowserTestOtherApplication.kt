@@ -14,7 +14,9 @@ import java.util.*
 /**
  * サンプルプラグインアプリケーション
  *
- * Created by kght6123 on 2017/09/16.
+ * @author    kght6123
+ * @copyright 2017/09/16 Hirotaka Koga
+ * @license   http://www.apache.org/licenses/LICENSE-2.0 Apache-2.0
  */
 class SmallBrowserTestOtherApplication : MultiFloatWindowApplication() {
 

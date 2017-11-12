@@ -10,7 +10,9 @@ import android.util.Log
 /**
  * MultiFloatWindowApplicationを初期化し、起動／停止を行う
  *
- * Created by kght6123 on 2017/10/01.
+ * @author    kght6123
+ * @copyright 2017/10/01 Hirotaka Koga
+ * @license   http://www.apache.org/licenses/LICENSE-2.0 Apache-2.0
  */
 open class MultiFloatWindowLauncher(val context: Context) {
     private val tag = MultiFloatWindowLauncher::class.java.simpleName

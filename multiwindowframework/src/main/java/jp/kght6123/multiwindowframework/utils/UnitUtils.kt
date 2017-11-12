@@ -4,7 +4,10 @@ import android.content.Context
 
 /**
  * 数値の単位変換ユーティリティ
- * Created by kght6123 on 2017/07/11.
+ *
+ * @author    kght6123
+ * @copyright 2017/11/04 Hirotaka Koga
+ * @license   http://www.apache.org/licenses/LICENSE-2.0 Apache-2.0
  */
 class UnitUtils {
 

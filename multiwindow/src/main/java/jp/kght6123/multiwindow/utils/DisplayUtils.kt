@@ -7,7 +7,9 @@ import android.view.WindowManager
 /**
  * 画面系のユーティリティクラス
  *
- * Created by kght6123 on 2017/07/29.
+ * @author    kght6123
+ * @copyright 2017/07/29 Hirotaka Koga
+ * @license   http://www.apache.org/licenses/LICENSE-2.0 Apache-2.0
  */
 class DisplayUtils {
 

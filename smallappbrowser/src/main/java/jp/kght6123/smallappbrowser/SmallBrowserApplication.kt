@@ -24,7 +24,9 @@ import java.util.*
 /**
  * スモールブラウザのサービス提供クラス
  *
- * Created by kght6123 on 2017/05/09.
+ * @author    kght6123
+ * @copyright 2017/05/09 Hirotaka Koga
+ * @license   http://www.apache.org/licenses/LICENSE-2.0 Apache-2.0
  */
 class SmallBrowserApplication : MultiFloatWindowApplication() {
 

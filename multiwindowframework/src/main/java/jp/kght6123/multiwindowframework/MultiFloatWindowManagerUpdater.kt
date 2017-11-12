@@ -3,7 +3,9 @@ package jp.kght6123.multiwindowframework
 /**
  * MultiFloatWindowManagerの更新を行うためのインターフェース
  *
- * Created by kght6123 on 2017/11/04.
+ * @author    kght6123
+ * @copyright 2017/11/04 Hirotaka Koga
+ * @license   http://www.apache.org/licenses/LICENSE-2.0 Apache-2.0
  */
 interface MultiFloatWindowManagerUpdater {
     fun setMinWidth(seq: Int, value: Int)
@@ -16,7 +18,9 @@ interface MultiFloatWindowManagerUpdater {
 /**
  * MultiFloatWindowManagerをリフレクションで更新を行うクラス
  *
- * Created by kght6123 on 2017/11/04.
+ * @author    kght6123
+ * @copyright 2017/11/04 Hirotaka Koga
+ * @license   http://www.apache.org/licenses/LICENSE-2.0 Apache-2.0
  */
 class MultiFloatWindowManagerUpdaterImpl(private val manager: Any) : MultiFloatWindowManagerUpdater {
 

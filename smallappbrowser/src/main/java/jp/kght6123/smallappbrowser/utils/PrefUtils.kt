@@ -8,6 +8,13 @@ import android.content.SharedPreferences
 import android.preference.PreferenceManager
 import android.view.View
 
+/**
+ *
+ *
+ * @author    kght6123
+ * @copyright 2017/08/04 Hirotaka Koga
+ * @license   http://www.apache.org/licenses/LICENSE-2.0 Apache-2.0
+ */
 object PrefUtils {
     fun setVisibility(resIdKey: Int, view: View, defaultValue: Boolean, context: Context, pref: SharedPreferences) {
         if (!pref.getBoolean(context.getString(resIdKey), defaultValue))

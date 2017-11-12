@@ -10,7 +10,9 @@ import jp.kght6123.multiwindow.MultiFloatWindowManager
 /**
  * アプリ一覧を表示するリサイクルビュー
  *
- * Created by kght6123 on 2017/07/29.
+ * @author    kght6123
+ * @copyright 2017/07/29 Hirotaka Koga
+ * @license   http://www.apache.org/licenses/LICENSE-2.0 Apache-2.0
  */
 class CardAppListRecyclerView(context: Context?, manager: MultiFloatWindowManager) : RecyclerView(context) {
     init {
