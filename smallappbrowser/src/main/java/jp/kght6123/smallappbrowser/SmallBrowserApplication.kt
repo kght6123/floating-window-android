@@ -26,9 +26,9 @@ import java.util.*
  *
  * Created by kght6123 on 2017/05/09.
  */
-class SmallBrowserApplicationService : MultiFloatWindowApplication() {
+class SmallBrowserApplication : MultiFloatWindowApplication() {
 
-    private val TAG = SmallBrowserApplicationService::class.java.simpleName
+    private val TAG = SmallBrowserApplication::class.java.simpleName
 
 	private enum class MoveControlArea {
 		Left,
@@ -51,7 +51,7 @@ class SmallBrowserApplicationService : MultiFloatWindowApplication() {
     override fun onCreateFactory(index: Int): MultiFloatWindowViewFactory {
         return object : MultiFloatWindowViewFactory(multiWindowContext) {
 
-            private val mainView by lazy { View.inflate(applicationContext, R.layout.smallapp_browser_main, null) }
+            private val mainView by lazy { createContentView(R.layout.smallapp_browser_main) }
             private val webView by lazy { mainView.findViewById(R.id.webview) as WebView }
             private val progressBarForWeb by lazy { mainView.findViewById(R.id.progressBarForWeb) as ProgressBar }
 
@@ -76,10 +76,10 @@ class SmallBrowserApplicationService : MultiFloatWindowApplication() {
                     webView.loadUrl("https://www.google.com/", additionalHttpHeaders)
             }
             private val onClickChromeListener = View.OnClickListener {
-                val pm = getPackageManager()
+                val pm = packageManager
                 val intent = pm.getLaunchIntentForPackage("com.android.chrome")
-                intent.setData(Uri.parse(webView.url))
-                intent.setAction(Intent.ACTION_VIEW)
+                intent.data = Uri.parse(webView.url)
+                intent.action = Intent.ACTION_VIEW
                 intent.addCategory(Intent.CATEGORY_DEFAULT)
                 intent.addCategory(Intent.CATEGORY_BROWSABLE)
                 startActivity(intent)
@@ -115,8 +115,8 @@ class SmallBrowserApplicationService : MultiFloatWindowApplication() {
                     listView.adapter = null
                     histAdapter = null
                 } else {
-                    val sharedData = this@SmallBrowserApplicationService.getApplicationContext() as SharedDataApplication
-                    histAdapter = WebHistoryItemAdapter(this.webView, this@SmallBrowserApplicationService, 0, sharedData.webHistoryItemList, additionalHttpHeaders, true)
+                    val sharedData = this@SmallBrowserApplication.applicationContext as SharedDataApplication
+                    histAdapter = WebHistoryItemAdapter(this.webView, this@SmallBrowserApplication, 0, sharedData.webHistoryItemList, additionalHttpHeaders, true)
 
                     listView.visibility = View.VISIBLE
                     listView.adapter = histAdapter
@@ -129,8 +129,8 @@ class SmallBrowserApplicationService : MultiFloatWindowApplication() {
                     listView.adapter = null
                     pinAdapter = null
                 } else {
-                    val sharedData = this@SmallBrowserApplicationService.getApplicationContext() as SharedDataApplication
-                    pinAdapter = WebHistoryItemAdapter(this.webView,this@SmallBrowserApplicationService, 0, sharedData.webPinItemList, additionalHttpHeaders, false)
+                    val sharedData = this@SmallBrowserApplication.applicationContext as SharedDataApplication
+                    pinAdapter = WebHistoryItemAdapter(this.webView,this@SmallBrowserApplication, 0, sharedData.webPinItemList, additionalHttpHeaders, false)
 
                     listView.visibility = View.VISIBLE
                     listView.adapter = pinAdapter
@@ -153,8 +153,9 @@ class SmallBrowserApplicationService : MultiFloatWindowApplication() {
                                 val historyItem = SharedDataApplication.WebHistoryItem(url, view.title, favicon)
                                 this.historyItem = historyItem
 
-                                val sharedData = this@SmallBrowserApplicationService.getApplicationContext() as SharedDataApplication
-                                sharedData.addWebHistoryItemList(historyItem)
+                                // FIXME java.lang.ClassCastException: android.app.ContextImpl cannot be cast to jp.kght6123.smallappbrowser.application.SharedDataApplication
+//                                val sharedData = this@SmallBrowserApplication.sharedContext as SharedDataApplication
+//                                sharedData.addWebHistoryItemList(historyItem)
                             }
                             override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {
                                 view?.loadUrl(request?.url?.toString(), additionalHttpHeaders)
@@ -278,23 +279,25 @@ class SmallBrowserApplicationService : MultiFloatWindowApplication() {
 
                 // キャッシュを設定
                 ws.setAppCacheEnabled(true)
-                ws.setAppCachePath(getExternalCacheDir().getPath())
+                ws.setAppCachePath(externalCacheDir.path)
 
                 ws.databaseEnabled = true
                 ws.domStorageEnabled = true
                 ws.loadWithOverviewMode = true
                 ws.useWideViewPort = true
 
-                setupOptionMenu(webView)
-                setupActionBar(webView, R.id.moveControlAreaBottom, R.id.webviewControlAreaBottom2, R.id.smallappControlAreaBottom2, MoveControlArea.Bottom2)
-                setupActionBar(webView, R.id.moveControlAreaBottom, R.id.webviewControlAreaBottom, R.id.smallappControlAreaBottom, MoveControlArea.Bottom)
-                setupActionBar(webView, R.id.moveControlAreaRight, R.id.webviewControlAreaRight, R.id.smallappControlAreaRight, MoveControlArea.Right)
-                setupActionBar(webView, R.id.moveControlAreaLeft, R.id.webviewControlAreaLeft, R.id.smallappControlAreaLeft, MoveControlArea.Left)
+                // FIXME java.lang.NumberFormatException: For input string: "2.0dip"
+//                setupOptionMenu(webView)
+                // FIXME include
+//                setupActionBar(webView, R.id.moveControlAreaBottom, R.id.webviewControlAreaBottom2, R.id.smallappControlAreaBottom2, MoveControlArea.Bottom2)
+//                setupActionBar(webView, R.id.moveControlAreaBottom, R.id.webviewControlAreaBottom, R.id.smallappControlAreaBottom, MoveControlArea.Bottom)
+//                setupActionBar(webView, R.id.moveControlAreaRight, R.id.webviewControlAreaRight, R.id.smallappControlAreaRight, MoveControlArea.Right)
+//                setupActionBar(webView, R.id.moveControlAreaLeft, R.id.webviewControlAreaLeft, R.id.smallappControlAreaLeft, MoveControlArea.Left)
 
                 return mainView
             }
             override fun createMinimizedView(arg: Int): View {
-                this.mMinimizedView = ImageView(applicationContext)
+                this.mMinimizedView = ImageView(sharedContext)
                 this.mMinimizedView!!.setImageResource(R.mipmap.ic_launcher)
                 this.mMinimizedView!!.isFocusableInTouchMode = true
                 this.mMinimizedView!!.isFocusable = true
@@ -332,159 +335,159 @@ class SmallBrowserApplicationService : MultiFloatWindowApplication() {
             }
             var savedMoveControlArea: MoveControlArea
                 get() {
-                    val sPref = getSharedPreferences(SmallBrowserApplicationService::class.java.name, Context.MODE_PRIVATE)
+                    val sPref = getSharedPreferences(SmallBrowserApplication::class.java.name, Context.MODE_PRIVATE)
                     val moveControlAreaStr = sPref.getString(MoveControlArea::class.java.simpleName, MoveControlArea.Left.name)
-                    val moveControlArea = MoveControlArea.valueOf(moveControlAreaStr)
-                    return moveControlArea
+                    return MoveControlArea.valueOf(moveControlAreaStr)
                 }
                 private set(moveControlArea) {
-                    val sPref = getSharedPreferences(SmallBrowserApplicationService::class.java.name, Context.MODE_PRIVATE)
+                    val sPref = getSharedPreferences(SmallBrowserApplication::class.java.name, Context.MODE_PRIVATE)
 
                     val editor = sPref.edit()
                     editor.putString(MoveControlArea::class.java.simpleName, moveControlArea.name)
                     editor.apply()
                 }
+// FIXME include
+//            inner class OnClickListenerForMoveControl(private val moveControlArea: MoveControlArea) : View.OnClickListener {
+//
+//                private val moveControlAreaLeft = mainView.findViewById(R.id.moveControlAreaLeft) as LinearLayout
+//                private val moveControlAreaRight = mainView.findViewById(R.id.moveControlAreaRight) as LinearLayout
+//                private val moveControlAreaBottom = mainView.findViewById(R.id.moveControlAreaBottom) as LinearLayout
+//
+//                private val webViewControlAreaLeft = mainView.findViewById(R.id.webviewControlAreaLeft) as LinearLayout
+//                private val webViewControlAreaRight = mainView.findViewById(R.id.webviewControlAreaRight) as LinearLayout
+//                private val webViewControlAreaBottom = mainView.findViewById(R.id.webviewControlAreaBottom) as LinearLayout
+//                private val webViewControlAreaBottom2 = mainView.findViewById(R.id.webviewControlAreaBottom2) as LinearLayout
+//
+//                private val smallappControlAreaLeft = mainView.findViewById(R.id.smallappControlAreaLeft) as LinearLayout
+//                private val smallappControlAreaRight = mainView.findViewById(R.id.smallappControlAreaRight) as LinearLayout
+//                private val smallappControlAreaBottom = mainView.findViewById(R.id.smallappControlAreaBottom) as LinearLayout
+//                private val smallappControlAreaBottom2 = mainView.findViewById(R.id.smallappControlAreaBottom2) as LinearLayout
+//
+//                @Synchronized override fun onClick(v: View) {
+//                    when (moveControlArea) {
+//                        MoveControlArea.Left -> {
+//                            moveControlAreaRight.visibility = View.VISIBLE
+//                            moveControlAreaBottom.visibility = View.VISIBLE
+//
+//                            webViewControlAreaRight.visibility = View.INVISIBLE
+//                            webViewControlAreaBottom.visibility = View.INVISIBLE
+//                            webViewControlAreaBottom2.visibility = View.INVISIBLE
+//
+//                            smallappControlAreaRight.visibility = View.INVISIBLE
+//                            smallappControlAreaBottom.visibility = View.INVISIBLE
+//                            smallappControlAreaBottom2.visibility = View.INVISIBLE
+//
+//                            moveControlAreaLeft.visibility = View.INVISIBLE
+//                            webViewControlAreaLeft.visibility = View.VISIBLE
+//                            smallappControlAreaLeft.visibility = View.VISIBLE
+//                        }
+//                        MoveControlArea.Right -> {
+//                            moveControlAreaLeft.visibility = View.VISIBLE
+//                            moveControlAreaBottom.visibility = View.VISIBLE
+//
+//                            webViewControlAreaLeft.visibility = View.INVISIBLE
+//                            webViewControlAreaBottom.visibility = View.INVISIBLE
+//                            webViewControlAreaBottom2.visibility = View.INVISIBLE
+//
+//                            smallappControlAreaLeft.visibility = View.INVISIBLE
+//                            smallappControlAreaBottom.visibility = View.INVISIBLE
+//                            smallappControlAreaBottom2.visibility = View.INVISIBLE
+//
+//                            moveControlAreaRight.visibility = View.INVISIBLE
+//                            webViewControlAreaRight.visibility = View.VISIBLE
+//                            smallappControlAreaRight.visibility = View.VISIBLE
+//                        }
+//                        MoveControlArea.Bottom, MoveControlArea.Bottom2 -> {
+//                            moveControlAreaLeft.visibility = View.VISIBLE
+//                            moveControlAreaRight.visibility = View.VISIBLE
+//
+//                            webViewControlAreaLeft.visibility = View.INVISIBLE
+//                            webViewControlAreaRight.visibility = View.INVISIBLE
+//
+//                            smallappControlAreaLeft.visibility = View.INVISIBLE
+//                            smallappControlAreaRight.visibility = View.INVISIBLE
+//
+//
+//                            val pref = PreferenceManager.getDefaultSharedPreferences(this@SmallBrowserApplication)
+//                            if (pref.getBoolean(this@SmallBrowserApplication.getString(R.string.bottom_actionbar_view_close_let_bar_key), false)) {
+//                                moveControlAreaBottom.visibility = View.INVISIBLE
+//                                webViewControlAreaBottom.visibility = View.INVISIBLE
+//                                smallappControlAreaBottom.visibility = View.INVISIBLE
+//
+//                                webViewControlAreaBottom2.visibility = View.VISIBLE
+//                                smallappControlAreaBottom2.visibility = View.VISIBLE
+//                            } else {
+//                                moveControlAreaBottom.visibility = View.INVISIBLE
+//                                webViewControlAreaBottom.visibility = View.VISIBLE
+//                                smallappControlAreaBottom.visibility = View.VISIBLE
+//
+//                                webViewControlAreaBottom2.visibility = View.INVISIBLE
+//                                smallappControlAreaBottom2.visibility = View.INVISIBLE
+//                            }
+//                        }
+//                    }
+//                    savedMoveControlArea = moveControlArea
+//                }
+//            }
 
-            inner class OnClickListenerForMoveControl(private val moveControlArea: MoveControlArea) : View.OnClickListener {
-
-                private val moveControlAreaLeft = mainView.findViewById(R.id.moveControlAreaLeft) as LinearLayout
-                private val moveControlAreaRight = mainView.findViewById(R.id.moveControlAreaRight) as LinearLayout
-                private val moveControlAreaBottom = mainView.findViewById(R.id.moveControlAreaBottom) as LinearLayout
-
-                private val webViewControlAreaLeft = mainView.findViewById(R.id.webviewControlAreaLeft) as LinearLayout
-                private val webViewControlAreaRight = mainView.findViewById(R.id.webviewControlAreaRight) as LinearLayout
-                private val webViewControlAreaBottom = mainView.findViewById(R.id.webviewControlAreaBottom) as LinearLayout
-                private val webViewControlAreaBottom2 = mainView.findViewById(R.id.webviewControlAreaBottom2) as LinearLayout
-
-                private val smallappControlAreaLeft = mainView.findViewById(R.id.smallappControlAreaLeft) as LinearLayout
-                private val smallappControlAreaRight = mainView.findViewById(R.id.smallappControlAreaRight) as LinearLayout
-                private val smallappControlAreaBottom = mainView.findViewById(R.id.smallappControlAreaBottom) as LinearLayout
-                private val smallappControlAreaBottom2 = mainView.findViewById(R.id.smallappControlAreaBottom2) as LinearLayout
-
-                @Synchronized override fun onClick(v: View) {
-                    when (moveControlArea) {
-                        MoveControlArea.Left -> {
-                            moveControlAreaRight.visibility = View.VISIBLE
-                            moveControlAreaBottom.visibility = View.VISIBLE
-
-                            webViewControlAreaRight.visibility = View.INVISIBLE
-                            webViewControlAreaBottom.visibility = View.INVISIBLE
-                            webViewControlAreaBottom2.visibility = View.INVISIBLE
-
-                            smallappControlAreaRight.visibility = View.INVISIBLE
-                            smallappControlAreaBottom.visibility = View.INVISIBLE
-                            smallappControlAreaBottom2.visibility = View.INVISIBLE
-
-                            moveControlAreaLeft.visibility = View.INVISIBLE
-                            webViewControlAreaLeft.visibility = View.VISIBLE
-                            smallappControlAreaLeft.visibility = View.VISIBLE
-                        }
-                        MoveControlArea.Right -> {
-                            moveControlAreaLeft.visibility = View.VISIBLE
-                            moveControlAreaBottom.visibility = View.VISIBLE
-
-                            webViewControlAreaLeft.visibility = View.INVISIBLE
-                            webViewControlAreaBottom.visibility = View.INVISIBLE
-                            webViewControlAreaBottom2.visibility = View.INVISIBLE
-
-                            smallappControlAreaLeft.visibility = View.INVISIBLE
-                            smallappControlAreaBottom.visibility = View.INVISIBLE
-                            smallappControlAreaBottom2.visibility = View.INVISIBLE
-
-                            moveControlAreaRight.visibility = View.INVISIBLE
-                            webViewControlAreaRight.visibility = View.VISIBLE
-                            smallappControlAreaRight.visibility = View.VISIBLE
-                        }
-                        MoveControlArea.Bottom, MoveControlArea.Bottom2 -> {
-                            moveControlAreaLeft.visibility = View.VISIBLE
-                            moveControlAreaRight.visibility = View.VISIBLE
-
-                            webViewControlAreaLeft.visibility = View.INVISIBLE
-                            webViewControlAreaRight.visibility = View.INVISIBLE
-
-                            smallappControlAreaLeft.visibility = View.INVISIBLE
-                            smallappControlAreaRight.visibility = View.INVISIBLE
-
-
-                            val pref = PreferenceManager.getDefaultSharedPreferences(this@SmallBrowserApplicationService)
-                            if (pref.getBoolean(this@SmallBrowserApplicationService.getString(R.string.bottom_actionbar_view_close_let_bar_key), false)) {
-                                moveControlAreaBottom.visibility = View.INVISIBLE
-                                webViewControlAreaBottom.visibility = View.INVISIBLE
-                                smallappControlAreaBottom.visibility = View.INVISIBLE
-
-                                webViewControlAreaBottom2.visibility = View.VISIBLE
-                                smallappControlAreaBottom2.visibility = View.VISIBLE
-                            } else {
-                                moveControlAreaBottom.visibility = View.INVISIBLE
-                                webViewControlAreaBottom.visibility = View.VISIBLE
-                                smallappControlAreaBottom.visibility = View.VISIBLE
-
-                                webViewControlAreaBottom2.visibility = View.INVISIBLE
-                                smallappControlAreaBottom2.visibility = View.INVISIBLE
-                            }
-                        }
-                    }
-                    savedMoveControlArea = moveControlArea
-                }
-            }
-
-            private fun setupOptionMenu(webView: WebView): View {
-                val pref = PreferenceManager.getDefaultSharedPreferences(this@SmallBrowserApplicationService)
-                val header = LayoutInflater.from(this@SmallBrowserApplicationService).inflate(R.layout.smallapp_browser_header, null)// リソースからViewを取り出す
-
-                val optionMenu = header.findViewById(R.id.option_menu)
-                optionMenu.setOnClickListener(View.OnClickListener {
-                    val popup = PopupMenu(this@SmallBrowserApplicationService, optionMenu)
-                    popup.menuInflater.inflate(R.menu.smallapp_browser_menus, popup.menu)
-
-                    val menu = popup.menu
-                    if (webView.settings.javaScriptEnabled)
-                        menu.findItem(R.id.javascript).setTitle(R.string.javascriptDisable)
-                    else
-                        menu.findItem(R.id.javascript).setTitle(R.string.javascriptEnable)
-
-                    popup.setOnMenuItemClickListener { item ->
-                        if (R.id.javascript == item.itemId) {
-                            if (webView.settings.javaScriptEnabled) {
-                                menu.findItem(R.id.javascript).setTitle(R.string.javascriptEnable)
-                                webView.settings.javaScriptEnabled = false
-                                webView.reload()
-                            } else {
-                                menu.findItem(R.id.javascript).setTitle(R.string.javascriptDisable)
-                                webView.settings.javaScriptEnabled = true
-                                webView.reload()
-                            }
-                        }
-                        true
-                    }
-                    popup.show()
-                })
-                val back = header.findViewById(R.id.back)
-                back.setOnClickListener(this.onClickBackListener)
-                PrefUtils.setVisibility(R.string.back_view_title_key, back, false, this@SmallBrowserApplicationService, pref)
-
-                val forward = header.findViewById(R.id.forward)
-                forward.setOnClickListener(this.onClickForwardListener)
-                PrefUtils.setVisibility(R.string.forward_view_title_key, forward, false, this@SmallBrowserApplicationService, pref)
-
-                val chrome = header.findViewById(R.id.chrome)
-                chrome.setOnClickListener(this.onClickChromeListener)
-                PrefUtils.setVisibility(R.string.chrome_view_title_key, chrome, false, this@SmallBrowserApplicationService, pref)
-
-                /**
-                 * タイトルビューの設定
-
-                 * 縦は48dpぐらい。AndoridのActionBarと同じサイズ。
-                 * ActionButtonは48dp×48dpにすること。（UIのガイドラインレベル）
-                 * Action button icons on header area should be 48x48 dp.
-
-                 */
-                /* Deploy the option menu in the header area of the titlebar */
-                return header
-            }
+// FIXME java.lang.NumberFormatException: For input string: "2.0dip"
+//            private fun setupOptionMenu(webView: WebView): View {
+//                val pref = PreferenceManager.getDefaultSharedPreferences(this@SmallBrowserApplication)
+//                val header = createContentView(R.layout.smallapp_browser_header)// リソースからViewを取り出す
+//
+//                val optionMenu = header.findViewById(R.id.option_menu)
+//                optionMenu.setOnClickListener(View.OnClickListener {
+//                    val popup = PopupMenu(this@SmallBrowserApplication, optionMenu)
+//                    popup.menuInflater.inflate(R.menu.smallapp_browser_menus, popup.menu)
+//
+//                    val menu = popup.menu
+//                    if (webView.settings.javaScriptEnabled)
+//                        menu.findItem(R.id.javascript).setTitle(R.string.javascriptDisable)
+//                    else
+//                        menu.findItem(R.id.javascript).setTitle(R.string.javascriptEnable)
+//
+//                    popup.setOnMenuItemClickListener { item ->
+//                        if (R.id.javascript == item.itemId) {
+//                            if (webView.settings.javaScriptEnabled) {
+//                                menu.findItem(R.id.javascript).setTitle(R.string.javascriptEnable)
+//                                webView.settings.javaScriptEnabled = false
+//                                webView.reload()
+//                            } else {
+//                                menu.findItem(R.id.javascript).setTitle(R.string.javascriptDisable)
+//                                webView.settings.javaScriptEnabled = true
+//                                webView.reload()
+//                            }
+//                        }
+//                        true
+//                    }
+//                    popup.show()
+//                })
+//                val back = header.findViewById(R.id.back)
+//                back.setOnClickListener(this.onClickBackListener)
+//                PrefUtils.setVisibility(R.string.back_view_title_key, back, false, this@SmallBrowserApplication, pref)
+//
+//                val forward = header.findViewById(R.id.forward)
+//                forward.setOnClickListener(this.onClickForwardListener)
+//                PrefUtils.setVisibility(R.string.forward_view_title_key, forward, false, this@SmallBrowserApplication, pref)
+//
+//                val chrome = header.findViewById(R.id.chrome)
+//                chrome.setOnClickListener(this.onClickChromeListener)
+//                PrefUtils.setVisibility(R.string.chrome_view_title_key, chrome, false, this@SmallBrowserApplication, pref)
+//
+//                /**
+//                 * タイトルビューの設定
+//
+//                 * 縦は48dpぐらい。AndoridのActionBarと同じサイズ。
+//                 * ActionButtonは48dp×48dpにすること。（UIのガイドラインレベル）
+//                 * Action button icons on header area should be 48x48 dp.
+//
+//                 */
+//                /* Deploy the option menu in the header area of the titlebar */
+//                return header
+//            }
 
             private fun setupActionBar(webView: WebView, moveControlAreaId: Int, webviewControlAreaId: Int, smallappControlAreaId: Int, targetMoveControlArea: MoveControlArea) {
-                val pref = PreferenceManager.getDefaultSharedPreferences(this@SmallBrowserApplicationService)
+                val pref = PreferenceManager.getDefaultSharedPreferences(this@SmallBrowserApplication)
 
                 val moveControlArea = mainView.findViewById(moveControlAreaId)
                 val webviewControlArea = mainView.findViewById(webviewControlAreaId)
@@ -492,31 +495,31 @@ class SmallBrowserApplicationService : MultiFloatWindowApplication() {
 
                 val back = webviewControlArea.findViewById(R.id.btnBack) as Button
                 back.setOnClickListener(this.onClickBackListener)
-                PrefUtils.setVisibility(R.string.back_view_bar_key, back, true, this@SmallBrowserApplicationService, pref)
+                PrefUtils.setVisibility(R.string.back_view_bar_key, back, true, this@SmallBrowserApplication, pref)
 
                 val forward = webviewControlArea.findViewById(R.id.btnForward) as Button
                 forward.setOnClickListener(this.onClickForwardListener)
-                PrefUtils.setVisibility(R.string.forward_view_bar_key, forward, false, this@SmallBrowserApplicationService, pref)
+                PrefUtils.setVisibility(R.string.forward_view_bar_key, forward, false, this@SmallBrowserApplication, pref)
 
                 val chrome = smallappControlArea.findViewById(R.id.btnChrome) as Button
                 chrome.setOnClickListener(this.onClickChromeListener)
-                PrefUtils.setVisibility(R.string.chrome_view_bar_key, chrome, true, this@SmallBrowserApplicationService, pref)
+                PrefUtils.setVisibility(R.string.chrome_view_bar_key, chrome, true, this@SmallBrowserApplication, pref)
 
                 val pin = webviewControlArea.findViewById(R.id.btnPin) as Button
                 pin.setOnClickListener(this.onClickPinListener)
-                PrefUtils.setVisibility(R.string.pin_view_bar_key, pin, false, this@SmallBrowserApplicationService, pref)
+                PrefUtils.setVisibility(R.string.pin_view_bar_key, pin, false, this@SmallBrowserApplication, pref)
 
                 val histry = webviewControlArea.findViewById(R.id.btnHistry) as Button
                 histry.setOnClickListener(this.onClickHistListener)
-                PrefUtils.setVisibility(R.string.history_view_bar_key, histry, false, this@SmallBrowserApplicationService, pref)
+                PrefUtils.setVisibility(R.string.history_view_bar_key, histry, false, this@SmallBrowserApplication, pref)
 
                 val shared = webviewControlArea.findViewById(R.id.btnShared) as Button
                 shared.setOnClickListener(this.onClickSharedListener)
-                PrefUtils.setVisibility(R.string.shared_view_bar_key, shared, true, this@SmallBrowserApplicationService, pref)
+                PrefUtils.setVisibility(R.string.shared_view_bar_key, shared, true, this@SmallBrowserApplication, pref)
 
                 val close = smallappControlArea.findViewById(R.id.btnClose) as Button
                 close.setOnClickListener { /*this@SmallBrowserApplication.finish()*/ }
-                PrefUtils.setVisibility(R.string.close_view_bar_key, close, true, this@SmallBrowserApplicationService, pref)
+                PrefUtils.setVisibility(R.string.close_view_bar_key, close, true, this@SmallBrowserApplication, pref)
 
                 val refresh = webviewControlArea.findViewById(R.id.btnRefresh) as Button
                 refresh.setOnClickListener {
@@ -524,15 +527,16 @@ class SmallBrowserApplicationService : MultiFloatWindowApplication() {
                     webView.reload()
                     webView.settings.cacheMode = defaultCacheMode
                 }
-                PrefUtils.setVisibility(R.string.refresh_view_bar_key, refresh, false, this@SmallBrowserApplicationService, pref)
+                PrefUtils.setVisibility(R.string.refresh_view_bar_key, refresh, false, this@SmallBrowserApplication, pref)
 
                 if (targetMoveControlArea != MoveControlArea.Bottom2) {
-                    val btnMoveControl = moveControlArea.findViewById(R.id.btnMoveControl) as Button
-                    val onClickMoveCtrl = OnClickListenerForMoveControl(targetMoveControlArea)
-                    btnMoveControl.setOnClickListener(onClickMoveCtrl)
-
-                    if (targetMoveControlArea == savedMoveControlArea)
-                        onClickMoveCtrl.onClick(btnMoveControl)
+                    // FIXME include
+//                    val btnMoveControl = moveControlArea.findViewById(R.id.btnMoveControl) as Button
+//                    val onClickMoveCtrl = OnClickListenerForMoveControl(targetMoveControlArea)
+//                    btnMoveControl.setOnClickListener(onClickMoveCtrl)
+//
+//                    if (targetMoveControlArea == savedMoveControlArea)
+//                        onClickMoveCtrl.onClick(btnMoveControl)
                 }
             }
         }

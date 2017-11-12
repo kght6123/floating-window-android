@@ -1,4 +1,4 @@
-package jp.kght6123.multiwindow
+package jp.kght6123.multiwindowframework
 
 import android.app.Activity
 import android.appwidget.AppWidgetHost
@@ -11,8 +11,6 @@ import android.os.Bundle
 import android.os.IBinder
 import android.provider.Settings
 import android.widget.Toast
-import jp.kght6123.multiwindowframework.MultiFloatWindowConstants
-import jp.kght6123.multiwindowframework.MultiWindowControlCommand
 
 /**
  * スモールブラウザの起動／停止とOverlay権限のチェック結果イベント発行を行う、Activity
@@ -27,7 +25,7 @@ abstract class MultiFloatWindowBaseActivity : Activity() {
         private val REQUEST_CODE_CONFIGURE_APPWIDGET :Int = 9012
     }
 
-    lateinit protected var launcher :MultiFloatWindowLauncher
+    lateinit protected var launcher : MultiFloatWindowLauncher
 
     private val appWidgetHost by lazy {
         AppWidgetHost(this, MultiFloatWindowConstants.APP_WIDGET_HOST_ID)
@@ -88,7 +86,13 @@ abstract class MultiFloatWindowBaseActivity : Activity() {
                 this@MultiFloatWindowBaseActivity.onFindPrevIndex(prevIndex, returnCommand)
             }
         }
+        this.launcher.bind()// 必ずonCreateに！
     }
+    override fun onDestroy() {
+        super.onDestroy()
+        launcher.unbind()// 必ずonDestroyに！
+    }
+
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         when (resultCode) {
             RESULT_OK -> {
@@ -153,12 +157,8 @@ abstract class MultiFloatWindowBaseActivity : Activity() {
     override fun onStart() {
         super.onStart()
         judgeOverlayPermission()
-        launcher.bind()
     }
-    override fun onStop() {
-        super.onStop()
-        launcher.unbind()
-    }
+
     open fun onLauncherServiceConnected(name: ComponentName?, binder: IBinder?) {
         serviceConnected = true
         //Toast.makeText(applicationContext, "Service Connected OK.", Toast.LENGTH_SHORT).show()

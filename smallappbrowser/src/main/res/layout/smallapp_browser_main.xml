@@ -55,7 +55,8 @@
         android:layout_marginBottom="-8dp"
         android:layout_marginTop="-4dp"
         android:hardwareAccelerated="true"/>
-    
+
+    <!-- FIXME include
     <include android:id="@+id/moveControlAreaBottom" layout="@layout/smallapp_browser_move_control_area_bottom"/>
     <include android:id="@+id/moveControlAreaLeft" layout="@layout/smallapp_browser_move_control_area_left"/>
     <include android:id="@+id/moveControlAreaRight" layout="@layout/smallapp_browser_move_control_area_right"/>
@@ -69,5 +70,6 @@
     <include android:id="@+id/smallappControlAreaBottom2" layout="@layout/smallapp_browser_smallapp_control_area_bottom2"/>
     <include android:id="@+id/smallappControlAreaLeft" layout="@layout/smallapp_browser_smallapp_control_area_left"/>
     <include android:id="@+id/smallappControlAreaRight" layout="@layout/smallapp_browser_smallapp_control_area_right"/>
-    
+     -->
+
 </FrameLayout>

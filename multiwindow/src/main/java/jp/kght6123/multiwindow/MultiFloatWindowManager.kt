@@ -245,6 +245,10 @@ class MultiFloatWindowManager(val context: Context): MultiFloatWindowManagerUpda
                         controlAppListLayer.minimumWidth = UnitUtils.convertDp2Px(200f, context).toInt()
 
                         windowManager.updateViewLayout(controlLayer, ctrlListParams)
+
+                        // 切り替え時にリストを更新する
+                        cardAppListView.adapter?.notifyDataSetChanged()
+                        iconAppListView.adapter?.notifyDataSetChanged()
                     }
                     return false
                 }
@@ -535,7 +539,7 @@ class MultiFloatWindowManager(val context: Context): MultiFloatWindowManagerUpda
 
     fun openWindow(windowIndex: Int, packageName: String, serviceClassName: String, update: Boolean) {
 
-        val sharedContext = context.createPackageContext(packageName, Context.CONTEXT_INCLUDE_CODE)
+        val sharedContext = context.createPackageContext(packageName, Context.CONTEXT_INCLUDE_CODE or Context.CONTEXT_IGNORE_SECURITY)
         val classObj = Class.forName(serviceClassName, true, sharedContext.classLoader)
         val application = classObj.newInstance()
 

@@ -39,7 +39,7 @@ class BrowserChangerActivity : Activity() {
 
         // カテゴリとアクションに一致するアクティビティの情報を取得する
         val items :List<ResolveInfo> = pm.queryIntentActivities(intent, 0)
-        val adapter : ResolveInfoListAdapter = ResolveInfoListAdapter(this, objects = items.toMutableList())
+        val adapter = ResolveInfoListAdapter(this, objects = items.toMutableList())
 
         // リストダイアログを表示する
         // 選択→そのブラウザで表示、長押し選択→ブラウザのアプリ設定

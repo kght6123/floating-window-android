@@ -1,4 +1,4 @@
-package jp.kght6123.multiwindow
+package jp.kght6123.multiwindowframework
 
 import android.content.ComponentName
 import android.content.Context
@@ -6,7 +6,6 @@ import android.content.Intent
 import android.content.ServiceConnection
 import android.os.*
 import android.util.Log
-import jp.kght6123.multiwindowframework.*
 
 /**
  * MultiFloatWindowApplicationを初期化し、起動／停止を行う
@@ -17,7 +16,9 @@ open class MultiFloatWindowLauncher(val context: Context) {
     private val tag = MultiFloatWindowLauncher::class.java.simpleName
 
     private val serviceIntent: Intent by lazy {
-        Intent(context, MultiFloatWindowService::class.java)
+        val intent = Intent("jp.kght6123.multiwindow.MultiFloatWindowService.ACTION")
+        intent.`package` = "jp.kght6123.multiwindow"
+        intent
     }
     private val mSelfMessenger: Messenger = Messenger(Handler(ResponseHandler()))
     private var mServiceMessenger: Messenger? = null

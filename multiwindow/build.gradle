@@ -33,7 +33,6 @@ dependencies {
     compile 'org.jetbrains.kotlinx:kotlinx-coroutines-core:0.16'
     compile 'org.jetbrains.kotlinx:kotlinx-coroutines-android:0.16'
     testImplementation 'junit:junit:4.12'
-    compile "org.jetbrains.kotlin:kotlin-stdlib-jre7:$kotlin_version"
     compile project(path: ':multiwindowframework')
 }
 repositories {

@@ -14,6 +14,9 @@
             android:enabled="true"
             android:exported="true"
             android:process=":local">
+            <intent-filter>
+                <action android:name="jp.kght6123.multiwindow.MultiFloatWindowService.ACTION" />
+            </intent-filter>
         </service>
 
         <receiver android:name=".receiver.RestartBroadcastReceiver" android:exported="true" android:permission="android.permission.RECEIVE_BOOT_COMPLETED">

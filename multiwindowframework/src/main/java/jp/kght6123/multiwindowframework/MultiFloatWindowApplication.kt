@@ -3,9 +3,8 @@ package jp.kght6123.multiwindowframework
 import android.app.Service
 import android.appwidget.AppWidgetHost
 import android.appwidget.AppWidgetProviderInfo
-import android.content.Context
-import android.content.Intent
-import android.os.IBinder
+import android.content.*
+import android.os.*
 import android.util.DisplayMetrics
 import android.view.LayoutInflater
 import android.view.View
@@ -37,8 +36,78 @@ abstract class MultiFloatWindowApplication : Service() {
 
     protected fun createContentView(layoutResId: Int): View {
         val parser = sharedContext!!.resources.getLayout(layoutResId)
-        return LayoutInflater.from(applicationContext).inflate(parser, null)
+
+        // applicationContextだと、styleに定義されているdimensionが取得できずに、Viewの初期化時にTypedArray.getDimensionPixelSizeでエラー
+        //    Caused by: java.lang.UnsupportedOperationException: Failed to resolve attribute at index 17: TypedValue{t=0x2/d=0x7f020063 a=-1}
+        //    ContextのobtainStyledAttributesで取得したTypedArrayについて、dimensionが取得できない
+        //    SharedContextなら行けるはずだけど、ContextWrapperでラップしてもobtainStyledAttributesの定義がfinalなので上書きできない
+        //
+
+        // 渡すContextを下記に変えたけど無理ぽ
+        //    this.baseContext, sharedContext, SharedContextWrapper(sharedContext!!, applicationContext), this
+        //       val configContext = applicationContext.createConfigurationContext(sharedContext!!.getResources().getConfiguration())
+        //      sharedContext系は、Context.getSystemServiceでぬるぽ
+        //
+
+        // cloneInContextとか・・・ContextThemeWrapperを使ってる？？
+        //   LayoutInflater.from(applicationContext).cloneInContext(sharedContext!!).inflate(parser, null)
+        //      同じくContext.getSystemServiceでぬるぽ
+        //
+
+        // LayoutInflater.Factory2を使ってみるか？
+        //    この「LayoutInflater.parseInclude:964, LayoutInflater (android.view)」が既に暗黙的に呼び出されており、
+        //    Factory2では割り込みできない
+        //     -> 簡単には無理かな・・・
+        //
+
+        val inflater = LayoutInflater.from(applicationContext)
+//        inflater.factory2 = Factory2()
+        return inflater.inflate(parser, null)
     }
+
+//    inner class Factory2: LayoutInflater.Factory2 {
+//
+//        private fun createIncludeView(attrs: AttributeSet, root: ViewGroup?): View? {
+//
+//            //
+//            // includeタグの本来の処理はViewStub？
+//            // include先(include.xml)のFrameLayoutのリソースIDに"includer"が割り当てられるので真似る
+//            //    return android.view.ViewStub(context, attrs).inflate()
+//            //
+//
+//            val id = attrs.getIdAttributeResourceValue(0)
+//            val layoutResId = attrs.getAttributeResourceValue(null, "layout", 0)
+//
+//            val parser = sharedContext!!.resources.getLayout(layoutResId)
+//            val includeView = LayoutInflater.from(applicationContext).inflate(parser, root)
+//
+//            includeView.id = id // IDを設定
+//
+//            return includeView
+//        }
+//        override fun onCreateView(name: String?, context: Context?, attrs: AttributeSet?): View? {
+//            return onCreateView(null, name, context, attrs)
+//        }
+//        override fun onCreateView(parent: View?, name: String?/*include*/, context: Context?, attrs: AttributeSet?): View? {
+//            return if(name == "include" && attrs != null) {
+//                createIncludeView(attrs, null)
+//            } else {
+//                null
+//            }
+//        }
+//    }
+//    class SharedContextWrapper(private val sharedContext: Context, applicationContext: Context): ContextWrapper(applicationContext) {
+//        override fun getPackageResourcePath(): String {
+//            return sharedContext.packageResourcePath
+//        }
+//        override fun getResources(): android.content.res.Resources {
+//            return sharedContext.resources
+//        }
+//        override fun getTheme(): android.content.res.Resources.Theme {
+//            return sharedContext.theme
+//        }
+//
+//    }
 
     abstract fun onCreateFactory(index: Int): MultiFloatWindowViewFactory
     abstract fun onCreateSettingsFactory(index: Int): MultiFloatWindowSettingsFactory

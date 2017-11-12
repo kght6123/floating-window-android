@@ -18,7 +18,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme" >
 
-        <!--activity
+        <activity
             android:name=".activity.HttpActionDelegateActivity"
             android:label="@string/app_browser_name"
             android:excludeFromRecents="true"
@@ -36,7 +36,7 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-        </activity-->
+        </activity>
 
         <activity
             android:name=".activity.BrowserChangerActivity"
@@ -54,7 +54,7 @@
             </intent-filter>
         </activity>
 
-        <service android:name=".SmallBrowserApplicationService"
+        <service android:name=".SmallBrowserApplication"
             android:enabled="true"
             android:exported="true">
             <intent-filter>

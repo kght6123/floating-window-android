@@ -1,5 +1,7 @@
 package jp.kght6123.multiwindow
 
+import jp.kght6123.multiwindowframework.MultiFloatWindowBaseActivity
+
 /**
  * MultiFloatWindowApplicationのWidget追加用のActivity
  *
