@@ -15,12 +15,12 @@ android（ルート権限不要）でフローティングウィンドウを実�
 
 小窓でフレームワークに実装したアプリを表示することが出来ます。
 アプリ一覧やアプリ履歴はコアに含まれるランチャーから呼び出しします。
-Activityから特定のマルチウィンドウアプリを呼び出したりことが出来ます。
+Activityから特定のマルチウィンドウアプリを呼び出したりことが出来ます。
 
 Coreアプリ（マルチウィンドウ機能）と、フレームワーク（アプリ追加用）にモジュールが分かれています。
 
 ## **Demo**
-サンプルアプリケーションのデモになります
+サンプルアプリケーションのデモになります
 
 [![Sample](http://img.youtube.com/vi/uGvzgPG2nSM&feature=youtu.be/0.jpg)](https://www.youtube.com/watch?v=uGvzgPG2nSM&feature=youtu.be)
 
@@ -32,7 +32,7 @@ Coreアプリ（マルチウィンドウ機能）と、フレームワーク（�
 ![ランチャー起動](screenshot/screen-01.png "ランチャー起動")
 
 1. アプリ一覧表示
-    * ランチャーをダブルタップしてアプリ一覧表示、ロングタップでランチャー表示に戻ります。
+    * ランチャーをダブルタップしてアプリ一覧表示、ロングタップでランチャー表示に戻ります。
     * アプリ一覧の上はインストール済みのアプリ一覧
     * アプリ一覧の下はアプリ履歴
 ![アプリ一覧表示](screenshot/screen-03.png "アプリ一覧表示")
@@ -65,7 +65,7 @@ Coreアプリ（マルチウィンドウ機能）と、フレームワーク（�
 非システムアプリの為、利用しているWindowManager（`TYPE_SYSTEM_ALERT`、`TYPE_APPLICATION_OVERLAY`）に制限があり、幾つかの機能に制約があります。
 1. ウィンドウが全て非アクティブになった場合、ランチャーを選択しないと復帰できない。
 1. コア機能を持つアプリのインストールが必須
-1. 「他のアプリの上に重ねて描画」の許可が必要
+1. 「他のアプリの上に重ねて描画」の許可が必要
 1. layoutにincludeタグが使えない
 
 ## **Requirement**
@@ -96,21 +96,21 @@ Coreアプリ（マルチウィンドウ機能）と、フレームワーク（�
 
         1. `createWindowView(arg: Int): View`メソッド
             * `createContentView`でViewを生成し、Viewにイベントや初期値を設定して返してください。
-            * 引数のindexは0から始まる生成するウィンドウのインデックス番号です。
+            * 引数のindexは0から始まる生成するウィンドウのインデックス番号です。
 
         1. `createMinimizedView(arg: Int): View`メソッド
             * ImageViewなどを生成し、ImageViewに最小化時のアイコン画像を設定して返してください。
-            * アイコン画像は75dp×75dpで表示されます。
+            * アイコン画像は75dp×75dpで表示されます。
 
         1. `start(intent: Intent?)`メソッドを実装
             * 起動時に設定されたIntent情報を元に初期化する処理を実装してください。
 
         1. `update(intent: Intent?, index: Int, positionName: String)`メソッドを実装
             * 更新時に設定されたIntent情報を元に初期化する処理を実装してください。
-            * positionNameはMultiWindowUpdatePositionの名称です。
+            * positionNameはMultiWindowUpdatePositionの名称です。
 
     1. `onCreateSettingsFactory(index: Int): MultiFloatWindowSettingsFactory`メソッドを実装
-        * MultiFloatWindowInitSettingsを初期化して、ウィンドウの初期設定（位置、サイズ）などを設定して返してください。
+        * MultiFloatWindowInitSettingsを初期化して、ウィンドウの初期設定（位置、サイズ）などを設定して返してください。
         ```kotlin
         override fun onCreateSettingsFactory(index: Int): MultiFloatWindowSettingsFactory {
             return object : MultiFloatWindowSettingsFactory(multiWindowContext) {
@@ -128,7 +128,7 @@ Coreアプリ（マルチウィンドウ機能）と、フレームワーク（�
         ```
 
 
-1. AndroidManifest.xmlの修正
+1. AndroidManifest.xmlの修正
     1. manifestタグに属性を追加
         * `android:sharedUserId="jp.kght6123"`
 
@@ -137,7 +137,7 @@ Coreアプリ（マルチウィンドウ機能）と、フレームワーク（�
 
     1. serviceタグ追加
         * ServiceクラスはFloatWindowApplicationクラスを継承して作成したクラスを指定
-        * `android:icon`属性を指定してください、ランチャーのアイコンになります。
+        * `android:icon`属性を指定してください、ランチャーのアイコンになります。
         * `android:exported="true"`を追加してください
     
     1. serviceタグ内にintent-filterを追加
