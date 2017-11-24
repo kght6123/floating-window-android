@@ -3,7 +3,7 @@ apply plugin: 'kotlin-android'
 
 android {
     compileSdkVersion 25
-    buildToolsVersion '26.0.2'
+    buildToolsVersion '27.0.1'
     defaultConfig {
         applicationId 'jp.kght6123.smallappbrowser'
         minSdkVersion 23
@@ -13,6 +13,9 @@ android {
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
+        debug {
+            debuggable true
+        }
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
@@ -33,7 +36,7 @@ dependencies {
     compile 'org.jetbrains.kotlinx:kotlinx-coroutines-core:0.16'
     compile 'org.jetbrains.kotlinx:kotlinx-coroutines-android:0.16'
     testCompile 'junit:junit:4.12'
-    compile project(path: ':multiwindowframework')
+    compile project(path: ':floating-window-framework')
 }
 repositories {
     mavenCentral()

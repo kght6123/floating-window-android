@@ -2,8 +2,8 @@ package jp.kght6123.smallappbrowser.activity
 
 import android.content.Intent
 import android.net.Uri
-import jp.kght6123.multiwindowframework.MultiFloatWindowBaseActivity
-import jp.kght6123.multiwindowframework.MultiWindowOpenType
+import jp.kght6123.floating.window.framework.FloatWindowBaseActivity
+import jp.kght6123.floating.window.framework.MultiWindowOpenType
 import jp.kght6123.smallappbrowser.SmallBrowserApplication
 
 /**
@@ -13,7 +13,7 @@ import jp.kght6123.smallappbrowser.SmallBrowserApplication
  * @copyright 2017/08/04 Hirotaka Koga
  * @license   http://www.apache.org/licenses/LICENSE-2.0 Apache-2.0
  */
-class HttpActionDelegateActivity : MultiFloatWindowBaseActivity() {
+class HttpActionDelegateActivity : FloatWindowBaseActivity() {
 
     private val initIntent by lazy {
         val intent = Intent()

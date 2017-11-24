@@ -2,11 +2,11 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
-      <module fileurl="file://$PROJECT_DIR$/multiwindow/multiwindow.iml" filepath="$PROJECT_DIR$/multiwindow/multiwindow.iml" />
-      <module fileurl="file://$PROJECT_DIR$/multiwindowframework/multiwindowframework.iml" filepath="$PROJECT_DIR$/multiwindowframework/multiwindowframework.iml" />
+      <module fileurl="file://$PROJECT_DIR$/floating-window.iml" filepath="$PROJECT_DIR$/floating-window.iml" />
+      <module fileurl="file://$PROJECT_DIR$/floating-window-core/floating-window-core.iml" filepath="$PROJECT_DIR$/floating-window-core/floating-window-core.iml" />
+      <module fileurl="file://$PROJECT_DIR$/floating-window-framework/floating-window-framework.iml" filepath="$PROJECT_DIR$/floating-window-framework/floating-window-framework.iml" />
+      <module fileurl="file://$PROJECT_DIR$/floating-window-sample/floating-window-sample.iml" filepath="$PROJECT_DIR$/floating-window-sample/floating-window-sample.iml" />
       <module fileurl="file://$PROJECT_DIR$/smallappbrowser/smallappbrowser.iml" filepath="$PROJECT_DIR$/smallappbrowser/smallappbrowser.iml" />
-      <module fileurl="file://$PROJECT_DIR$/smallappviewer.iml" filepath="$PROJECT_DIR$/smallappviewer.iml" />
     </modules>
   </component>
 </project>

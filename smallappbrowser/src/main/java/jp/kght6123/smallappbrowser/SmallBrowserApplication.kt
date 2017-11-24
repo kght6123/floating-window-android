@@ -13,8 +13,8 @@ import android.util.Log
 import android.view.*
 import android.webkit.*
 import android.widget.*
-import jp.kght6123.multiwindowframework.MultiFloatWindowApplication
-import jp.kght6123.multiwindowframework.MultiWindowUpdatePosition
+import jp.kght6123.floating.window.framework.FloatWindowApplication
+import jp.kght6123.floating.window.framework.MultiWindowUpdatePosition
 import jp.kght6123.smallappbrowser.adapter.WebHistoryItemAdapter
 import jp.kght6123.smallappbrowser.application.SharedDataApplication
 import jp.kght6123.smallappbrowser.utils.PrefUtils
@@ -28,7 +28,7 @@ import java.util.*
  * @copyright 2017/05/09 Hirotaka Koga
  * @license   http://www.apache.org/licenses/LICENSE-2.0 Apache-2.0
  */
-class SmallBrowserApplication : MultiFloatWindowApplication() {
+class SmallBrowserApplication : FloatWindowApplication() {
 
     private val TAG = SmallBrowserApplication::class.java.simpleName
 

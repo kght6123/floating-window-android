@@ -1,8 +1,7 @@
 
 # **Floting Multiple Window Framework α1**
-====
 
-**現在は、実験的なリリースです。多くのバグを含む可能性が高いです。**
+**現在は、テストが十分ではない実験的なリリースです。多くのバグを含む可能性があります。**
 
 android（ルート権限不要）でフローティングウィンドウを実現し、片手操作に最適化したライブラリです。
 
@@ -22,7 +21,34 @@ Coreアプリ（マルチウィンドウ機能）と、フレームワーク（�
 
 ## **Demo**
 サンプルアプリケーションのデモになります
-FIXME アニメGIFでサンプルが動作しているところを表示
+
+[![Sample](http://img.youtube.com/vi/uGvzgPG2nSM&feature=youtu.be/0.jpg)](https://www.youtube.com/watch?v=uGvzgPG2nSM&feature=youtu.be)
+
+## **Screen Shot**
+サンプルアプリケーション操作中の画面になります
+
+1. ランチャー起動
+    * 「FloatWindow」アイコンで起動します。通知を選択すると終了します。
+![ランチャー起動](screenshot/screen-01.png "ランチャー起動")
+
+1. アプリ一覧表示
+    * ランチャーをダブルタップしてアプリ一覧表示、ロングタップでランチャー表示に戻ります。
+    * アプリ一覧の上はインストール済みのアプリ一覧
+    * アプリ一覧の下はアプリ履歴
+![アプリ一覧表示](screenshot/screen-03.png "アプリ一覧表示")
+
+1. サンプルのブラウザ起動
+    * アプリ一覧のインストールされているアプリアイコンを選択すると起動。
+![サンプルブラウザ起動](screenshot/screen-02.png "サンプルブラウザ起動")
+
+1. 非アクティブ
+    * 裏側が操作できます。
+    * オレンジのランチャーを選択すると、再度アクティブになります。
+![非アクティブ](screenshot/screen-04.png "非アクティブ")
+
+1. ウィジェット
+    * 「FloatWidget」を選択すると、ウィジェットも追加できます。
+![ウィジェット](screenshot/screen-05.png "ウィジェット")
 
 ## **特徴**
 このフレームワークの基本的な特徴になります
@@ -63,7 +89,7 @@ FIXME アニメGIFでサンプルが動作しているところを表示
 
 ## **Usage**
 全体像はsampleモジュールを参考にしてください。
-1. MultiFloatWindowApplicationを実装するクラスを作成
+1. FloatWindowApplicationを実装するクラスを作成
     1. `onCreateFactory(index: Int): MultiFloatWindowViewFactory`メソッドを実装
         * MultiFloatWindowViewFactoryを実装し、クラスを初期化して返してください。
         * 下記の４メソッドを実装します。
@@ -85,6 +111,21 @@ FIXME アニメGIFでサンプルが動作しているところを表示
 
     1. `onCreateSettingsFactory(index: Int): MultiFloatWindowSettingsFactory`メソッドを実装
         * MultiFloatWindowInitSettingsを初期化して、ウィンドウの初期設定（位置、サイズ）などを設定して返してください。
+        ```kotlin
+        override fun onCreateSettingsFactory(index: Int): MultiFloatWindowSettingsFactory {
+            return object : MultiFloatWindowSettingsFactory(multiWindowContext) {
+                override fun createInitSettings(arg: Int): MultiFloatWindowInitSettings {
+                    return MultiFloatWindowInitSettings(
+                            getDimensionPixelSize(R.dimen.x),
+                            getDimensionPixelSize(R.dimen.y),
+                            getDimensionPixelSize(R.dimen.width),
+                            getDimensionPixelSize(R.dimen.height),
+                            getColor(android.R.color.background_light)
+                    )
+                }
+            }
+        }
+        ```
 
 
 1. AndroidManifest.xmlの修正
@@ -92,18 +133,18 @@ FIXME アニメGIFでサンプルが動作しているところを表示
         * `android:sharedUserId="jp.kght6123"`
 
     1. uses-permissionタグ追加
-        * `<uses-permission android:name="jp.kght6123.multiwindow.manifest.permission.APPS" />`
+        * `<uses-permission android:name="jp.kght6123.floating.window.core.manifest.permission.APPS" />`
 
     1. serviceタグ追加
-        * ServiceクラスはMultiFloatWindowApplicationクラスを継承して作成したクラスを指定
+        * ServiceクラスはFloatWindowApplicationクラスを継承して作成したクラスを指定
         * `android:icon`属性を指定してください、ランチャーのアイコンになります。
         * `android:exported="true"`を追加してください
     
     1. serviceタグ内にintent-filterを追加
         ```xml
         <intent-filter>
-		    <action android:name="jp.kght6123.multiwindow.intent.action.MAIN" />
-		    <category android:name="jp.kght6123.multiwindow.intent.category.LAUNCHER" />
+		    <action android:name="jp.kght6123.floating.window.core.intent.action.MAIN" />
+		    <category android:name="jp.kght6123.floating.window.core.intent.category.LAUNCHER" />
 	    </intent-filter>
         ```
 

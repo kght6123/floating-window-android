@@ -8,9 +8,9 @@
         <option name="modules">
           <set>
             <option value="$PROJECT_DIR$" />
-            <option value="$PROJECT_DIR$/app" />
-            <option value="$PROJECT_DIR$/multiwindow" />
-            <option value="$PROJECT_DIR$/multiwindowframework" />
+            <option value="$PROJECT_DIR$/floating-window-core" />
+            <option value="$PROJECT_DIR$/floating-window-framework" />
+            <option value="$PROJECT_DIR$/floating-window-sample" />
             <option value="$PROJECT_DIR$/smallappbrowser" />
           </set>
         </option>

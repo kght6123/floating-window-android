@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+
+
+ @author    kght6123
+ @copyright 2017/05/09 Hirotaka Koga
+ @license   http://www.apache.org/licenses/LICENSE-2.0 Apache-2.0
+ -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="jp.kght6123.floating.window.core"
+    android:sharedUserId="jp.kght6123">
+
+    <permission android:name="jp.kght6123.floating.window.core.manifest.permission.APPS"
+        android:label="@string/multiwindow_core_permission_name"
+        android:description="@string/multiwindow_core_permission_desc"
+        android:protectionLevel="normal" /><!-- dangerousはnormalの方が良いかも -->
+
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+
+    <application
+        android:allowBackup="false"
+        android:icon="@mipmap/ic_main_launcher"
+        android:label="@string/app_name"
+        android:largeHeap="true">
+
+        <service android:name=".FloatWindowService"
+            android:enabled="true"
+            android:exported="true"
+            android:process=":local">
+            <intent-filter>
+                <action android:name="jp.kght6123.floating.window.core.FloatWindowService.ACTION" />
+            </intent-filter>
+        </service>
+
+        <receiver android:name="jp.kght6123.floating.window.core.receiver.RestartBroadcastReceiver" android:exported="true" android:permission="android.permission.RECEIVE_BOOT_COMPLETED">
+            <intent-filter>
+                <action android:name="com.android.vending.INSTALL_REFERRER" />
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.INSTALL_PACKAGE" />
+                <action android:name="android.intent.action.PACKAGE_INSTALL" />
+                <action android:name="android.intent.action.PACKAGE_ADDED" />
+                <action android:name="android.intent.action.PACKAGE_CHANGED" />
+                <action android:name="android.intent.action.PACKAGE_REPLACED" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+                <action android:name="android.intent.action.PACKAGE_FULLY_REMOVED" />
+                <action android:name="android.intent.action.PACKAGE_REMOVED" />
+            </intent-filter>
+            <!--data android:scheme="package" /-->
+        </receiver>
+
+        <activity android:name=".FloatWindowMainActivity"
+            android:noHistory="true"
+            android:excludeFromRecents="true"
+            android:label="@string/multiwindow_core_name"
+            android:icon="@mipmap/ic_main_launcher"
+            >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <activity android:name=".FloatWindowWidgetActivity"
+            android:noHistory="true"
+            android:excludeFromRecents="true"
+            android:label="@string/multiwindow_core_widget_name"
+            android:icon="@mipmap/ic_main_launcher"
+            >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <activity android:name=".FloatWindowStopActivity"
+            android:noHistory="true"
+            android:excludeFromRecents="true"
+            >
+        </activity>
+
+    </application>
+</manifest>

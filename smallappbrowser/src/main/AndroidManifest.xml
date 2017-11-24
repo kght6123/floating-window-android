@@ -6,7 +6,7 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
 
-    <uses-permission android:name="jp.kght6123.multiwindow.manifest.permission.APPS" />
+    <uses-permission android:name="jp.kght6123.floating.window.core.manifest.permission.APPS" />
 
     <application
         android:name=".application.SharedDataApplication"
@@ -58,8 +58,8 @@
             android:enabled="true"
             android:exported="true">
             <intent-filter>
-                <action android:name="jp.kght6123.multiwindow.intent.action.MAIN" />
-                <category android:name="jp.kght6123.multiwindow.intent.category.LAUNCHER" />
+                <action android:name="jp.kght6123.floating.window.core.intent.action.MAIN" />
+                <category android:name="jp.kght6123.floating.window.core.intent.category.LAUNCHER" />
             </intent-filter>
         </service>
 

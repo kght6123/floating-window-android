@@ -1,1 +1,1 @@
-include ':app', ':multiwindow', ':smallappbrowser', ':multiwindowframework'
+include ':floating-window-sample', ':floating-window-core', ':smallappbrowser', ':floating-window-framework'
