@@ -86,7 +86,8 @@ Coreアプリ（マルチウィンドウ機能）と、フレームワーク（�
 
 ## **How to Build**
 「floating-window」リポジトリをcloneして、AndroidStudioにインポート。
-「floating-window-core」と「floating-window-sample」を実行。
+
+デバッグ実行時は「floating-window-core」と「floating-window-sample」を実行。
 
 ## **Install**
 現状はαリリースのため、Coreはデバッグ向けと署名なしAPKを公開し、
