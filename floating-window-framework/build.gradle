@@ -1,5 +1,17 @@
+apply plugin: 'maven'
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
+
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            repository url: "file://$buildDir/../../../maven-repositories/android"
+            pom.version = "0.0.1"
+            pom.groupId = "jp.kght6123.floating.window"
+            pom.artifactId = "floating-window-framework"
+        }
+    }
+}
 
 android {
     compileSdkVersion 25

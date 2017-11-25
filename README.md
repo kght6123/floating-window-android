@@ -84,8 +84,30 @@ Coreアプリ（マルチウィンドウ機能）と、フレームワーク（�
     - macOS High Sierra 10.13
     - Android Studio 3.0
 
+## **How to Build**
+「floating-window」リポジトリをcloneして、AndroidStudioにインポート。
+「floating-window-core」と「floating-window-sample」を実行。
+
 ## **Install**
-* **インストール用のライブラリ（aar）は準備中。**
+現状はαリリースのため、Coreはデバッグ向けと署名なしAPKを公開し、
+FrameworkライブラリはGitPagesの仮Mavenリポジトリで公開。
+
+* Core
+    * [デバッグAPK](./download/floating-window-core-debug.apk)
+    * [リリース署名なしAPK](./download/floating-window-core-release-unsigned.apk)
+
+* Framework
+    
+    build.gradleに下記のリポジトリとライブラリを追加してください。
+
+    ```gradle
+    repositories {
+        maven { url 'http://kght6123.github.io/maven-repositories/android' }
+    }
+    dependencies {
+        compile 'jp.kght6123.floating.window:floating-window-framework:0.0.1'
+    }
+    ```
 
 ## **Usage**
 全体像はsampleモジュールを参考にしてください。
