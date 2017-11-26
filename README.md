@@ -20,12 +20,13 @@ Activityから特定のマルチウィンドウアプリを呼び出したりこ
 Coreアプリ（マルチウィンドウ機能）と、フレームワーク（アプリ追加用）にモジュールが分かれています。
 
 ## **Demo**
-サンプルアプリケーションのデモになります
+サンプルアプリケーションのデモ動画です
 
-[![Sample](http://img.youtube.com/vi/uGvzgPG2nSM&feature=youtu.be/0.jpg)](https://www.youtube.com/watch?v=uGvzgPG2nSM&feature=youtu.be)
+[![Sample](https://img.youtube.com/vi/uGvzgPG2nSM/0.jpg)](https://www.youtube.com/watch?v=uGvzgPG2nSM)
+
 
 ## **Screen Shot**
-サンプルアプリケーション操作中の画面になります
+サンプルアプリケーション操作中のスクリーンショットです
 
 1. ランチャー起動
     * 「FloatWindow」アイコンで起動します。通知を選択すると終了します。
