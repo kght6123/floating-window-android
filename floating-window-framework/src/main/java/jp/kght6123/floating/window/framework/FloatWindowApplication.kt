@@ -13,6 +13,7 @@ import android.widget.LinearLayout
 import jp.kght6123.floating.window.framework.context.res.Resources
 import jp.kght6123.floating.window.framework.context.res.ResourcesImpl
 import jp.kght6123.floating.window.framework.utils.UnitUtils
+import jp.kght6123.floating.window.framework.utils.*
 
 /**
  * マルチウィンドウサービスの実装を簡易化するクラス
@@ -283,9 +284,9 @@ abstract class FloatWindowApplication : Service() {
             //appWidgetHostView.setBackgroundResource(R.color.float_window_background_color)
 
             // Widgetのリサイズ時のmax,min値を設定する
-            if(appWidgetProviderInfo.minResizeHeight > 0)
+            if(appWidgetProviderInfo.isResizeHeight())
                 setMinHeight(arg, appWidgetProviderInfo.minResizeHeight)
-            if(appWidgetProviderInfo.minResizeWidth > 0)
+            if(appWidgetProviderInfo.isResizeWidth())
                 setMinWidth(arg, appWidgetProviderInfo.minResizeWidth)
 
             return appWidgetHostView
@@ -297,14 +298,15 @@ abstract class FloatWindowApplication : Service() {
         }
     }
     class MultiFloatWindowSettingsAppWidgetFactory(
-            context: MultiFloatWindowContext,
+            private val context: MultiFloatWindowContext,
             private val appWidgetProviderInfo: AppWidgetProviderInfo): MultiFloatWindowSettingsFactory(context) {
+
         override fun createInitSettings(arg: Int): MultiFloatWindowInitSettings {
             return MultiFloatWindowInitSettings(
-                    x = 50,
-                    y = 50,
-                    width = appWidgetProviderInfo.minWidth,
-                    height = appWidgetProviderInfo.minHeight,
+                    x = UnitUtils.convertDp2Px(50f, context.sharedContext).toInt(),
+                    y = UnitUtils.convertDp2Px(50f, context.sharedContext).toInt(),
+                    width = appWidgetProviderInfo.initMinWidth(UnitUtils.convertDp2Px(160f, context.sharedContext).toInt()),
+                    height = appWidgetProviderInfo.initMinHeight(UnitUtils.convertDp2Px(160f, context.sharedContext).toInt()),
                     backgroundColor = MultiFloatWindowConstants.Theme.Dark.rgb,
                     active = false
             )

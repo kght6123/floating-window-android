@@ -8,6 +8,7 @@ import android.view.*
 import android.widget.FrameLayout
 import android.widget.LinearLayout
 import jp.kght6123.floating.window.core.utils.DisplayUtils
+import jp.kght6123.floating.window.framework.gesture.LongClickOnGestureListener
 import jp.kght6123.floating.window.framework.utils.UnitUtils
 
 /**
@@ -22,7 +23,7 @@ class FloatWindowInfo(
         val manager: FloatWindowManager,
         val index: Int,
         var miniMode: Boolean,
-        val backgroundColor: Int,
+        private val backgroundColor: Int,
         private val initWidth: Int,
         private val initHeight: Int,
         val name: String
@@ -31,7 +32,7 @@ class FloatWindowInfo(
     private val tag = this.javaClass.name
 
     private enum class Stroke {
-        UNKNOWN, TOP, BOTTOM, LEFT, RIGHT, TOP_LEFT, TOP_RIGHT, BOTTOM_LEFT, BOTTOM_RIGHT,
+        UNKNOWN, TOP, BOTTOM, LEFT, RIGHT, TOP_LEFT, TOP_RIGHT, BOTTOM_LEFT, BOTTOM_RIGHT, ALL
     }
     private enum class Mode {
         UNKNOWN, MOVE, RESIZE, FINISH
@@ -132,55 +133,13 @@ class FloatWindowInfo(
         val windowOutFrame =
                 View.inflate(context, R.layout.window_frame, null).findViewById(R.id.windowOutlineFrame) as ViewGroup
         windowOutFrame.layoutParams = FrameLayout.LayoutParams(initWidth, initHeight)
-        windowOutFrame
-    }
 
-    val windowInlineFrame: ViewGroup by lazy {
-
-        val windowInFrame =
-                windowOutlineFrame.findViewById(R.id.windowInlineFrame) as ViewGroup
-        windowInFrame.setBackgroundColor(backgroundColor)   // FIXME 色のみ指定可、背景そのものの変更は出来ない
-
-        windowOutlineFrame.setOnLongClickListener {
-            if(strokeMode != Stroke.UNKNOWN && windowMode == Mode.UNKNOWN && resize) {
-                // リサイズモードの背景色に変える
-                when (strokeMode) {
-                    Stroke.TOP -> {
-                        windowInFrame.setBackgroundResource(R.drawable.window_frame_stroke_top)
-                    }
-                    Stroke.BOTTOM -> {
-                        windowInFrame.setBackgroundResource(R.drawable.window_frame_stroke_bottom)
-                    }
-                    Stroke.LEFT -> {
-                        windowInFrame.setBackgroundResource(R.drawable.window_frame_stroke_left)
-                    }
-                    Stroke.RIGHT -> {
-                        windowInFrame.setBackgroundResource(R.drawable.window_frame_stroke_right)
-                    }
-                    Stroke.TOP_LEFT -> {
-                        windowInFrame.setBackgroundResource(R.drawable.window_frame_stroke_top_left)
-                    }
-                    Stroke.TOP_RIGHT -> {
-                        windowInFrame.setBackgroundResource(R.drawable.window_frame_stroke_top_right)
-                    }
-                    Stroke.BOTTOM_LEFT -> {
-                        windowInFrame.setBackgroundResource(R.drawable.window_frame_stroke_bottom_left)
-                    }
-                    Stroke.BOTTOM_RIGHT -> {
-                        windowInFrame.setBackgroundResource(R.drawable.window_frame_stroke_bottom_right)
-                    }
-                    else -> {}
-                }
-                windowMode = Mode.RESIZE
-            }
-            return@setOnLongClickListener false
-        }
         val switchMiniMode = fun() {
             if(strokeMode != Stroke.UNKNOWN) {
                 manager.changeMode(this.index, true)
             }
         }
-        windowOutlineFrame.setOnTouchListener(object: View.OnTouchListener {
+        windowOutFrame.setOnTouchListener(object: View.OnTouchListener {
             var onGestureListener: GestureDetector.OnGestureListener = object: GestureDetector.SimpleOnGestureListener() {
 
                 private var tempX = 0
@@ -276,6 +235,17 @@ class FloatWindowInfo(
             val gestureDetector: GestureDetector by lazy {
                 GestureDetector(context, onGestureListener)
             }
+            val longClickDetector: LongClickOnGestureListener by lazy {
+                LongClickOnGestureListener(object: LongClickOnGestureListener.OnLongClickListener{
+                    override fun onLongClick(event: MotionEvent, view: View) {
+                        if(strokeMode != Stroke.UNKNOWN && windowMode == Mode.UNKNOWN && resize) {
+                            // リサイズモードの背景色に変える
+                            updateAnchorColor(strokeMode)
+                            windowMode = Mode.RESIZE
+                        }
+                    }
+                }, 250L, UnitUtils.convertDp2Px(3f, context) + 40F)
+            }
 
             private val strokeWidth: Int = UnitUtils.convertDp2Px(3f, context).toInt() + 40/*ぼかしの分*/
 
@@ -288,6 +258,8 @@ class FloatWindowInfo(
 
             @SuppressLint("ClickableViewAccessibility")
             override fun onTouch(view: View, event: MotionEvent): Boolean {
+
+                longClickDetector.onTouchEvent(view, event)
 
                 Log.d(tag, "motionEvent.action = ${event.action}")
                 Log.d(tag, "motionEvent.rawX, rawY = ${event.rawX}, ${event.rawY}")
@@ -359,7 +331,7 @@ class FloatWindowInfo(
                             initialTouchX = rx
                             initialTouchY = ry
 
-                            windowInFrame.setBackgroundResource(android.R.color.holo_blue_dark)
+                            updateAnchorColor(Stroke.ALL)
                         }
                     }
                     MotionEvent.ACTION_UP -> {
@@ -379,7 +351,7 @@ class FloatWindowInfo(
                         }
                         if(strokeMode != Stroke.UNKNOWN) {
                             // ACTION_UP,DOWNのみの対策。
-                            windowInFrame.setBackgroundColor(backgroundColor)
+                            updateAnchorColor(Stroke.UNKNOWN)
                         }
                     }
                     MotionEvent.ACTION_MOVE -> {
@@ -480,17 +452,23 @@ class FloatWindowInfo(
                 }
                 gestureDetector.onTouchEvent(event)// ジェスチャー機能を使う
 
-                return false
+                //return false ここで伝搬を止めないと、ACTION_DOWN以降が動かない
+                return true
             }
         })
-        windowInFrame
+        windowOutFrame
     }
+
+    val windowInlineFrame: ViewGroup by lazy { windowOutlineFrame.findViewById(R.id.windowInlineFrame) as ViewGroup }
 
     var activeFlag: Boolean = false
 
     init {
         miniWindowFrame
         windowInlineFrame
+
+        // デフォルト色に設定する
+        updateAnchorColor(Stroke.UNKNOWN)   // FIXME 色のみ指定可、背景そのものの変更は出来ない
     }
     fun getActiveOverlay(): ViewGroup {
         return if(this.miniMode)
@@ -508,5 +486,40 @@ class FloatWindowInfo(
         val params = getActiveWindowLayoutParams()
         return event.rawX in params.leftMargin..(params.leftMargin + params.width)
                 && event.rawY in params.topMargin..(params.topMargin + params.height)
+    }
+
+    private fun updateAnchorColor(strokeMode: Stroke) {
+        when (strokeMode) {
+            Stroke.TOP -> {
+                windowInlineFrame.setBackgroundResource(R.drawable.window_frame_stroke_top)
+            }
+            Stroke.BOTTOM -> {
+                windowInlineFrame.setBackgroundResource(R.drawable.window_frame_stroke_bottom)
+            }
+            Stroke.LEFT -> {
+                windowInlineFrame.setBackgroundResource(R.drawable.window_frame_stroke_left)
+            }
+            Stroke.RIGHT -> {
+                windowInlineFrame.setBackgroundResource(R.drawable.window_frame_stroke_right)
+            }
+            Stroke.TOP_LEFT -> {
+                windowInlineFrame.setBackgroundResource(R.drawable.window_frame_stroke_top_left)
+            }
+            Stroke.TOP_RIGHT -> {
+                windowInlineFrame.setBackgroundResource(R.drawable.window_frame_stroke_top_right)
+            }
+            Stroke.BOTTOM_LEFT -> {
+                windowInlineFrame.setBackgroundResource(R.drawable.window_frame_stroke_bottom_left)
+            }
+            Stroke.BOTTOM_RIGHT -> {
+                windowInlineFrame.setBackgroundResource(R.drawable.window_frame_stroke_bottom_right)
+            }
+            Stroke.ALL -> {
+                windowInlineFrame.setBackgroundResource(android.R.color.holo_blue_dark)
+            }
+            Stroke.UNKNOWN -> {
+                windowInlineFrame.setBackgroundColor(backgroundColor)
+            }
+        }
     }
 }

@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+
+
+ @author    kght6123
+ @copyright 2017/11/26 Hirotaka Koga
+ @license   http://www.apache.org/licenses/LICENSE-2.0 Apache-2.0
+ -->
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:id="@+id/windowOutlineFrame">
+
+    <LinearLayout
+        android:id="@+id/anchor_top_left"
+        android:orientation="vertical"
+        android:layout_width="@dimen/float_window_anchor_size"
+        android:layout_height="@dimen/float_window_anchor_size"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentStart="true"
+        android:background="@drawable/window_frame_anchor"
+        >
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/anchor_top_center"
+        android:orientation="vertical"
+        android:layout_width="@dimen/float_window_anchor_width_size"
+        android:layout_height="@dimen/float_window_anchor_size"
+        android:layout_alignParentTop="true"
+        android:layout_centerInParent="true"
+        android:background="@drawable/window_frame_anchor"
+        >
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/anchor_top_right"
+        android:orientation="vertical"
+        android:layout_width="@dimen/float_window_anchor_size"
+        android:layout_height="@dimen/float_window_anchor_size"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
+        android:background="@drawable/window_frame_anchor"
+        >
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/anchor_center_left"
+        android:orientation="vertical"
+        android:layout_width="@dimen/float_window_anchor_size"
+        android:layout_height="@dimen/float_window_anchor_width_size"
+        android:layout_centerInParent="true"
+        android:layout_alignParentStart="true"
+        android:background="@drawable/window_frame_anchor"
+        >
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/anchor_center_center"
+        android:orientation="vertical"
+        android:layout_width="@dimen/float_window_anchor_size"
+        android:layout_height="@dimen/float_window_anchor_size"
+        android:layout_centerInParent="true"
+        android:background="@drawable/window_frame_anchor"
+        >
+    </LinearLayout>
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:focusable="true"
+        android:focusableInTouchMode="true"
+        android:background="@android:color/background_light"
+        android:layout_margin="@dimen/float_window_anchor_size"
+        android:id="@+id/windowInlineFrame">
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/anchor_center_right"
+        android:orientation="vertical"
+        android:layout_width="@dimen/float_window_anchor_size"
+        android:layout_height="@dimen/float_window_anchor_width_size"
+        android:layout_centerInParent="true"
+        android:layout_alignParentEnd="true"
+        android:background="@drawable/window_frame_anchor"
+        >
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/anchor_bottom_left"
+        android:orientation="vertical"
+        android:layout_width="@dimen/float_window_anchor_size"
+        android:layout_height="@dimen/float_window_anchor_size"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentStart="true"
+        android:background="@drawable/window_frame_anchor"
+        >
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/anchor_bottom_center"
+        android:orientation="vertical"
+        android:layout_width="@dimen/float_window_anchor_width_size"
+        android:layout_height="@dimen/float_window_anchor_size"
+        android:layout_alignParentBottom="true"
+        android:layout_centerInParent="true"
+        android:background="@drawable/window_frame_anchor"
+        >
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/anchor_bottom_right"
+        android:orientation="vertical"
+        android:layout_width="@dimen/float_window_anchor_size"
+        android:layout_height="@dimen/float_window_anchor_size"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
+        android:background="@drawable/window_frame_anchor"
+        >
+    </LinearLayout>
+</RelativeLayout>

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+
+
+ @author    kght6123
+ @copyright 2017/11/26 Hirotaka Koga
+ @license   http://www.apache.org/licenses/LICENSE-2.0 Apache-2.0
+ -->
+<resources>
+    <dimen name="float_window_anchor_size">10dp</dimen>
+    <dimen name="float_window_anchor_width_size">50dp</dimen>
+</resources>

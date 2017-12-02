@@ -11,4 +11,8 @@
     <color name="app_list_background_color">#88000000</color>
     <color name="app_icon_background_color">#66000000</color>
     <color name="float_window_background_color">#CC000000</color>
+
+    <color name="float_window_anchor_color">#88000000</color>
+    <color name="float_window_anchor_color_move">@android:color/holo_blue_dark</color>
+    <color name="float_window_anchor_color_resize">#FFFF4081</color>
 </resources>
