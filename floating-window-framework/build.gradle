@@ -4,6 +4,7 @@ apply plugin: 'kotlin-android'
 
 uploadArchives {
     repositories {
+        // Mavenリポジトリを作成
         mavenDeployer {
             repository url: "file://$buildDir/../../../maven-repositories/android"
             pom.version = "0.0.1"

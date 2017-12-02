@@ -85,11 +85,6 @@ Coreアプリ（マルチウィンドウ機能）と、フレームワーク（�
     - macOS High Sierra 10.13
     - Android Studio 3.0
 
-## **How to Build**
-「floating-window」リポジトリをcloneして、AndroidStudioにインポート。
-
-デバッグ実行時は「floating-window-core」と「floating-window-sample」を実行。
-
 ## **Install**
 現状はαリリースのため、Coreはデバッグ向けと署名なしAPKを公開し、
 FrameworkライブラリはGitPagesの仮Mavenリポジトリで公開。
@@ -171,6 +166,47 @@ FrameworkライブラリはGitPagesの仮Mavenリポジトリで公開。
 		    <category android:name="jp.kght6123.floating.window.core.intent.category.LAUNCHER" />
 	    </intent-filter>
         ```
+
+## **How to Build**
+このライブラリをクローンしてビルドする方法です。リポジトリをcloneして、AndroidStudioにインポートしてください。
+
+ターミナルはAndroidStudioを使用しています
+
+* **Debug、Run**
+
+    1. 「floating-window-core」と「floating-window-sample」モジュールをデバッグまたは実行する
+
+* **Coreのapk作成、コピー**
+
+    1. apk作成（署名なし）
+
+    ```zsh
+    ./gradlew floating-window-core:assemble
+    ```
+    
+    2. apkコピー
+
+    ```zsh
+    cp ./floating-window-core/build/outputs/apk/debug/floating-window-core-debug.apk ./download
+    cp ./floating-window-core/build/outputs/apk/release/floating-window-core-release-unsigned.apk ./download
+    ```
+
+* **FrameworkのMavenリポジトリ作成、Commit＆Push**
+
+    1. Mavenリポジトリ作成
+    ```zsh
+    ./gradlew floating-window-framework:clean floating-window-framework:assembleRelease floating-window-framework:uploadArchives
+    ```
+
+    2. Commit＆Push
+    ```zsh
+    cd ../maven-repositories
+    git add *
+    git commit -m '${comment}'
+    git push origin master
+    # git pull origin master
+    ```
+
 
 ## **Contribution**
 Licenceに「Apache License Version 2.0」を選択しており、修正いただいた場合は「Pull Request」をお願いします。
