@@ -24,7 +24,7 @@ class AnchorLayer(private val position: Position, private val info: FloatWindowI
         TOP, BOTTOM, LEFT, RIGHT
     }
 
-    private val borderWidth = UnitUtils.convertDp2Px(48f, info.context).toInt()
+    private val borderWidth = UnitUtils.convertDp2Px(24f, info.context).toInt()
     private val shadowWidth = 40
 
     private val anchorActiveFlags = WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN or
@@ -93,7 +93,7 @@ class AnchorLayer(private val position: Position, private val info: FloatWindowI
 
                 inner class ChangeSizeModeUpdater(val modeWidth: Int, val modeHeight: Int, val modeX: Int, val modeY: Int) {
                     fun update() {
-                        val params = info.getActiveLayoutParams()
+                        val params = info.getWindowLayoutParams()
                         if(modeWidth != 0 && modeHeight != 0) {
                             if(tempWidth != 0
                                     && tempHeight != 0
@@ -148,7 +148,7 @@ class AnchorLayer(private val position: Position, private val info: FloatWindowI
                             }
                         }
                         info.updateAnchorLayerPosition()
-                        info.getActiveOverlay().layoutParams = params
+                        info.windowOutlineFrame.layoutParams = params
                     }
                 }
 
@@ -190,7 +190,7 @@ class AnchorLayer(private val position: Position, private val info: FloatWindowI
                 val rx: Float = event.rawX
                 val ry: Float = event.rawY
 
-                val params = info.getActiveLayoutParams()
+                val params = info.getWindowLayoutParams()
                 Log.d(tag, "params.width, height=${params.width}, ${params.height}")
                 Log.d(tag, "params.x, y = ${params.leftMargin}, ${params.topMargin}")
 
@@ -199,6 +199,12 @@ class AnchorLayer(private val position: Position, private val info: FloatWindowI
 
                     }
                     MotionEvent.ACTION_DOWN -> {
+
+                        // Activeに
+                        if(!info.activeFlag) {
+                            info.manager.changeActiveIndex(info.index)
+                            info.manager.changeActiveOverlayView()
+                        }
 
                         // モードのリセット
                         info.windowMode = FloatWindowInfo.Mode.UNKNOWN
@@ -375,7 +381,7 @@ class AnchorLayer(private val position: Position, private val info: FloatWindowI
                             }
                         }
                         info.updateAnchorLayerPosition()
-                        info.getActiveOverlay().layoutParams = params
+                        info.windowOutlineFrame.layoutParams = params
                     }
                     MotionEvent.ACTION_OUTSIDE -> {
                         Log.d(tag, "anchorLayer onDispatchTouchEventListener onTouch MotionEvent.ACTION_OUTSIDE")

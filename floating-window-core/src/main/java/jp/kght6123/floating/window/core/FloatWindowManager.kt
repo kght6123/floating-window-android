@@ -332,8 +332,8 @@ class FloatWindowManager(val context: Context): MultiFloatWindowManagerUpdater {
         if(overlayInfoOld.miniMode) {
             overlayInfo.updateMiniMode()
         } else {
-            overlayView.removeView(overlayInfoOld.getActiveOverlay())
-            overlayView.addView(overlayInfo.getActiveOverlay())
+            overlayView.removeView(overlayInfoOld.windowOutlineFrame)
+            overlayView.addView(overlayInfo.windowOutlineFrame)
         }
         if(initActive)
             changeActiveIndex(index)
@@ -349,7 +349,7 @@ class FloatWindowManager(val context: Context): MultiFloatWindowManagerUpdater {
         if(overlayInfo.miniMode) {
             overlayInfo.addMiniMode(true)
         } else {
-            overlayView.addView(overlayInfo.getActiveOverlay())
+            overlayView.addView(overlayInfo.windowOutlineFrame)
         }
         overlayInfo.addAnchor()
 
@@ -363,10 +363,10 @@ class FloatWindowManager(val context: Context): MultiFloatWindowManagerUpdater {
                 overlayInfo.updateMiniModePosition(x, y)
                 overlayInfo.updateMiniMode()
             } else {
-                val params = overlayInfo.getActiveLayoutParams()
+                val params = overlayInfo.getWindowLayoutParams()
                 params.leftMargin = x
                 params.topMargin = y
-                overlayInfo.getActiveOverlay().layoutParams = params
+                overlayInfo.windowOutlineFrame.layoutParams = params
                 overlayInfo.updateAnchorLayerPosition()
             }
         }
@@ -380,7 +380,7 @@ class FloatWindowManager(val context: Context): MultiFloatWindowManagerUpdater {
             if(overlayInfo.miniMode) {
                 overlayInfo.removeMiniMode(true)
             } else {
-                overlayView.removeView(overlayInfo.getActiveOverlay())
+                overlayView.removeView(overlayInfo.windowOutlineFrame)
             }
             overlayInfo.removeAnchor()
 
@@ -412,7 +412,7 @@ class FloatWindowManager(val context: Context): MultiFloatWindowManagerUpdater {
             (indexList.first() + 1)
         }
     }
-    private fun changeActiveIndex(index: Int) {
+    fun changeActiveIndex(index: Int) {
         val overlayInfo = overlayWindowMap[index]
 
         if(overlayInfo != null) {
@@ -421,8 +421,8 @@ class FloatWindowManager(val context: Context): MultiFloatWindowManagerUpdater {
                 overlayInfo.removeMiniMode(false)
                 overlayInfo.addMiniMode(false)
             } else {
-                overlayView.removeView(overlayInfo.getActiveOverlay())
-                overlayView.addView(overlayInfo.getActiveOverlay())
+                overlayView.removeView(overlayInfo.windowOutlineFrame)
+                overlayView.addView(overlayInfo.windowOutlineFrame)
             }
             updateActive(index)  // 追加したWindowをActiveに
             updateOtherDeActive(index)  // 追加したWindow以外をDeActiveに
@@ -451,7 +451,7 @@ class FloatWindowManager(val context: Context): MultiFloatWindowManagerUpdater {
             overlayWindowMap.entries.reversed().forEach { (index, overlayInfo) ->
                 if(!overlayInfo.miniMode) {
                     changeActiveIndex(index)
-                    windowManager.updateViewLayout(overlayView, getActiveParams())
+                    changeActiveOverlayView()
                 }
             }
         }
@@ -515,9 +515,12 @@ class FloatWindowManager(val context: Context): MultiFloatWindowManagerUpdater {
         else if(changeActiveIndex != -1) {
             // 他のinActiveなウィンドウをタッチされた時、Activeへ
             changeActiveIndex(changeActiveIndex)
-            windowManager.updateViewLayout(overlayView, getActiveParams())
+            changeActiveOverlayView()
         }
         return false
+    }
+    fun changeActiveOverlayView() {
+        windowManager.updateViewLayout(overlayView, getActiveParams())
     }
     fun finish() {
         for ((overlayName, _) in overlayWindowMap.toList()) {

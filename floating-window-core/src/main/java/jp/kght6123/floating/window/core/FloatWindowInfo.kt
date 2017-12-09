@@ -166,7 +166,7 @@ class FloatWindowInfo(
         }
     }
 
-    private val windowOutlineFrame: ViewGroup by lazy {
+    val windowOutlineFrame: ViewGroup by lazy {
         val windowOutFrame =
                 View.inflate(context, R.layout.window_frame, null).findViewById(R.id.windowOutlineFrame) as ViewGroup
         windowOutFrame.layoutParams = FrameLayout.LayoutParams(initWidth, initHeight)
@@ -193,27 +193,17 @@ class FloatWindowInfo(
         // デフォルト色に設定する
         updateAnchorColor(Stroke.UNKNOWN)   // FIXME 色のみ指定可、背景そのものの変更は出来ない
     }
-    fun getActiveOverlay(): ViewGroup {
-        return if(this.miniMode)
-            this.miniWindowFrame
-        else
-            this.windowOutlineFrame
-    }
     private fun getLayoutParams(viewGroup: ViewGroup): FrameLayout.LayoutParams {
         return (viewGroup.layoutParams as FrameLayout.LayoutParams)
-    }
-    fun getActiveLayoutParams(): FrameLayout.LayoutParams {
-        return getLayoutParams(getActiveOverlay())
     }
     fun getWindowLayoutParams(): FrameLayout.LayoutParams {
         return getLayoutParams(this.windowOutlineFrame)
     }
     fun isOnTouchEvent(event: MotionEvent): Boolean {
-        val params = getActiveLayoutParams()
+        val params = getWindowLayoutParams()
         return event.rawX in params.leftMargin..(params.leftMargin + params.width)
                 && event.rawY in params.topMargin..(params.topMargin + params.height)
     }
-
     fun updateAnchorColor(strokeMode: Stroke) {
         when (strokeMode) {
             Stroke.TOP -> {
@@ -270,7 +260,7 @@ class FloatWindowInfo(
     }
 
     fun updateAnchorLayerPosition() {
-        val params = getActiveLayoutParams()
+        val params = getWindowLayoutParams()
         updateAnchorLayerPosition(params.leftMargin, params.topMargin, true)
     }
     private fun updateAnchorMiniLayerPosition() {
