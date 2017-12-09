@@ -317,6 +317,7 @@ class FloatWindowManager(val context: Context): MultiFloatWindowManagerUpdater {
         windowManager.addView(controlLayer, ctrlIconParams)
     }
     fun add(index: Int, miniMode: Boolean, x: Int?, y: Int?, backgroundColor: Int, initWidth: Int, initHeight: Int, initActive: Boolean, className: String): FloatWindowInfo {
+        Log.d(tag, "index=$index, miniMode=$miniMode, initActive=$initActive")
         val overlayWindowInfo = FloatWindowInfo(context, this, index, miniMode, backgroundColor, initWidth, initHeight, className)
         put(index, overlayWindowInfo, initActive)
         moveFixed(index, x!!, y!!)
@@ -328,9 +329,12 @@ class FloatWindowManager(val context: Context): MultiFloatWindowManagerUpdater {
         val overlayInfoOld = overlayWindowMap.getValue(index)
         overlayWindowMap.put(index, overlayInfo)  // 管理を上書き
 
-        overlayView.removeView(overlayInfoOld.getActiveOverlay())
-        overlayView.addView(overlayInfo.getActiveOverlay())
-
+        if(overlayInfoOld.miniMode) {
+            overlayInfo.updateMiniMode()
+        } else {
+            overlayView.removeView(overlayInfoOld.getActiveOverlay())
+            overlayView.addView(overlayInfo.getActiveOverlay())
+        }
         if(initActive)
             changeActiveIndex(index)
 
@@ -341,7 +345,13 @@ class FloatWindowManager(val context: Context): MultiFloatWindowManagerUpdater {
             return
 
         overlayWindowMap.put(index, overlayInfo)  // 管理に追加
-        overlayView.addView(overlayInfo.getActiveOverlay())
+
+        if(overlayInfo.miniMode) {
+            overlayInfo.addMiniMode(true)
+        } else {
+            overlayView.addView(overlayInfo.getActiveOverlay())
+        }
+        overlayInfo.addAnchor()
 
         if(active)
             changeActiveIndex(index)
@@ -349,19 +359,33 @@ class FloatWindowManager(val context: Context): MultiFloatWindowManagerUpdater {
     private fun moveFixed(index: Int, x: Int, y: Int) {
         val overlayInfo = overlayWindowMap[index]
         if(overlayInfo != null) {
-            val params = overlayInfo.getActiveWindowLayoutParams()
-            params.leftMargin = x
-            params.topMargin = y
-            overlayInfo.getActiveOverlay().layoutParams = params
+            if(overlayInfo.miniMode) {
+                overlayInfo.updateMiniModePosition(x, y)
+                overlayInfo.updateMiniMode()
+            } else {
+                val params = overlayInfo.getActiveLayoutParams()
+                params.leftMargin = x
+                params.topMargin = y
+                overlayInfo.getActiveOverlay().layoutParams = params
+                overlayInfo.updateAnchorLayerPosition()
+            }
         }
     }
-    fun remove(index: Int) {
+    fun remove(index: Int, factory: Boolean) {
          val overlayInfo = overlayWindowMap[index]
         if(overlayInfo != null){
             Log.d(tag, "remove is not null. index=$index")
             overlayWindowMap.remove(index)
-            overlayView.removeView(overlayInfo.getActiveOverlay())
-            factoryMap.remove(index)
+
+            if(overlayInfo.miniMode) {
+                overlayInfo.removeMiniMode(true)
+            } else {
+                overlayView.removeView(overlayInfo.getActiveOverlay())
+            }
+            overlayInfo.removeAnchor()
+
+            if(factory)
+                factoryMap.remove(index)
         } else
             Log.d(tag, "remove is null. index=$index")
 
@@ -370,7 +394,7 @@ class FloatWindowManager(val context: Context): MultiFloatWindowManagerUpdater {
     fun changeMode(index: Int, miniMode: Boolean) {
         val overlayInfo = overlayWindowMap[index]
         if(overlayInfo != null){
-            remove(index)
+            remove(index, false)
             overlayInfo.miniMode = miniMode // 現在のウィンドウの状態（最大化、最小化）を保持
             put(index, overlayInfo, true)
 
@@ -393,9 +417,13 @@ class FloatWindowManager(val context: Context): MultiFloatWindowManagerUpdater {
 
         if(overlayInfo != null) {
             // 対象のViewを一番上へ移動する
-            overlayView.removeView(overlayInfo.getActiveOverlay())
-            overlayView.addView(overlayInfo.getActiveOverlay())
-
+            if(overlayInfo.miniMode) {
+                overlayInfo.removeMiniMode(false)
+                overlayInfo.addMiniMode(false)
+            } else {
+                overlayView.removeView(overlayInfo.getActiveOverlay())
+                overlayView.addView(overlayInfo.getActiveOverlay())
+            }
             updateActive(index)  // 追加したWindowをActiveに
             updateOtherDeActive(index)  // 追加したWindow以外をDeActiveに
         }
@@ -420,8 +448,12 @@ class FloatWindowManager(val context: Context): MultiFloatWindowManagerUpdater {
     }
     fun changeForciblyActiveEvent() {
         if(!overlayWindowMap.isEmpty()) {
-            changeActiveIndex(overlayWindowMap.keys.last())
-            windowManager.updateViewLayout(overlayView, getActiveParams())
+            overlayWindowMap.entries.reversed().forEach { (index, overlayInfo) ->
+                if(!overlayInfo.miniMode) {
+                    changeActiveIndex(index)
+                    windowManager.updateViewLayout(overlayView, getActiveParams())
+                }
+            }
         }
     }
     fun getThumb(seq: Int) :Bitmap? {
@@ -435,7 +467,7 @@ class FloatWindowManager(val context: Context): MultiFloatWindowManagerUpdater {
         getMultiFloatWindowInfo(seq)?.index?.let { changeActiveIndex(it) }
     }
     fun removeSeq(seq: Int) {
-        getMultiFloatWindowInfo(seq)?.index?.let { remove(it) }
+        getMultiFloatWindowInfo(seq)?.index?.let { remove(it, true) }
     }
     override fun setMinWidth(seq: Int, value: Int) {
         getMultiFloatWindowInfo(seq)?.minWidth = value
@@ -461,16 +493,18 @@ class FloatWindowManager(val context: Context): MultiFloatWindowManagerUpdater {
     private fun changeActiveEvent(event: MotionEvent) :Boolean {
         var changeActiveIndex: Int = -2
         for ((overlayIndex, overlayInfo) in overlayWindowMap) {
-            val onTouch = overlayInfo.isOnTouchEvent(event)
-            if (!onTouch/* || changeActiveName != null*/) {
-                // タッチされていない、他をActive済
-                updateDeActive(overlayIndex)
-            } else if (!overlayInfo.activeFlag) {
-                // タッチされ、Active以外、他をActiveにしていない
-                changeActiveIndex = overlayIndex
-            } else if (overlayInfo.activeFlag) {
-                // タッチされ、Active、他をActiveにしていない
-                changeActiveIndex = -1
+            if(!overlayInfo.miniMode) {
+                val onTouch = overlayInfo.isOnTouchEvent(event)
+                if (!onTouch/* || changeActiveName != null*/) {
+                    // タッチされていない、他をActive済
+                    updateDeActive(overlayIndex)
+                } else if (!overlayInfo.activeFlag) {
+                    // タッチされ、Active以外、他をActiveにしていない
+                    changeActiveIndex = overlayIndex
+                } else if (overlayInfo.activeFlag) {
+                    // タッチされ、Active、他をActiveにしていない
+                    changeActiveIndex = -1
+                }
             }
         }
         if(changeActiveIndex == -2) {
@@ -487,7 +521,7 @@ class FloatWindowManager(val context: Context): MultiFloatWindowManagerUpdater {
     }
     fun finish() {
         for ((overlayName, _) in overlayWindowMap.toList()) {
-            this.remove(overlayName)
+            this.remove(overlayName, true)
         }
         windowManager.removeViewImmediate(overlayView)
         windowManager.removeViewImmediate(controlLayer)
@@ -598,51 +632,6 @@ class FloatWindowManager(val context: Context): MultiFloatWindowManagerUpdater {
                 factory.createMinimizedView(windowIndex),
                 factory.createMinimizedLayoutParams(windowIndex))
     }
-//    fun openRemoteWindow(windowIndex: Int, remoteWindowViews: RemoteViews, remoteMiniViews: RemoteViews, update: Boolean) {
-//
-//        val windowSettingsFactory = FloatWindowApplication.MultiFloatWindowSettingsRemoteViewFactory(context)
-//        val initSettings = windowSettingsFactory.createInitSettings(windowIndex)
-//
-//        val info = if(update)
-//            update(
-//                    windowIndex,
-//                    initSettings.miniMode,
-//                    initSettings.backgroundColor,
-//                    initSettings.width,
-//                    initSettings.height,
-//                    initSettings.active)
-//        else
-//            add(
-//                    windowIndex,
-//                    initSettings.miniMode,
-//                    initSettings.x,
-//                    initSettings.y,
-//                    initSettings.backgroundColor,
-//                    initSettings.width,
-//                    initSettings.height,
-//                    initSettings.active)
-//
-//        val windowViewFactory = FloatWindowApplication.MultiFloatWindowViewRemoteViewFactory(
-//                context,
-//                remoteWindowViews,
-//                remoteMiniViews,
-//                info.windowInlineFrame,
-//                info.miniWindowFrame)
-//
-//        if(update) {
-//            info.windowInlineFrame.removeAllViews()
-//            info.miniWindowFrame.removeAllViews()
-//        }
-//        info.windowInlineFrame.addView(
-//                windowViewFactory.createWindowView(windowIndex),
-//                windowViewFactory.createWindowLayoutParams(windowIndex))
-//        info.miniWindowFrame.addView(
-//                windowViewFactory.createMinimizedView(windowIndex),
-//                windowViewFactory.createMinimizedLayoutParams(windowIndex))
-//
-//        val factory = FloatWindowApplication.MultiFloatWindowFactory(windowViewFactory, windowSettingsFactory)
-//        factoryMap.put(windowIndex, factory)
-//    }
     fun openAppWidgetWindow(windowIndex: Int, appWidgetId: Int, update: Boolean) {
 
         val appWidgetProviderInfo =

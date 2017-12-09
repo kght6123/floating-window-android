@@ -98,8 +98,7 @@ class FloatWindowService : Service() {
                         true
                     }
                     MultiWindowControlCommand.CLOSE -> {
-                        manager.remove(msg.arg1)
-                        manager.factoryMap.remove(msg.arg1)
+                        manager.remove(msg.arg1, true)
                         true
                     }
 //                        MultiWindowControlCommand.ADD_REMOTE_VIEWS -> {

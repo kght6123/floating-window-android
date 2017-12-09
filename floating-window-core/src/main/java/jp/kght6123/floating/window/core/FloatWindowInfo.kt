@@ -2,13 +2,14 @@ package jp.kght6123.floating.window.core
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.graphics.PixelFormat
 import android.graphics.Point
 import android.util.Log
 import android.view.*
 import android.widget.FrameLayout
 import android.widget.LinearLayout
+import jp.kght6123.floating.window.core.layer.AnchorLayer
 import jp.kght6123.floating.window.core.utils.DisplayUtils
-import jp.kght6123.floating.window.framework.gesture.LongClickOnGestureListener
 import jp.kght6123.floating.window.framework.utils.UnitUtils
 
 /**
@@ -29,22 +30,22 @@ class FloatWindowInfo(
         val name: String
 ) {
 
-    private val tag = this.javaClass.name
+    // private val tag = this.javaClass.name
 
-    private enum class Stroke {
+    enum class Stroke {
         UNKNOWN, TOP, BOTTOM, LEFT, RIGHT, TOP_LEFT, TOP_RIGHT, BOTTOM_LEFT, BOTTOM_RIGHT, ALL
     }
-    private enum class Mode {
+    enum class Mode {
         UNKNOWN, MOVE, RESIZE, FINISH
     }
 
-    private val notificationBarSize = 50 + 40/* ぼかしの分 */
+    val notificationBarSize = 50 + 40/* ぼかしの分 */
 
-    private var strokeMode: Stroke = Stroke.UNKNOWN
-    private var windowMode: Mode = Mode.UNKNOWN
+    var strokeMode: Stroke = Stroke.UNKNOWN
+    var windowMode: Mode = Mode.UNKNOWN
 
     // ディスプレイのサイズを格納する
-    private val defaultDisplaySize: Point by lazy {
+    val defaultDisplaySize: Point by lazy {
         DisplayUtils.defaultDisplaySize(context)
     }
 
@@ -59,18 +60,35 @@ class FloatWindowInfo(
     // リサイズ可・不可を設定
     var resize: Boolean = true
 
+    private val miniModeFlags = WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN or
+            WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH or
+            WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or
+            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
+            WindowManager.LayoutParams.FLAG_SPLIT_TOUCH or
+            WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN or
+            WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS or
+            WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED
+
+    private val miniModeParams: WindowManager.LayoutParams by lazy {
+        val params = WindowManager.LayoutParams(
+                UnitUtils.convertDp2Px(75f, context).toInt(),
+                UnitUtils.convertDp2Px(75f, context).toInt(),
+                0, // X
+                0, // Y
+                //WindowManager.LayoutParams.TYPE_SYSTEM_OVERLAY,   // ロック画面より上にくる
+                WindowManager.LayoutParams.TYPE_SYSTEM_ALERT, // なるべく上の階層で表示
+                //WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY, // Android-O以降
+                miniModeFlags,
+                PixelFormat.TRANSLUCENT)
+        params.gravity = Gravity.TOP or Gravity.START
+        params.dimAmount = 0.0f
+        params.alpha = 0.75f
+        params
+    }
+
     val miniWindowFrame: ViewGroup by lazy {
 
         val miniView = LinearLayout(context)
-
-        val layoutParams =
-                FrameLayout.LayoutParams(
-                        UnitUtils.convertDp2Px(75f, context).toInt(),
-                        UnitUtils.convertDp2Px(75f, context).toInt())
-        layoutParams.leftMargin = 100
-        layoutParams.topMargin = 100
-
-        miniView.layoutParams = layoutParams
 
         /**
          * 最小化表示も、ウィンドウモードの様に枠外処理など適切に処理する必要がありそう。
@@ -85,369 +103,52 @@ class FloatWindowInfo(
 
             var initialX: Int = 0
             var initialY: Int = 0
-            var initialTouchX: Float = 0f
-            var initialTouchY: Float = 0f
-            var windowMode: Mode = Mode.UNKNOWN
+
+            val gestureDetector: GestureDetector = GestureDetector(context, object: GestureDetector.SimpleOnGestureListener() {
+
+                override fun onSingleTapConfirmed(event: MotionEvent?): Boolean {
+                    Log.d(TAG, "miniWindowFrame SimpleOnGestureListener onSingleTapConfirmed")
+                    manager.changeMode(this@FloatWindowInfo.index, false)
+                    return false
+                }
+                override fun onDown(e: MotionEvent?): Boolean {
+                    Log.d(TAG, "miniWindowFrame SimpleOnGestureListener onDown")
+                    // 移動・拡大縮小のための初期値設定
+                    val params = miniModeParams
+                    initialX = params.x
+                    initialY = params.y
+                    return false
+                }
+                override fun onLongPress(e: MotionEvent?) {
+                    Log.d(TAG, "miniWindowFrame SimpleOnGestureListener onLongPress")
+                }
+                override fun onDoubleTapEvent(e: MotionEvent?): Boolean {
+                    Log.d(TAG, "miniWindowFrame SimpleOnGestureListener onDoubleTapEvent")
+                    return false
+                }
+                override fun onScroll(e1: MotionEvent?, e2: MotionEvent?, distanceX: Float, distanceY: Float): Boolean {
+                    Log.d(TAG, "miniWindowFrame SimpleOnGestureListener onScroll distanceX=$distanceX, distanceY=$distanceY")
+                    // 移動中の処理
+                    val params = miniModeParams
+                    params.x = initialX + (e2!!.rawX - e1!!.rawX).toInt()
+                    params.y = initialY + (e2.rawY - e1.rawY).toInt()
+                    manager.windowManager.updateViewLayout(miniView, params)
+                    return false
+                }
+            })
 
             @SuppressLint("ClickableViewAccessibility")
             override fun onTouch(view: View, event: MotionEvent): Boolean {
                 Log.d(TAG, "miniWindowFrame event.action = ${event.action}")
-
-                val rx: Float = event.rawX
-                val ry: Float = event.rawY
-
-                val params = getActiveWindowLayoutParams()
-
                 when (event.action) {
                     MotionEvent.ACTION_UP -> {
-                        if(windowMode != Mode.MOVE)
-                            manager.changeMode(this@FloatWindowInfo.index, false)
-                        windowMode = Mode.FINISH
+                        Log.d(TAG, "miniWindowFrame ACTION_UP")
                     }
                     MotionEvent.ACTION_MOVE -> {
-                        windowMode = Mode.MOVE
-
-                        // 移動中の処理
-                        params.leftMargin = initialX + (rx - initialTouchX).toInt()
-                        params.topMargin = initialY + (ry - initialTouchY).toInt()
-
-                        getActiveOverlay().layoutParams = params
+                        Log.d(TAG, "miniWindowFrame ACTION_MOVE")
                     }
                     MotionEvent.ACTION_DOWN -> {
-                        windowMode = Mode.UNKNOWN
-
-                        // 移動・拡大縮小のための初期値設定
-                        initialX = params.leftMargin
-                        initialY = params.topMargin
-                        initialTouchX = rx
-                        initialTouchY = ry
-                    }
-                }
-                //return false ここで伝搬を止めないと、ACTION_DOWN以降が動かない
-                return true
-            }
-        })
-        miniView
-    }
-    private val windowOutlineFrame: ViewGroup by lazy {
-        val windowOutFrame =
-                View.inflate(context, R.layout.window_frame, null).findViewById(R.id.windowOutlineFrame) as ViewGroup
-        windowOutFrame.layoutParams = FrameLayout.LayoutParams(initWidth, initHeight)
-
-        val switchMiniMode = fun() {
-            if(strokeMode != Stroke.UNKNOWN) {
-                manager.changeMode(this.index, true)
-            }
-        }
-        windowOutFrame.setOnTouchListener(object: View.OnTouchListener {
-            var onGestureListener: GestureDetector.OnGestureListener = object: GestureDetector.SimpleOnGestureListener() {
-
-                private var tempX = 0
-                private var tempY = 0
-                private var tempWidth = 0
-                private var tempHeight = 0
-
-                inner class ChangeSizeModeUpdater(val modeWidth: Int, val modeHeight: Int, val modeX: Int, val modeY: Int) {
-
-                    fun update() {
-                        val params = getActiveWindowLayoutParams()
-                        if(modeWidth != 0 && modeHeight != 0) {
-                            if(tempWidth != 0
-                                    && tempHeight != 0
-                                    && params.width == modeWidth
-                                    && params.height == modeHeight) {
-                                // 元のサイズが残ってれば元に戻す
-                                // 元のサイズに戻す
-                                params.width = tempWidth
-                                params.height = tempHeight
-                                tempWidth = 0
-                                tempHeight = 0
-
-                                // 元の位置に戻す
-                                params.topMargin = tempX
-                                params.leftMargin = tempY
-                                tempX = 0
-                                tempY = 0
-
-                            } else if(tempWidth != 0
-                                    && tempHeight != 0) {
-                                // 元のサイズが残ってれば元を更新しない
-                                params.width = modeWidth
-                                params.height = modeHeight
-
-                                if(modeX != 0 && modeY != 0) {
-                                    // 位置指定があれば、その位置に
-                                    params.topMargin = modeX
-                                    params.leftMargin = modeY
-
-                                } else if(tempX != 0 && tempY != 0) {
-                                    // 位置指定がなく元の位置が保持されてれば、元の位置に
-                                    params.topMargin = tempX
-                                    params.leftMargin = tempY
-                                }
-
-                            } else {
-                                // 指定された大きさにする
-                                tempWidth = params.width
-                                tempHeight = params.height
-                                params.width = modeWidth
-                                params.height = modeHeight
-
-                                // 元の位置は常に保持（元のサイズに戻す時、位置も戻したい）
-                                tempX = params.topMargin
-                                tempY = params.leftMargin
-
-                                if(modeX != 0 && modeY != 0) {
-                                    // 位置指定があれば、その位置に
-                                    params.topMargin = modeX
-                                    params.leftMargin = modeY
-                                }
-                            }
-                        }
-                        getActiveOverlay().layoutParams = params
-                    }
-                }
-
-                val changeMaxSizeModeUpdater: ChangeSizeModeUpdater = ChangeSizeModeUpdater(maxWidth, maxHeight, notificationBarSize,-1)
-                val changeMinSizeModeUpdater: ChangeSizeModeUpdater = ChangeSizeModeUpdater(minWidth, minHeight,0,0)
-
-                override fun onDoubleTap(event: MotionEvent): Boolean {
-                    Log.d(tag, "SimpleOnGestureListener onDoubleTap")
-                    Log.d(tag, "SimpleOnGestureListener onDoubleTap $strokeMode")
-
-                    when (strokeMode) {
-                        Stroke.TOP, Stroke.BOTTOM, Stroke.LEFT, Stroke.RIGHT -> {
-                            switchMiniMode()
-                        }
-                        Stroke.TOP_LEFT, Stroke.TOP_RIGHT -> {
-                            // 角のダブルタップで最大化
-                            changeMaxSizeModeUpdater.update()
-                        }
-                        Stroke.BOTTOM_LEFT, Stroke.BOTTOM_RIGHT -> {
-                            // 角のダブルタップで最小化
-                            changeMinSizeModeUpdater.update()
-                        }
-                        else -> {}
-                    }
-                    return super.onDoubleTap(event)
-                }
-            }
-            val gestureDetector: GestureDetector by lazy {
-                GestureDetector(context, onGestureListener)
-            }
-            val longClickDetector: LongClickOnGestureListener by lazy {
-                LongClickOnGestureListener(object: LongClickOnGestureListener.OnLongClickListener{
-                    override fun onLongClick(event: MotionEvent, view: View) {
-                        if(strokeMode != Stroke.UNKNOWN && windowMode == Mode.UNKNOWN && resize) {
-                            // リサイズモードの背景色に変える
-                            updateAnchorColor(strokeMode)
-                            windowMode = Mode.RESIZE
-                        }
-                    }
-                }, 250L, UnitUtils.convertDp2Px(3f, context) + 40F)
-            }
-
-            private val strokeWidth: Int = UnitUtils.convertDp2Px(3f, context).toInt() + 40/*ぼかしの分*/
-
-            private var initialX: Int = 0
-            private var initialY: Int = 0
-            private var initialWidth: Int = 0
-            private var initialHeight: Int = 0
-            private var initialTouchX: Float = 0f
-            private var initialTouchY: Float = 0f
-
-            @SuppressLint("ClickableViewAccessibility")
-            override fun onTouch(view: View, event: MotionEvent): Boolean {
-
-                longClickDetector.onTouchEvent(view, event)
-
-                Log.d(tag, "motionEvent.action = ${event.action}")
-                Log.d(tag, "motionEvent.rawX, rawY = ${event.rawX}, ${event.rawY}")
-                Log.d(tag, "motionEvent.x, y = ${event.x}, ${event.y}")
-
-                val rx: Float = event.rawX
-                val ry: Float = event.rawY
-
-                val params = getActiveWindowLayoutParams()
-                Log.d(tag, "params.width, height=${params.width}, ${params.height}")
-                Log.d(tag, "params.x, y = ${params.leftMargin}, ${params.topMargin}")
-
-                when (event.action) {
-                    MotionEvent.ACTION_CANCEL -> {
-
-                    }
-                    MotionEvent.ACTION_DOWN -> {
-
-                        // モードのリセット
-                        windowMode = Mode.UNKNOWN
-                        strokeMode = Stroke.UNKNOWN
-
-                        Log.d(tag, "params.width-this.strokeWidth = ${params.width-this.strokeWidth}")
-                        Log.d(tag, "params.height-this.strokeWidth = ${params.height-this.strokeWidth}")
-
-                        val left = event.x in 0..this.strokeWidth
-                        val right = event.x in (params.width-this.strokeWidth)..params.width
-                        val top = event.y in 0..this.strokeWidth
-                        val bottom = event.y in (params.height-this.strokeWidth)..params.height
-
-                        if(left){
-                            strokeMode = Stroke.LEFT
-                            Log.d(tag, "dispatchTouchEvent $strokeMode strokeWidth=$strokeWidth")
-                        }
-                        if(right) {
-                            strokeMode = Stroke.RIGHT
-                            Log.d(tag, "dispatchTouchEvent $strokeMode strokeWidth=$strokeWidth")
-                        }
-                        if(top) {
-                            strokeMode = Stroke.TOP
-                            Log.d(tag, "dispatchTouchEvent $strokeMode strokeWidth=$strokeWidth")
-                        }
-                        if(bottom) {
-                            strokeMode = Stroke.BOTTOM
-                            Log.d(tag, "dispatchTouchEvent $strokeMode strokeWidth=$strokeWidth")
-                        }
-                        if(top && left) {
-                            strokeMode = Stroke.TOP_LEFT
-                            Log.d(tag, "dispatchTouchEvent $strokeMode strokeWidth=$strokeWidth")
-                        }
-                        if(top && right) {
-                            strokeMode = Stroke.TOP_RIGHT
-                            Log.d(tag, "dispatchTouchEvent $strokeMode strokeWidth=$strokeWidth")
-                        }
-                        if(bottom && left) {
-                            strokeMode = Stroke.BOTTOM_LEFT
-                            Log.d(tag, "dispatchTouchEvent $strokeMode strokeWidth=$strokeWidth")
-                        }
-                        if(bottom && right) {
-                            strokeMode = Stroke.BOTTOM_RIGHT
-                            Log.d(tag, "dispatchTouchEvent $strokeMode strokeWidth=$strokeWidth")
-                        }
-                        if(strokeMode != Stroke.UNKNOWN) {
-                            // 移動・拡大縮小のための初期値設定
-                            initialX = params.leftMargin
-                            initialY = params.topMargin
-                            initialWidth = params.width
-                            initialHeight = params.height
-                            initialTouchX = rx
-                            initialTouchY = ry
-
-                            updateAnchorColor(Stroke.ALL)
-                        }
-                    }
-                    MotionEvent.ACTION_UP -> {
-
-                        if(windowMode == Mode.MOVE && strokeMode != Stroke.UNKNOWN) {
-                            // 移動完了
-                            Log.d(tag, "displaySize.x, y = ${defaultDisplaySize.x}, ${defaultDisplaySize.y}")
-                            Log.d(tag, "motionEvent.rawX, rawY = $rx, $ry")
-                            Log.d(tag, "motionEvent.x, y = ${event.x}, ${event.y}")
-                            Log.d(tag, "params.width, height=${params.width}, ${params.height}")
-                            Log.d(tag, "params.x, y = ${params.leftMargin}, ${params.topMargin}")
-
-                            windowMode = Mode.FINISH    // フリック誤作動防止
-                        }
-                        if(windowMode == Mode.RESIZE && strokeMode != Stroke.UNKNOWN) {
-                            windowMode = Mode.FINISH    // フリック誤作動防止
-                        }
-                        if(strokeMode != Stroke.UNKNOWN) {
-                            // ACTION_UP,DOWNのみの対策。
-                            updateAnchorColor(Stroke.UNKNOWN)
-                        }
-                    }
-                    MotionEvent.ACTION_MOVE -> {
-
-                        if(windowMode != Mode.RESIZE && strokeMode != Stroke.UNKNOWN) {
-                            // 移動中の処理
-                            params.leftMargin = initialX + (rx - initialTouchX).toInt()
-                            params.topMargin = initialY + (ry - initialTouchY).toInt()
-
-                            Log.d(tag, "params.x, y = ${params.leftMargin}, ${params.topMargin}")
-
-                            windowMode = Mode.MOVE
-                        }
-                        if(windowMode == Mode.RESIZE && strokeMode != Stroke.UNKNOWN && resize) {
-
-                            val limitWidth = fun(): Boolean {
-                                return when {
-                                    maxWidth < params.width -> {
-                                        params.width = maxWidth
-                                        true
-                                    }
-                                    minWidth > params.width -> {
-                                        params.width = minWidth
-                                        true
-                                    }
-                                    else -> false
-                                }
-                            }
-                            val limitHeight = fun(): Boolean {
-                                return when {
-                                    maxHeight < params.height -> {
-                                        params.height = maxHeight
-                                        true
-                                    }
-                                    minHeight > params.height -> {
-                                        params.height = minHeight
-                                        true
-                                    }
-                                    else -> false
-                                }
-                            }
-                            val resizeTop = fun(){
-                                params.height = (initialHeight - (ry - initialTouchY).toInt())
-                                if(!limitHeight())
-                                    params.topMargin = initialY + (ry - initialTouchY).toInt()
-                            }
-                            val resizeBottom = fun(){
-                                params.height = (initialHeight + (ry - initialTouchY).toInt())
-                                limitHeight()
-                            }
-                            val resizeLeft = fun(){
-                                params.width = (initialWidth - (rx - initialTouchX).toInt())
-                                if(!limitWidth())
-                                    params.leftMargin = initialX + (rx - initialTouchX).toInt()
-                            }
-                            val resizeRight = fun(){
-                                params.width = (initialWidth + (rx - initialTouchX).toInt())
-                                limitWidth()
-                            }
-                            when(strokeMode){
-                                Stroke.TOP -> {
-                                    resizeTop()
-                                }
-                                Stroke.BOTTOM -> {
-                                    resizeBottom()
-                                }
-                                Stroke.LEFT -> {
-                                    resizeLeft()
-                                }
-                                Stroke.RIGHT -> {
-                                    resizeRight()
-                                }
-                                Stroke.TOP_LEFT -> {
-                                    resizeTop()
-                                    resizeLeft()
-                                }
-                                Stroke.TOP_RIGHT -> {
-                                    resizeTop()
-                                    resizeRight()
-                                }
-                                Stroke.BOTTOM_LEFT -> {
-                                    resizeBottom()
-                                    resizeLeft()
-                                }
-                                Stroke.BOTTOM_RIGHT -> {
-                                    resizeBottom()
-                                    resizeRight()
-                                }
-                                else -> {}
-                            }
-                        }
-                        getActiveOverlay().layoutParams = params
-                    }
-                    MotionEvent.ACTION_OUTSIDE -> {
-                        Log.d(tag, "ACTION_OUTSIDE event.x, y = ${event.x}, ${event.y}")
-                        Log.d(tag, "ACTION_OUTSIDE event.rawX, rawY = ${event.rawX}, ${event.rawY}")
+                        Log.d(TAG, "miniWindowFrame ACTION_DOWN")
                     }
                 }
                 gestureDetector.onTouchEvent(event)// ジェスチャー機能を使う
@@ -456,16 +157,38 @@ class FloatWindowInfo(
                 return true
             }
         })
+        miniView
+    }
+
+    val switchMiniMode = fun() {
+        if(strokeMode != Stroke.UNKNOWN) {
+            manager.changeMode(this.index, true)
+        }
+    }
+
+    private val windowOutlineFrame: ViewGroup by lazy {
+        val windowOutFrame =
+                View.inflate(context, R.layout.window_frame, null).findViewById(R.id.windowOutlineFrame) as ViewGroup
+        windowOutFrame.layoutParams = FrameLayout.LayoutParams(initWidth, initHeight)
         windowOutFrame
     }
 
     val windowInlineFrame: ViewGroup by lazy { windowOutlineFrame.findViewById(R.id.windowInlineFrame) as ViewGroup }
-
     var activeFlag: Boolean = false
+
+    private val anchorLayerTop: AnchorLayer by lazy { AnchorLayer(AnchorLayer.Position.TOP,this) }
+    private val anchorLayerLeft: AnchorLayer by lazy { AnchorLayer(AnchorLayer.Position.LEFT,this) }
+    private val anchorLayerRight: AnchorLayer by lazy { AnchorLayer(AnchorLayer.Position.RIGHT,this) }
+    private val anchorLayerBottom: AnchorLayer by lazy { AnchorLayer(AnchorLayer.Position.BOTTOM,this) }
 
     init {
         miniWindowFrame
         windowInlineFrame
+
+        anchorLayerTop
+        anchorLayerLeft
+        anchorLayerRight
+        anchorLayerBottom
 
         // デフォルト色に設定する
         updateAnchorColor(Stroke.UNKNOWN)   // FIXME 色のみ指定可、背景そのものの変更は出来ない
@@ -479,47 +202,127 @@ class FloatWindowInfo(
     private fun getLayoutParams(viewGroup: ViewGroup): FrameLayout.LayoutParams {
         return (viewGroup.layoutParams as FrameLayout.LayoutParams)
     }
-    fun getActiveWindowLayoutParams(): FrameLayout.LayoutParams {
+    fun getActiveLayoutParams(): FrameLayout.LayoutParams {
         return getLayoutParams(getActiveOverlay())
     }
+    fun getWindowLayoutParams(): FrameLayout.LayoutParams {
+        return getLayoutParams(this.windowOutlineFrame)
+    }
     fun isOnTouchEvent(event: MotionEvent): Boolean {
-        val params = getActiveWindowLayoutParams()
+        val params = getActiveLayoutParams()
         return event.rawX in params.leftMargin..(params.leftMargin + params.width)
                 && event.rawY in params.topMargin..(params.topMargin + params.height)
     }
 
-    private fun updateAnchorColor(strokeMode: Stroke) {
+    fun updateAnchorColor(strokeMode: Stroke) {
         when (strokeMode) {
             Stroke.TOP -> {
+                anchorLayerTop.updateBackgroundResource(R.color.float_window_anchor_color_resize)
                 windowInlineFrame.setBackgroundResource(R.drawable.window_frame_stroke_top)
             }
             Stroke.BOTTOM -> {
+                anchorLayerBottom.updateBackgroundResource(R.color.float_window_anchor_color_resize)
                 windowInlineFrame.setBackgroundResource(R.drawable.window_frame_stroke_bottom)
             }
             Stroke.LEFT -> {
+                anchorLayerLeft.updateBackgroundResource(R.color.float_window_anchor_color_resize)
                 windowInlineFrame.setBackgroundResource(R.drawable.window_frame_stroke_left)
             }
             Stroke.RIGHT -> {
+                anchorLayerRight.updateBackgroundResource(R.color.float_window_anchor_color_resize)
                 windowInlineFrame.setBackgroundResource(R.drawable.window_frame_stroke_right)
             }
             Stroke.TOP_LEFT -> {
+                anchorLayerTop.updateBackgroundResource(R.color.float_window_anchor_color_resize)
+                anchorLayerLeft.updateBackgroundResource(R.color.float_window_anchor_color_resize)
                 windowInlineFrame.setBackgroundResource(R.drawable.window_frame_stroke_top_left)
             }
             Stroke.TOP_RIGHT -> {
+                anchorLayerTop.updateBackgroundResource(R.color.float_window_anchor_color_resize)
+                anchorLayerRight.updateBackgroundResource(R.color.float_window_anchor_color_resize)
                 windowInlineFrame.setBackgroundResource(R.drawable.window_frame_stroke_top_right)
             }
             Stroke.BOTTOM_LEFT -> {
+                anchorLayerBottom.updateBackgroundResource(R.color.float_window_anchor_color_resize)
+                anchorLayerLeft.updateBackgroundResource(R.color.float_window_anchor_color_resize)
                 windowInlineFrame.setBackgroundResource(R.drawable.window_frame_stroke_bottom_left)
             }
             Stroke.BOTTOM_RIGHT -> {
+                anchorLayerBottom.updateBackgroundResource(R.color.float_window_anchor_color_resize)
+                anchorLayerRight.updateBackgroundResource(R.color.float_window_anchor_color_resize)
                 windowInlineFrame.setBackgroundResource(R.drawable.window_frame_stroke_bottom_right)
             }
             Stroke.ALL -> {
+                anchorLayerTop.updateBackgroundResource(R.color.float_window_anchor_color_move)
+                anchorLayerBottom.updateBackgroundResource(R.color.float_window_anchor_color_move)
+                anchorLayerLeft.updateBackgroundResource(R.color.float_window_anchor_color_move)
+                anchorLayerRight.updateBackgroundResource(R.color.float_window_anchor_color_move)
                 windowInlineFrame.setBackgroundResource(android.R.color.holo_blue_dark)
             }
             Stroke.UNKNOWN -> {
+                anchorLayerTop.updateBackgroundResource(R.color.float_window_anchor_color)
+                anchorLayerBottom.updateBackgroundResource(R.color.float_window_anchor_color)
+                anchorLayerLeft.updateBackgroundResource(R.color.float_window_anchor_color)
+                anchorLayerRight.updateBackgroundResource(R.color.float_window_anchor_color)
                 windowInlineFrame.setBackgroundColor(backgroundColor)
             }
         }
+    }
+
+    fun updateAnchorLayerPosition() {
+        val params = getActiveLayoutParams()
+        updateAnchorLayerPosition(params.leftMargin, params.topMargin, true)
+    }
+    private fun updateAnchorMiniLayerPosition() {
+        updateAnchorLayerPosition(miniModeParams.x, miniModeParams.y, false)
+        val params = getLayoutParams(this.windowOutlineFrame)
+        params.leftMargin = miniModeParams.x
+        params.topMargin = miniModeParams.y
+        this.windowOutlineFrame.layoutParams = params
+    }
+    private fun updateAnchorLayerPosition(x: Int, y: Int, update: Boolean) {
+        anchorLayerTop.updatePosition(x, y, update)
+        anchorLayerLeft.updatePosition(x, y, update)
+        anchorLayerRight.updatePosition(x, y, update)
+        anchorLayerBottom.updatePosition(x, y, update)
+    }
+    fun removeAnchor() {
+        if(!miniMode) {
+            anchorLayerTop.remove()
+            anchorLayerBottom.remove()
+            anchorLayerLeft.remove()
+            anchorLayerRight.remove()
+        }
+        updateAnchorColor(FloatWindowInfo.Stroke.UNKNOWN)  // 色を元に戻す
+    }
+    fun addAnchor() {
+        if(!miniMode) {
+            anchorLayerTop.add()
+            anchorLayerBottom.add()
+            anchorLayerLeft.add()
+            anchorLayerRight.add()
+        }
+        updateAnchorColor(FloatWindowInfo.Stroke.UNKNOWN)  // 色を元に戻す
+    }
+
+    fun addMiniMode(updatePosition: Boolean) {
+        if(updatePosition)
+            updateMiniModePosition(anchorLayerTop.getX(), anchorLayerTop.getY())
+        manager.windowManager.addView(this.miniWindowFrame, miniModeParams)
+    }
+
+    fun updateMiniModePosition(x: Int, y: Int) {
+        miniModeParams.x = if(x < 0) 0 else x
+        miniModeParams.y = if(y < notificationBarSize) notificationBarSize else y
+    }
+
+    fun removeMiniMode(updatePosition: Boolean) {
+        if(updatePosition)
+            updateAnchorMiniLayerPosition()
+        manager.windowManager.removeViewImmediate(this.miniWindowFrame)
+    }
+
+    fun updateMiniMode() {
+        manager.windowManager.updateViewLayout(this.miniWindowFrame, miniModeParams)
     }
 }

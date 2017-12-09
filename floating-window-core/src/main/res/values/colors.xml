@@ -12,7 +12,7 @@
     <color name="app_icon_background_color">#66000000</color>
     <color name="float_window_background_color">#CC000000</color>
 
-    <color name="float_window_anchor_color">#88000000</color>
-    <color name="float_window_anchor_color_move">@android:color/holo_blue_dark</color>
-    <color name="float_window_anchor_color_resize">#FFFF4081</color>
+    <color name="float_window_anchor_color">#11000000</color>
+    <color name="float_window_anchor_color_move">#220099CC</color>
+    <color name="float_window_anchor_color_resize">#22FF4081</color>
 </resources>

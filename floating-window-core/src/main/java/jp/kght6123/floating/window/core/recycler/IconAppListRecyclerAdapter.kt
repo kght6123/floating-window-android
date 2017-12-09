@@ -5,6 +5,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.pm.ResolveInfo
 import android.support.v7.widget.RecyclerView
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -24,6 +25,7 @@ import jp.kght6123.floating.window.framework.MultiFloatWindowConstants
  */
 class IconAppListRecyclerAdapter(val context: Context, private val manager: FloatWindowManager) : RecyclerView.Adapter<IconAppListRecyclerAdapter.ViewHolder>() {
 
+    private val tag = this.javaClass.name
     private val resolveInfoAllList: MutableList<ResolveInfo> = mutableListOf()
     private val packageManager by lazy { context.packageManager }
 
@@ -52,11 +54,15 @@ class IconAppListRecyclerAdapter(val context: Context, private val manager: Floa
         holder?.thumbIconButton?.setOnClickListener {
             // 選択されたアプリを開く（次インデックス）
             val nextIndex = manager.nextIndex()
-            if(manager.factoryMap.containsKey(nextIndex))
-                manager.openWindow(nextIndex, resolveInfo.serviceInfo.packageName, resolveInfo.serviceInfo.name, true)
-            else
-                manager.openWindow(nextIndex, resolveInfo.serviceInfo.packageName, resolveInfo.serviceInfo.name, false)
+            Log.d(tag, "nextIndex=$nextIndex")
 
+            if(manager.factoryMap.containsKey(nextIndex)) {
+                Log.d(tag, "update=true")
+                manager.openWindow(nextIndex, resolveInfo.serviceInfo.packageName, resolveInfo.serviceInfo.name, true)
+            } else {
+                Log.d(tag, "update=false")
+                manager.openWindow(nextIndex, resolveInfo.serviceInfo.packageName, resolveInfo.serviceInfo.name, false)
+            }
             manager.factoryMap.getValue(nextIndex).start(null)
 
             // FIXME 今後、MetaDataでフレームワークの動きを設定したい

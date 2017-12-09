@@ -7,6 +7,5 @@
  @license   http://www.apache.org/licenses/LICENSE-2.0 Apache-2.0
  -->
 <resources>
-    <dimen name="float_window_anchor_size">10dp</dimen>
-    <dimen name="float_window_anchor_width_size">50dp</dimen>
+    <dimen name="float_window_anchor_size">5dp</dimen>
 </resources>
