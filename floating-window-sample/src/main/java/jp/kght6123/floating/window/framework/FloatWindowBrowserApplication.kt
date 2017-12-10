@@ -1,10 +1,11 @@
 package jp.kght6123.floating.window.framework
 
 import android.content.Intent
+import android.graphics.Bitmap
+import android.os.Message
+import android.util.Log
 import android.view.View
-import android.webkit.WebResourceRequest
-import android.webkit.WebView
-import android.webkit.WebViewClient
+import android.webkit.*
 import android.widget.ImageView
 import android.widget.Toast
 import java.util.*
@@ -24,11 +25,18 @@ class FloatWindowBrowserApplication : FloatWindowApplication() {
             additionalHttpHeaders.put("Accept-Encoding", "gzip")
         }
     }
+    private val tag = FloatWindowBrowserApplication::class.java.name
     override fun onCreateFactory(index: Int): MultiFloatWindowViewFactory {
         return object : MultiFloatWindowViewFactory(multiWindowContext) {
 
             val view by lazy { createContentView(R.layout.floatwindow_webview) }
             val webView by lazy { view.findViewById(R.id.webView) as WebView }
+
+            val mMinimizedView by lazy {
+                val imageView = ImageView(sharedContext)
+                imageView.setImageResource(R.mipmap.ic_launcher)
+                imageView
+            }
 
             override fun createWindowView(arg: Int): View {
                 webView.setWebViewClient(
@@ -39,11 +47,67 @@ class FloatWindowBrowserApplication : FloatWindowApplication() {
                         }
                     }
                 )
+                webView.setWebChromeClient(
+                    object : WebChromeClient() {
+                        override fun onCreateWindow(view: WebView,
+                                                    isDialog: Boolean, isUserGesture: Boolean,
+                                                    resultMsg: Message): Boolean {
+                            val result = super.onCreateWindow(view, isDialog, isUserGesture, resultMsg)
+                            Log.d(tag, "WebChromeClient onCreateWindow")
+                            mMinimizedView.setImageBitmap(view.favicon)
+                            return result
+                        }
+                        override fun onCloseWindow(view: WebView) {
+                            super.onCloseWindow(view)
+                            Log.d(tag, "WebChromeClient onCloseWindow")
+                            mMinimizedView.setImageBitmap(view.favicon)
+                        }
+                        override fun onReceivedIcon(view: WebView, icon: Bitmap) {
+                            super.onReceivedIcon(view, icon)
+                            Log.d(tag, "WebChromeClient onReceivedIcon")
+                            mMinimizedView.setImageBitmap(icon)
+                        }
+                        override fun onProgressChanged(view: WebView, newProgress: Int) {
+
+                        }
+                    }
+                )
+                webView.scrollBarStyle = WebView.SCROLLBARS_INSIDE_OVERLAY
+
+                // マルチタッチでのピンチズームを有効化
+                val ws = webView.settings
+                ws.builtInZoomControls = true
+                ws.setSupportZoom(true)
+                ws.displayZoomControls = false// ズームボタンを出さない
+
+                ws.javaScriptCanOpenWindowsAutomatically = true
+
+                ws.loadWithOverviewMode = true
+
+                ws.loadsImagesAutomatically = true
+                ws.blockNetworkImage = false
+                ws.blockNetworkLoads = false
+
+                ws.mediaPlaybackRequiresUserGesture = true
+                ws.useWideViewPort = true
+
+                @Suppress("DEPRECATION")
+                ws.pluginState = WebSettings.PluginState.ON
+
+                //ws.setSupportMultipleWindows(support);
+
+                // キャッシュを設定
+                ws.setAppCacheEnabled(true)
+                ws.setAppCachePath(externalCacheDir.path)
+
+                ws.databaseEnabled = true
+                ws.domStorageEnabled = true
+                ws.loadWithOverviewMode = true
+                ws.useWideViewPort = true
+
                 return view
             }
             override fun createMinimizedView(arg: Int): View {
-                val mMinimizedView = ImageView(sharedContext)
-                mMinimizedView.setImageResource(R.mipmap.ic_launcher)
                 mMinimizedView.isFocusableInTouchMode = true
                 mMinimizedView.isFocusable = true
                 return mMinimizedView

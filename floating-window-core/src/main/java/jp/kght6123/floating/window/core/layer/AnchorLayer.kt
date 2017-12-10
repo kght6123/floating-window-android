@@ -62,13 +62,13 @@ class AnchorLayer(private val position: Position, private val info: FloatWindowI
             val longClickDetector: LongClickOnGestureListener by lazy {
                 LongClickOnGestureListener(object: LongClickOnGestureListener.OnLongClickListener{
                     override fun onLongClick(event: MotionEvent, view: View) {
-                        if(info.strokeMode != FloatWindowInfo.Stroke.UNKNOWN && info.windowMode == FloatWindowInfo.Mode.UNKNOWN && info.resize) {
+                        if(info.strokeMode != FloatWindowInfo.Stroke.UNKNOWN /*&& info.windowMode == FloatWindowInfo.Mode.UNKNOWN*/ && info.resize) {
                             // リサイズモードの背景色に変える
                             info.updateAnchorColor(info.strokeMode)
                             info.windowMode = FloatWindowInfo.Mode.RESIZE
                         }
                     }
-                }, 250L, UnitUtils.convertDp2Px(3f, info.context) + 40F)
+                }, 250L, UnitUtils.convertDp2Px(6f, info.context))
             }
 
             private var initialX: Int = 0
