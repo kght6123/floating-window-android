@@ -8,4 +8,5 @@
 <resources>
     <string name="app_name">FloatWindowCore</string>
     <string name="app_thumb_desc">AppThumbImage</string>
+    <string name="anchor_thumb_desc">Anchor</string>
 </resources>

@@ -153,7 +153,8 @@ class FloatWindowBrowserApplication : FloatWindowApplication() {
                         getDimensionPixelSize(R.dimen.y),
                         getDimensionPixelSize(R.dimen.width),
                         getDimensionPixelSize(R.dimen.height),
-                        getColor(android.R.color.background_light)
+                        MultiFloatWindowConstants.Theme.Light,
+                        MultiFloatWindowConstants.Anchor.Edge
                 )
             }
         }

@@ -14,6 +14,7 @@ import android.view.*
 import android.webkit.*
 import android.widget.*
 import jp.kght6123.floating.window.framework.FloatWindowApplication
+import jp.kght6123.floating.window.framework.MultiFloatWindowConstants
 import jp.kght6123.floating.window.framework.MultiWindowUpdatePosition
 import jp.kght6123.smallappbrowser.adapter.WebHistoryItemAdapter
 import jp.kght6123.smallappbrowser.application.SharedDataApplication
@@ -552,7 +553,7 @@ class SmallBrowserApplication : FloatWindowApplication() {
                         y = getDimensionPixelSize(R.dimen.y),
                         width = getDimensionPixelSize(R.dimen.width),
                         height = getDimensionPixelSize(R.dimen.height),
-                        backgroundColor = getColor(android.R.color.background_light)
+                        theme = MultiFloatWindowConstants.Theme.Light
                 )
 			}
         }

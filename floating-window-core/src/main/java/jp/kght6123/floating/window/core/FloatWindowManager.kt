@@ -316,15 +316,15 @@ class FloatWindowManager(val context: Context): MultiFloatWindowManagerUpdater {
         windowManager.addView(overlayView, getActiveParams())   // WindowManagerに追加
         windowManager.addView(controlLayer, ctrlIconParams)
     }
-    fun add(index: Int, miniMode: Boolean, x: Int?, y: Int?, backgroundColor: Int, initWidth: Int, initHeight: Int, initActive: Boolean, className: String): FloatWindowInfo {
+    fun add(index: Int, miniMode: Boolean, x: Int?, y: Int?, theme: MultiFloatWindowConstants.Theme, anchor: MultiFloatWindowConstants.Anchor, initWidth: Int, initHeight: Int, initActive: Boolean, className: String): FloatWindowInfo {
         Log.d(tag, "index=$index, miniMode=$miniMode, initActive=$initActive")
-        val overlayWindowInfo = FloatWindowInfo(context, this, index, miniMode, backgroundColor, initWidth, initHeight, className)
+        val overlayWindowInfo = FloatWindowInfo(context, this, index, miniMode, theme, anchor, initWidth, initHeight, className)
         put(index, overlayWindowInfo, initActive)
         moveFixed(index, x!!, y!!)
         return overlayWindowInfo
     }
-    private fun update(index: Int, miniMode: Boolean, backgroundColor: Int, initWidth: Int, initHeight: Int, initActive: Boolean, className: String): FloatWindowInfo {
-        val overlayInfo = FloatWindowInfo(context, this, index, miniMode, backgroundColor, initWidth, initHeight, className)
+    private fun update(index: Int, miniMode: Boolean, theme: MultiFloatWindowConstants.Theme, anchor: MultiFloatWindowConstants.Anchor, initWidth: Int, initHeight: Int, initActive: Boolean, className: String): FloatWindowInfo {
+        val overlayInfo = FloatWindowInfo(context, this, index, miniMode, theme, anchor, initWidth, initHeight, className)
 
         val overlayInfoOld = overlayWindowMap.getValue(index)
         overlayWindowMap.put(index, overlayInfo)  // 管理を上書き
@@ -607,7 +607,8 @@ class FloatWindowManager(val context: Context): MultiFloatWindowManagerUpdater {
                     update(
                             windowIndex,
                             initSettings.miniMode,
-                            initSettings.backgroundColor,
+                            initSettings.theme,
+                            initSettings.anchor,
                             initSettings.width,
                             initSettings.height,
                             initSettings.active,
@@ -618,7 +619,8 @@ class FloatWindowManager(val context: Context): MultiFloatWindowManagerUpdater {
                             initSettings.miniMode,
                             initSettings.x,
                             initSettings.y,
-                            initSettings.backgroundColor,
+                            initSettings.theme,
+                            initSettings.anchor,
                             initSettings.width,
                             initSettings.height,
                             initSettings.active,
@@ -678,7 +680,8 @@ class FloatWindowManager(val context: Context): MultiFloatWindowManagerUpdater {
             update(
                     windowIndex,
                     initSettings.miniMode,
-                    initSettings.backgroundColor,
+                    initSettings.theme,
+                    initSettings.anchor,
                     initSettings.width,
                     initSettings.height,
                     initSettings.active,
@@ -689,7 +692,8 @@ class FloatWindowManager(val context: Context): MultiFloatWindowManagerUpdater {
                     initSettings.miniMode,
                     initSettings.x,
                     initSettings.y,
-                    initSettings.backgroundColor,
+                    initSettings.theme,
+                    initSettings.anchor,
                     initSettings.width,
                     initSettings.height,
                     initSettings.active,

@@ -11,7 +11,7 @@
     android:orientation="vertical"
     android:layout_width="0dp"
     android:layout_height="0dp"
-    android:background="@drawable/shadow_233622"
+    android:background="@android:drawable/dialog_holo_dark_frame"
     android:id="@+id/windowOutlineFrame">
     <LinearLayout
         android:orientation="vertical"

@@ -8,8 +8,11 @@ import android.util.Log
 import android.view.*
 import android.widget.FrameLayout
 import android.widget.LinearLayout
-import jp.kght6123.floating.window.core.layer.AnchorLayer
+import jp.kght6123.floating.window.core.layer.AnchorLayerGroup
+import jp.kght6123.floating.window.core.layer.EdgeAnchorLayerGroup
+import jp.kght6123.floating.window.core.layer.SinglePointAnchorLayerGroup
 import jp.kght6123.floating.window.core.utils.DisplayUtils
+import jp.kght6123.floating.window.framework.MultiFloatWindowConstants
 import jp.kght6123.floating.window.framework.utils.UnitUtils
 
 /**
@@ -24,7 +27,8 @@ class FloatWindowInfo(
         val manager: FloatWindowManager,
         val index: Int,
         var miniMode: Boolean,
-        private val backgroundColor: Int,
+        private val theme: MultiFloatWindowConstants.Theme,
+        anchor: MultiFloatWindowConstants.Anchor,
         private val initWidth: Int,
         private val initHeight: Int,
         val name: String
@@ -169,6 +173,12 @@ class FloatWindowInfo(
     val windowOutlineFrame: ViewGroup by lazy {
         val windowOutFrame =
                 View.inflate(context, R.layout.window_frame, null).findViewById(R.id.windowOutlineFrame) as ViewGroup
+        when (theme) {
+            MultiFloatWindowConstants.Theme.Dark ->
+                windowOutFrame.setBackgroundResource(android.R.drawable.dialog_holo_dark_frame)
+            MultiFloatWindowConstants.Theme.Light ->
+                windowOutFrame.setBackgroundResource(android.R.drawable.dialog_holo_light_frame)
+        }
         windowOutFrame.layoutParams = FrameLayout.LayoutParams(initWidth, initHeight)
         windowOutFrame
     }
@@ -176,22 +186,19 @@ class FloatWindowInfo(
     val windowInlineFrame: ViewGroup by lazy { windowOutlineFrame.findViewById(R.id.windowInlineFrame) as ViewGroup }
     var activeFlag: Boolean = false
 
-    private val anchorLayerTop: AnchorLayer by lazy { AnchorLayer(AnchorLayer.Position.TOP,this) }
-    private val anchorLayerLeft: AnchorLayer by lazy { AnchorLayer(AnchorLayer.Position.LEFT,this) }
-    private val anchorLayerRight: AnchorLayer by lazy { AnchorLayer(AnchorLayer.Position.RIGHT,this) }
-    private val anchorLayerBottom: AnchorLayer by lazy { AnchorLayer(AnchorLayer.Position.BOTTOM,this) }
+    private val anchorLayerGroup: AnchorLayerGroup
 
     init {
         miniWindowFrame
         windowInlineFrame
 
-        anchorLayerTop
-        anchorLayerLeft
-        anchorLayerRight
-        anchorLayerBottom
-
-        // デフォルト色に設定する
-        updateAnchorColor(Stroke.UNKNOWN)   // FIXME 色のみ指定可、背景そのものの変更は出来ない
+        anchorLayerGroup = when (anchor) {
+            MultiFloatWindowConstants.Anchor.Edge ->
+                EdgeAnchorLayerGroup(this)
+            MultiFloatWindowConstants.Anchor.SinglePoint ->
+                SinglePointAnchorLayerGroup(this)
+        }
+        updateAnchorColor(Stroke.UNKNOWN)// デフォルト色に設定する
     }
     private fun getLayoutParams(viewGroup: ViewGroup): FrameLayout.LayoutParams {
         return (viewGroup.layoutParams as FrameLayout.LayoutParams)
@@ -205,99 +212,70 @@ class FloatWindowInfo(
                 && event.rawY in params.topMargin..(params.topMargin + params.height)
     }
     fun updateAnchorColor(strokeMode: Stroke) {
+
+        anchorLayerGroup.onChangeStrokeMode(strokeMode)
+
         when (strokeMode) {
             Stroke.TOP -> {
-                anchorLayerTop.updateBackgroundResource(R.color.float_window_anchor_color_resize)
                 windowInlineFrame.setBackgroundResource(R.drawable.window_frame_stroke_top)
             }
             Stroke.BOTTOM -> {
-                anchorLayerBottom.updateBackgroundResource(R.color.float_window_anchor_color_resize)
                 windowInlineFrame.setBackgroundResource(R.drawable.window_frame_stroke_bottom)
             }
             Stroke.LEFT -> {
-                anchorLayerLeft.updateBackgroundResource(R.color.float_window_anchor_color_resize)
                 windowInlineFrame.setBackgroundResource(R.drawable.window_frame_stroke_left)
             }
             Stroke.RIGHT -> {
-                anchorLayerRight.updateBackgroundResource(R.color.float_window_anchor_color_resize)
                 windowInlineFrame.setBackgroundResource(R.drawable.window_frame_stroke_right)
             }
             Stroke.TOP_LEFT -> {
-                anchorLayerTop.updateBackgroundResource(R.color.float_window_anchor_color_resize)
-                anchorLayerLeft.updateBackgroundResource(R.color.float_window_anchor_color_resize)
                 windowInlineFrame.setBackgroundResource(R.drawable.window_frame_stroke_top_left)
             }
             Stroke.TOP_RIGHT -> {
-                anchorLayerTop.updateBackgroundResource(R.color.float_window_anchor_color_resize)
-                anchorLayerRight.updateBackgroundResource(R.color.float_window_anchor_color_resize)
                 windowInlineFrame.setBackgroundResource(R.drawable.window_frame_stroke_top_right)
             }
             Stroke.BOTTOM_LEFT -> {
-                anchorLayerBottom.updateBackgroundResource(R.color.float_window_anchor_color_resize)
-                anchorLayerLeft.updateBackgroundResource(R.color.float_window_anchor_color_resize)
                 windowInlineFrame.setBackgroundResource(R.drawable.window_frame_stroke_bottom_left)
             }
             Stroke.BOTTOM_RIGHT -> {
-                anchorLayerBottom.updateBackgroundResource(R.color.float_window_anchor_color_resize)
-                anchorLayerRight.updateBackgroundResource(R.color.float_window_anchor_color_resize)
                 windowInlineFrame.setBackgroundResource(R.drawable.window_frame_stroke_bottom_right)
             }
             Stroke.ALL -> {
-                anchorLayerTop.updateBackgroundResource(R.color.float_window_anchor_color_move)
-                anchorLayerBottom.updateBackgroundResource(R.color.float_window_anchor_color_move)
-                anchorLayerLeft.updateBackgroundResource(R.color.float_window_anchor_color_move)
-                anchorLayerRight.updateBackgroundResource(R.color.float_window_anchor_color_move)
                 windowInlineFrame.setBackgroundResource(android.R.color.holo_blue_dark)
             }
             Stroke.UNKNOWN -> {
-                anchorLayerTop.updateBackgroundResource(R.color.float_window_anchor_color)
-                anchorLayerBottom.updateBackgroundResource(R.color.float_window_anchor_color)
-                anchorLayerLeft.updateBackgroundResource(R.color.float_window_anchor_color)
-                anchorLayerRight.updateBackgroundResource(R.color.float_window_anchor_color)
-                windowInlineFrame.setBackgroundColor(backgroundColor)
+                windowInlineFrame.setBackgroundResource(android.R.color.transparent)
             }
         }
     }
 
     fun updateAnchorLayerPosition() {
         val params = getWindowLayoutParams()
-        updateAnchorLayerPosition(params.leftMargin, params.topMargin, true)
+        anchorLayerGroup.onChangePosition(params.leftMargin, params.topMargin, true)
     }
     private fun updateAnchorMiniLayerPosition() {
-        updateAnchorLayerPosition(miniModeParams.x, miniModeParams.y, false)
+        anchorLayerGroup.onChangePosition(miniModeParams.x, miniModeParams.y, false)
         val params = getLayoutParams(this.windowOutlineFrame)
         params.leftMargin = miniModeParams.x
         params.topMargin = miniModeParams.y
         this.windowOutlineFrame.layoutParams = params
     }
-    private fun updateAnchorLayerPosition(x: Int, y: Int, update: Boolean) {
-        anchorLayerTop.updatePosition(x, y, update)
-        anchorLayerLeft.updatePosition(x, y, update)
-        anchorLayerRight.updatePosition(x, y, update)
-        anchorLayerBottom.updatePosition(x, y, update)
-    }
     fun removeAnchor() {
         if(!miniMode) {
-            anchorLayerTop.remove()
-            anchorLayerBottom.remove()
-            anchorLayerLeft.remove()
-            anchorLayerRight.remove()
+            anchorLayerGroup.remove()
         }
         updateAnchorColor(FloatWindowInfo.Stroke.UNKNOWN)  // 色を元に戻す
     }
     fun addAnchor() {
         if(!miniMode) {
-            anchorLayerTop.add()
-            anchorLayerBottom.add()
-            anchorLayerLeft.add()
-            anchorLayerRight.add()
+            anchorLayerGroup.add()
         }
         updateAnchorColor(FloatWindowInfo.Stroke.UNKNOWN)  // 色を元に戻す
     }
 
     fun addMiniMode(updatePosition: Boolean) {
         if(updatePosition)
-            updateMiniModePosition(anchorLayerTop.getX(), anchorLayerTop.getY())
+            updateMiniModePosition(anchorLayerGroup.getX(), anchorLayerGroup.getY())
         manager.windowManager.addView(this.miniWindowFrame, miniModeParams)
     }
 

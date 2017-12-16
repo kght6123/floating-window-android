@@ -12,7 +12,10 @@ class MultiFloatWindowConstants {
         Dark(0x000000),
         Light(0xFFFFFF),
     }
-
+    enum class Anchor {
+        Edge,
+        SinglePoint,
+    }
     companion object {
         val APP_WIDGET_HOST_ID: Int = 798756856
 

@@ -5,7 +5,6 @@ import android.graphics.PixelFormat
 import android.util.Log
 import android.view.*
 import jp.kght6123.floating.window.core.FloatWindowInfo
-import jp.kght6123.floating.window.core.R
 import jp.kght6123.floating.window.core.viewgroup.FloatWindowOverlayLayout
 import jp.kght6123.floating.window.framework.gesture.LongClickOnGestureListener
 import jp.kght6123.floating.window.framework.utils.UnitUtils
@@ -16,7 +15,7 @@ import jp.kght6123.floating.window.framework.utils.UnitUtils
  * @copyright 2017/12/03 Hirotaka Koga
  * @license   http://www.apache.org/licenses/LICENSE-2.0 Apache-2.0
  */
-class AnchorLayer(private val position: Position, private val info: FloatWindowInfo) {
+abstract class AnchorLayer(private val position: Position, private val info: FloatWindowInfo) {
 
     private val tag = this.javaClass.name
 
@@ -24,8 +23,15 @@ class AnchorLayer(private val position: Position, private val info: FloatWindowI
         TOP, BOTTOM, LEFT, RIGHT
     }
 
-    private val borderWidth = UnitUtils.convertDp2Px(24f, info.context).toInt()
-    private val shadowWidth = 40
+    protected abstract fun getAnchorLayoutResource(): Int
+    protected abstract fun getAnchorLayerId(): Int
+    protected abstract fun getBorderWidth(): Int
+    protected abstract fun updatePosition(x: Int, y: Int)
+    abstract fun updateBackgroundResource(resId: Int)
+    protected abstract fun updateStroke(event: MotionEvent)
+
+    //private val borderWidth = UnitUtils.convertDp2Px(24f, info.context).toInt()
+    protected val shadowWidth = 28
 
     private val anchorActiveFlags = WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN or
             WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH or
@@ -36,7 +42,7 @@ class AnchorLayer(private val position: Position, private val info: FloatWindowI
             WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS or
             WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED
 
-    private val anchorLayerParams: WindowManager.LayoutParams by lazy {
+    protected val anchorLayerParams: WindowManager.LayoutParams by lazy {
         val params = WindowManager.LayoutParams(
                 WindowManager.LayoutParams.WRAP_CONTENT,//UnitUtils.convertDp2Px(150f, context).toInt(),
                 WindowManager.LayoutParams.WRAP_CONTENT,//UnitUtils.convertDp2Px(5f, context).toInt(),
@@ -53,9 +59,9 @@ class AnchorLayer(private val position: Position, private val info: FloatWindowI
         params
     }
 
-    private val anchorLayer: FloatWindowOverlayLayout by lazy {
+    protected val anchorLayer: FloatWindowOverlayLayout by lazy {
         val anchorLayer =
-                View.inflate(info.context, R.layout.edge_layer, null).findViewById(R.id.anchor) as FloatWindowOverlayLayout
+                View.inflate(info.context, getAnchorLayoutResource(), null).findViewById(getAnchorLayerId()) as FloatWindowOverlayLayout
 
         anchorLayer.onDispatchTouchEventListener = object: View.OnTouchListener {
 
@@ -210,54 +216,10 @@ class AnchorLayer(private val position: Position, private val info: FloatWindowI
                         info.windowMode = FloatWindowInfo.Mode.UNKNOWN
                         info.strokeMode = FloatWindowInfo.Stroke.UNKNOWN
 
-                        val left = event.x in 0..(borderWidth)
-                        val right = event.x in (params.width - shadowWidth*2)..(params.width - shadowWidth*2 + borderWidth)
-                        val top = event.y in 0..(borderWidth)
-                        val bottom = event.y in (params.height - shadowWidth*2)..(params.height - shadowWidth*2 + borderWidth)
+                        // モード更新
+                        updateStroke(event)
 
-                        when(this@AnchorLayer.position){
-                            AnchorLayer.Position.TOP -> {
-                                when {
-                                    left ->
-                                        info.strokeMode = FloatWindowInfo.Stroke.TOP_LEFT
-                                    //right ->
-                                    //    info.strokeMode = FloatWindowInfo.Stroke.TOP_RIGHT
-                                    else ->
-                                        info.strokeMode = FloatWindowInfo.Stroke.TOP
-                                }
-                            }
-                            AnchorLayer.Position.BOTTOM -> {
-                                when {
-                                    //left ->
-                                    //    info.strokeMode = FloatWindowInfo.Stroke.BOTTOM_LEFT
-                                    right ->
-                                        info.strokeMode = FloatWindowInfo.Stroke.BOTTOM_RIGHT
-                                    else ->
-                                        info.strokeMode = FloatWindowInfo.Stroke.BOTTOM
-                                }
-                            }
-                            AnchorLayer.Position.LEFT -> {
-                                when {
-                                    //top ->
-                                    //    info.strokeMode = FloatWindowInfo.Stroke.TOP_LEFT
-                                    bottom ->
-                                        info.strokeMode = FloatWindowInfo.Stroke.BOTTOM_LEFT
-                                    else ->
-                                        info.strokeMode = FloatWindowInfo.Stroke.LEFT
-                                }
-                            }
-                            AnchorLayer.Position.RIGHT -> {
-                                when {
-                                    top ->
-                                        info.strokeMode = FloatWindowInfo.Stroke.TOP_RIGHT
-                                    //bottom ->
-                                    //    info.strokeMode = FloatWindowInfo.Stroke.BOTTOM_RIGHT
-                                    else ->
-                                        info.strokeMode = FloatWindowInfo.Stroke.RIGHT
-                                }
-                            }
-                        }
-                        Log.d(tag, "dispatchTouchEvent ${info.strokeMode} borderWidth=$borderWidth position=${this@AnchorLayer.position}")
+                        Log.d(tag, "dispatchTouchEvent ${info.strokeMode} borderWidth=${getBorderWidth()} position=${this@AnchorLayer.position}")
 
                         if(info.strokeMode != FloatWindowInfo.Stroke.UNKNOWN) {
                             // 移動・拡大縮小のための初期値設定
@@ -405,44 +367,10 @@ class AnchorLayer(private val position: Position, private val info: FloatWindowI
         anchorLayer
     }
     fun updatePosition(x: Int, y: Int, update: Boolean) {
-
-        val params = info.getWindowLayoutParams()
-
-        when (position) {
-            Position.TOP -> {
-                anchorLayerParams.width = params.width + borderWidth - shadowWidth * 2
-                anchorLayerParams.height = borderWidth
-                anchorLayerParams.x = x - borderWidth + shadowWidth
-                anchorLayerParams.y = y - borderWidth + shadowWidth
-            }
-            Position.BOTTOM -> {
-                anchorLayerParams.width = params.width + borderWidth - shadowWidth * 2
-                anchorLayerParams.height = borderWidth
-                anchorLayerParams.x = x + shadowWidth
-                anchorLayerParams.y = y + params.height - shadowWidth
-            }
-            Position.LEFT -> {
-                anchorLayerParams.width = borderWidth
-                anchorLayerParams.height = params.height + borderWidth - shadowWidth * 2
-                anchorLayerParams.x = x - borderWidth + shadowWidth
-                anchorLayerParams.y = y + shadowWidth
-            }
-            Position.RIGHT -> {
-                anchorLayerParams.width = borderWidth
-                anchorLayerParams.height = params.height + borderWidth - shadowWidth * 2
-                anchorLayerParams.x = x + params.width - shadowWidth
-                anchorLayerParams.y = y - borderWidth + shadowWidth
-            }
-        }
+        updatePosition(x, y)
         if(update)
             info.manager.windowManager.updateViewLayout(anchorLayer, anchorLayerParams)
     }
-    fun updateBackgroundResource(resId: Int) {
-        anchorLayer.setBackgroundResource(resId)
-    }
-    //fun updateBackgroundColor(color: Int) {
-    //    anchorLayer.setBackgroundColor(color)
-    //}
     fun add() {
         info.manager.windowManager.addView(anchorLayer, anchorLayerParams)
     }

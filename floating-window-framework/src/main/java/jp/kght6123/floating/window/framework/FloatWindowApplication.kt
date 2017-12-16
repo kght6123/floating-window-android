@@ -128,10 +128,18 @@ abstract class FloatWindowApplication : Service() {
             var y: Int = 0,
             var width: Int,
             var height: Int,
-            var backgroundColor: Int = MultiFloatWindowConstants.Theme.Light.rgb,
+            var theme: MultiFloatWindowConstants.Theme = MultiFloatWindowConstants.Theme.Dark,
+            var anchor: MultiFloatWindowConstants.Anchor = MultiFloatWindowConstants.Anchor.Edge,
             var miniMode: Boolean = false,
             var active: Boolean = false
-    )
+    ) {
+        @Suppress("unused") fun getThemeName(): String {
+            return theme.name
+        }
+        @Suppress("unused") fun getAnchorName(): String {
+            return anchor.name
+        }
+    }
     class MultiFloatWindowFactory(
             val classObj: Class<*>,
             private val windowViewFactory: Any,
@@ -193,14 +201,15 @@ abstract class FloatWindowApplication : Service() {
             val y = settingsClass.getMethod("getY").invoke(settings) as Int
             val width = settingsClass.getMethod("getWidth").invoke(settings) as Int
             val height = settingsClass.getMethod("getHeight").invoke(settings) as Int
-            val backgroundColor = settingsClass.getMethod("getBackgroundColor").invoke(settings) as Int
+            val themeName = settingsClass.getMethod("getThemeName").invoke(settings) as String
+            val anchorName = settingsClass.getMethod("getAnchorName").invoke(settings) as String
             val miniMode = settingsClass.getMethod("getMiniMode").invoke(settings) as Boolean
             val active = settingsClass.getMethod("getActive").invoke(settings) as Boolean
 
             //val windowSettingsMethod = windowViewFactoryClass.getMethod("getWindowSettings")
             //val windowSettings = windowSettingsMethod.invoke(windowViewFactory)
 
-            return MultiFloatWindowInitSettings(x, y, width, height, backgroundColor, miniMode, active)
+            return MultiFloatWindowInitSettings(x, y, width, height, MultiFloatWindowConstants.Theme.valueOf(themeName), MultiFloatWindowConstants.Anchor.valueOf(anchorName), miniMode, active)
         }
     }
     abstract class MultiFloatWindowViewFactory(private val context: MultiFloatWindowContext): Resources by context.resourcesImpl, MultiFloatWindowManagerUpdater by context.manager {
@@ -307,7 +316,7 @@ abstract class FloatWindowApplication : Service() {
                     y = UnitUtils.convertDp2Px(50f, context.sharedContext).toInt(),
                     width = appWidgetProviderInfo.initMinWidth(UnitUtils.convertDp2Px(160f, context.sharedContext).toInt()),
                     height = appWidgetProviderInfo.initMinHeight(UnitUtils.convertDp2Px(160f, context.sharedContext).toInt()),
-                    backgroundColor = MultiFloatWindowConstants.Theme.Dark.rgb,
+                    theme = MultiFloatWindowConstants.Theme.Dark,
                     active = false
             )
         }

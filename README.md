@@ -130,6 +130,8 @@ FrameworkライブラリはGitPagesの仮Mavenリポジトリで公開。
 
     1. `onCreateSettingsFactory(index: Int): MultiFloatWindowSettingsFactory`メソッドを実装
         * MultiFloatWindowInitSettingsを初期化して、ウィンドウの初期設定（位置、サイズ）などを設定して返してください。
+        * `Theme`は`Light`または`Dark`です。
+        * `Anchor`は`Edge`または`SinglePoint`です。
         ```kotlin
         override fun onCreateSettingsFactory(index: Int): MultiFloatWindowSettingsFactory {
             return object : MultiFloatWindowSettingsFactory(multiWindowContext) {
@@ -139,7 +141,8 @@ FrameworkライブラリはGitPagesの仮Mavenリポジトリで公開。
                             getDimensionPixelSize(R.dimen.y),
                             getDimensionPixelSize(R.dimen.width),
                             getDimensionPixelSize(R.dimen.height),
-                            getColor(android.R.color.background_light)
+                            MultiFloatWindowConstants.Theme.Light,
+                            MultiFloatWindowConstants.Anchor.Edge
                     )
                 }
             }

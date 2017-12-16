@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+
+
+ @author    kght6123
+ @copyright 2017/11/26 Hirotaka Koga
+ @license   http://www.apache.org/licenses/LICENSE-2.0 Apache-2.0
+ -->
+<jp.kght6123.floating.window.core.viewgroup.FloatWindowOverlayLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/float_window_anchor_color"
+    android:focusable="true"
+    android:focusableInTouchMode="true"
+    android:id="@+id/pointAnchor"
+    >
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@mipmap/ic_fullscreen_black_48dp"
+        android:contentDescription="@string/anchor_thumb_desc"
+        android:rotation="45"/>
+</jp.kght6123.floating.window.core.viewgroup.FloatWindowOverlayLayout>
