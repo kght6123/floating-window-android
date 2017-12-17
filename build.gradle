@@ -1,14 +1,19 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 
 buildscript {
-    ext.kotlin_version = '1.1.60'
+    ext.kotlin_version = '1.2.0'
+    ext.kotlinx_coroutines_version = '0.16'
+    ext.android_support_version = '27.0.2'//''25.4.0'//27.0.2
+    ext.anko_version='0.10.3'
+    ext.gradle_version='3.1.0-alpha05'
     repositories {
         jcenter()
         google()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.1.0-alpha04'
+        classpath "com.android.tools.build:gradle:$gradle_version"
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        classpath "org.jetbrains.anko:anko:$anko_version"
 
         // NOTE: Do not place your application dependencies here; they belong
         // in the individual module build.gradle files
