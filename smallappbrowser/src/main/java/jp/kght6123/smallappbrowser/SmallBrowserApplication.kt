@@ -207,7 +207,7 @@ class SmallBrowserApplication : FloatWindowApplication() {
                             }
                         }
                 )
-                webView.setVerticalScrollbarOverlay(true)
+                //webView.setVerticalScrollbarOverlay(true)
 
                 val urlHandler = object : Handler() {
                     override fun handleMessage(msg: Message) {
@@ -492,9 +492,9 @@ class SmallBrowserApplication : FloatWindowApplication() {
             private fun setupActionBar(webView: WebView, moveControlAreaId: Int, webviewControlAreaId: Int, smallappControlAreaId: Int, targetMoveControlArea: MoveControlArea) {
                 val pref = PreferenceManager.getDefaultSharedPreferences(this@SmallBrowserApplication)
 
-                val moveControlArea = mainView.findViewById(moveControlAreaId)
-                val webviewControlArea = mainView.findViewById(webviewControlAreaId)
-                val smallappControlArea = mainView.findViewById(smallappControlAreaId)
+                //val moveControlArea: View = mainView.findViewById(moveControlAreaId)
+                val webviewControlArea: View = mainView.findViewById(webviewControlAreaId)
+                val smallappControlArea: View = mainView.findViewById(smallappControlAreaId)
 
                 val back = webviewControlArea.findViewById(R.id.btnBack) as Button
                 back.setOnClickListener(this.onClickBackListener)

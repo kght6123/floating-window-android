@@ -59,6 +59,18 @@
 				<category android:name="jp.kght6123.floating.window.core.intent.category.LAUNCHER" />
 			</intent-filter>
 		</service>
+
+		<service android:name="jp.kght6123.floating.window.framework.FloatWindowCalcApplication"
+			android:label="@string/calc_app_name"
+			android:enabled="true"
+			android:exported="true"
+			android:icon="@mipmap/ic_main_launcher">
+			<intent-filter>
+				<action android:name="jp.kght6123.floating.window.core.intent.action.MAIN" />
+				<category android:name="jp.kght6123.floating.window.core.intent.category.LAUNCHER" />
+			</intent-filter>
+		</service>
+
 	</application>
 
 </manifest>

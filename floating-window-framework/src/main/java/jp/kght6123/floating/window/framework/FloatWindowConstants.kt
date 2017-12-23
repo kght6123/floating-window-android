@@ -1,5 +1,8 @@
 package jp.kght6123.floating.window.framework
 
+import android.os.Build
+import android.view.WindowManager
+
 /**
  * 定数クラス
  *
@@ -27,6 +30,13 @@ class MultiFloatWindowConstants {
         val ACTION_SERVICE_CORE = "jp.kght6123.floating.window.core.FloatWindowService.ACTION"
 
         val API_VERSION = MultiWindowApiVersion.DEV_1
+
+        @Suppress("DEPRECATION")
+        val WINDOW_MANAGER_OVERLAY_TYPE =
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+                    WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
+                else
+                    WindowManager.LayoutParams.TYPE_SYSTEM_ALERT
     }
 }
 

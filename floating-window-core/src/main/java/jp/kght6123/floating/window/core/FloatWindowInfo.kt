@@ -79,9 +79,7 @@ class FloatWindowInfo(
                 UnitUtils.convertDp2Px(75f, context).toInt(),
                 0, // X
                 0, // Y
-                //WindowManager.LayoutParams.TYPE_SYSTEM_OVERLAY,   // ロック画面より上にくる
-                WindowManager.LayoutParams.TYPE_SYSTEM_ALERT, // なるべく上の階層で表示
-                //WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY, // Android-O以降
+                MultiFloatWindowConstants.WINDOW_MANAGER_OVERLAY_TYPE,
                 miniModeFlags,
                 PixelFormat.TRANSLUCENT)
         params.gravity = Gravity.TOP or Gravity.START
