@@ -128,11 +128,55 @@ abstract class FloatWindowApplication : Service() {
             var y: Int = 0,
             var width: Int,
             var height: Int,
-            var theme: MultiFloatWindowConstants.Theme = MultiFloatWindowConstants.Theme.Dark,
-            var anchor: MultiFloatWindowConstants.Anchor = MultiFloatWindowConstants.Anchor.Edge,
+            var theme: MultiFloatWindowConstants.Theme =
+                MultiFloatWindowConstants.Theme.valueOf(MultiWindowMetaDataName.WINDOW_THEME.getStringValue()),
+            var anchor: MultiFloatWindowConstants.Anchor =
+                MultiFloatWindowConstants.Anchor.valueOf(MultiWindowMetaDataName.WINDOW_MODE.getStringValue()),
             var miniMode: Boolean = false,
-            var active: Boolean = false
+            var active: Boolean = false,
+            var windowBorderDpWidth: Float =
+                MultiWindowMetaDataName.WINDOW_BORDER_DP_WIDTH.getFloatValue(),
+            var windowBorderOpacity: Float =
+                MultiWindowMetaDataName.WINDOW_BORDER_OPACITY.getFloatValue(),
+            var windowBorderTouchOpacity: Float =
+                MultiWindowMetaDataName.WINDOW_BORDER_TOUCH_OPACITY.getFloatValue(),
+            var windowResize: Boolean =
+                MultiWindowMetaDataName.WINDOW_RESIZE.getBooleanValue(),
+            var windowMinWidth: Float =
+                MultiWindowMetaDataName.WINDOW_DP_MIN_WIDTH.getFloatValue(),
+            var windowMinHeight: Float =
+                MultiWindowMetaDataName.WINDOW_DP_MIN_HEIGHT.getFloatValue(),
+            var windowMaxWidth: Float =
+                MultiWindowMetaDataName.WINDOW_DP_MAX_WIDTH.getFloatValue(),
+            var windowMaxHeight: Float =
+                MultiWindowMetaDataName.WINDOW_DP_MAX_HEIGHT.getFloatValue()
     ) {
+        fun updateParamMap(paramMap: Map<String, Any>) {
+            paramMap.entries.forEach {
+                when (MultiWindowMetaDataName.valueOf(it.key)) {
+                    MultiWindowMetaDataName.WINDOW_MODE ->
+                        anchor = MultiFloatWindowConstants.Anchor.valueOf(it.value as String)
+                    MultiWindowMetaDataName.WINDOW_BORDER_DP_WIDTH ->
+                        windowBorderDpWidth = it.value as Float
+                    MultiWindowMetaDataName.WINDOW_BORDER_OPACITY ->
+                        windowBorderOpacity = it.value as Float
+                    MultiWindowMetaDataName.WINDOW_THEME ->
+                        theme = MultiFloatWindowConstants.Theme.valueOf(it.value as String)
+                    MultiWindowMetaDataName.WINDOW_BORDER_TOUCH_OPACITY ->
+                        windowBorderTouchOpacity = it.value as Float
+                    MultiWindowMetaDataName.WINDOW_RESIZE ->
+                        windowResize = it.value as Boolean
+                    MultiWindowMetaDataName.WINDOW_DP_MIN_WIDTH ->
+                        windowMinWidth = it.value as Float
+                    MultiWindowMetaDataName.WINDOW_DP_MIN_HEIGHT ->
+                        windowMinHeight = it.value as Float
+                    MultiWindowMetaDataName.WINDOW_DP_MAX_WIDTH ->
+                        windowMaxWidth = it.value as Float
+                    MultiWindowMetaDataName.WINDOW_DP_MAX_HEIGHT ->
+                        windowMaxHeight = it.value as Float
+                }
+            }
+        }
         @Suppress("unused") fun getThemeName(): String {
             return theme.name
         }

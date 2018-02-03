@@ -9,12 +9,19 @@ import jp.kght6123.floating.window.core.R
  * @copyright 2017/12/10 Hirotaka Koga
  * @license   http://www.apache.org/licenses/LICENSE-2.0 Apache-2.0
  */
-class EdgeAnchorLayerGroup(private val info: FloatWindowInfo) : AnchorLayerGroup {
+class EdgeAnchorLayerGroup(
+        private val info: FloatWindowInfo,
+        private val windowBorderOpacity: Float = info.initSettings.windowBorderOpacity,
+        private val windowBorderTouchOpacity: Float = info.initSettings.windowBorderTouchOpacity) : AnchorLayerGroup {
 
-    private val anchorLayerTop: AnchorLayer by lazy { EdgeAnchorLayer(AnchorLayer.Position.TOP, info, 0) }
-    private val anchorLayerLeft: AnchorLayer by lazy { EdgeAnchorLayer(AnchorLayer.Position.LEFT, info, 0) }
-    private val anchorLayerRight: AnchorLayer by lazy { EdgeAnchorLayer(AnchorLayer.Position.RIGHT, info, 0) }
-    private val anchorLayerBottom: AnchorLayer by lazy { EdgeAnchorLayer(AnchorLayer.Position.BOTTOM, info, 0) }
+    private val anchorLayerTop: AnchorLayer
+            by lazy { EdgeAnchorLayer(AnchorLayer.Position.TOP, info) }
+    private val anchorLayerLeft: AnchorLayer
+            by lazy { EdgeAnchorLayer(AnchorLayer.Position.LEFT, info) }
+    private val anchorLayerRight: AnchorLayer
+            by lazy { EdgeAnchorLayer(AnchorLayer.Position.RIGHT, info) }
+    private val anchorLayerBottom: AnchorLayer
+            by lazy { EdgeAnchorLayer(AnchorLayer.Position.BOTTOM, info) }
 
     init {
         anchorLayerTop
@@ -31,44 +38,44 @@ class EdgeAnchorLayerGroup(private val info: FloatWindowInfo) : AnchorLayerGroup
     override fun onChangeStrokeMode(strokeMode: FloatWindowInfo.Stroke) {
         when (strokeMode) {
             FloatWindowInfo.Stroke.TOP -> {
-                anchorLayerTop.updateBackgroundResource(R.color.float_window_anchor_color_resize)
+                anchorLayerTop.updateBackgroundResource(R.color.float_window_anchor_color_resize, windowBorderTouchOpacity)
             }
             FloatWindowInfo.Stroke.BOTTOM -> {
-                anchorLayerBottom.updateBackgroundResource(R.color.float_window_anchor_color_resize)
+                anchorLayerBottom.updateBackgroundResource(R.color.float_window_anchor_color_resize, windowBorderTouchOpacity)
             }
             FloatWindowInfo.Stroke.LEFT -> {
-                anchorLayerLeft.updateBackgroundResource(R.color.float_window_anchor_color_resize)
+                anchorLayerLeft.updateBackgroundResource(R.color.float_window_anchor_color_resize, windowBorderTouchOpacity)
             }
             FloatWindowInfo.Stroke.RIGHT -> {
-                anchorLayerRight.updateBackgroundResource(R.color.float_window_anchor_color_resize)
+                anchorLayerRight.updateBackgroundResource(R.color.float_window_anchor_color_resize, windowBorderTouchOpacity)
             }
             FloatWindowInfo.Stroke.TOP_LEFT -> {
-                anchorLayerTop.updateBackgroundResource(R.color.float_window_anchor_color_resize)
-                anchorLayerLeft.updateBackgroundResource(R.color.float_window_anchor_color_resize)
+                anchorLayerTop.updateBackgroundResource(R.color.float_window_anchor_color_resize, windowBorderTouchOpacity)
+                anchorLayerLeft.updateBackgroundResource(R.color.float_window_anchor_color_resize, windowBorderTouchOpacity)
             }
             FloatWindowInfo.Stroke.TOP_RIGHT -> {
-                anchorLayerTop.updateBackgroundResource(R.color.float_window_anchor_color_resize)
-                anchorLayerRight.updateBackgroundResource(R.color.float_window_anchor_color_resize)
+                anchorLayerTop.updateBackgroundResource(R.color.float_window_anchor_color_resize, windowBorderTouchOpacity)
+                anchorLayerRight.updateBackgroundResource(R.color.float_window_anchor_color_resize, windowBorderTouchOpacity)
             }
             FloatWindowInfo.Stroke.BOTTOM_LEFT -> {
-                anchorLayerBottom.updateBackgroundResource(R.color.float_window_anchor_color_resize)
-                anchorLayerLeft.updateBackgroundResource(R.color.float_window_anchor_color_resize)
+                anchorLayerBottom.updateBackgroundResource(R.color.float_window_anchor_color_resize, windowBorderTouchOpacity)
+                anchorLayerLeft.updateBackgroundResource(R.color.float_window_anchor_color_resize, windowBorderTouchOpacity)
             }
             FloatWindowInfo.Stroke.BOTTOM_RIGHT -> {
-                anchorLayerBottom.updateBackgroundResource(R.color.float_window_anchor_color_resize)
-                anchorLayerRight.updateBackgroundResource(R.color.float_window_anchor_color_resize)
+                anchorLayerBottom.updateBackgroundResource(R.color.float_window_anchor_color_resize, windowBorderTouchOpacity)
+                anchorLayerRight.updateBackgroundResource(R.color.float_window_anchor_color_resize, windowBorderTouchOpacity)
             }
             FloatWindowInfo.Stroke.ALL -> {
-                anchorLayerTop.updateBackgroundResource(R.color.float_window_anchor_color_move)
-                anchorLayerBottom.updateBackgroundResource(R.color.float_window_anchor_color_move)
-                anchorLayerLeft.updateBackgroundResource(R.color.float_window_anchor_color_move)
-                anchorLayerRight.updateBackgroundResource(R.color.float_window_anchor_color_move)
+                anchorLayerTop.updateBackgroundResource(R.color.float_window_anchor_color_move, windowBorderTouchOpacity)
+                anchorLayerBottom.updateBackgroundResource(R.color.float_window_anchor_color_move, windowBorderTouchOpacity)
+                anchorLayerLeft.updateBackgroundResource(R.color.float_window_anchor_color_move, windowBorderTouchOpacity)
+                anchorLayerRight.updateBackgroundResource(R.color.float_window_anchor_color_move, windowBorderTouchOpacity)
             }
             FloatWindowInfo.Stroke.UNKNOWN -> {
-                anchorLayerTop.updateBackgroundResource(R.color.float_window_anchor_color)
-                anchorLayerBottom.updateBackgroundResource(R.color.float_window_anchor_color)
-                anchorLayerLeft.updateBackgroundResource(R.color.float_window_anchor_color)
-                anchorLayerRight.updateBackgroundResource(R.color.float_window_anchor_color)
+                anchorLayerTop.updateBackgroundResource(R.color.float_window_anchor_color, windowBorderOpacity)
+                anchorLayerBottom.updateBackgroundResource(R.color.float_window_anchor_color, windowBorderOpacity)
+                anchorLayerLeft.updateBackgroundResource(R.color.float_window_anchor_color, windowBorderOpacity)
+                anchorLayerRight.updateBackgroundResource(R.color.float_window_anchor_color, windowBorderOpacity)
             }
         }
     }

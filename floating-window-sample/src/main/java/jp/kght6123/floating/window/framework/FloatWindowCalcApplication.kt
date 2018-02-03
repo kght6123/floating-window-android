@@ -1,6 +1,5 @@
 package jp.kght6123.floating.window.framework
 
-import android.annotation.TargetApi
 import android.content.Intent
 import android.os.Build
 import android.text.TextUtils
@@ -8,6 +7,7 @@ import android.util.TypedValue
 import android.view.View
 import android.widget.GridLayout
 import android.widget.ImageView
+import android.widget.LinearLayout
 import org.jetbrains.anko.*
 
 /**
@@ -19,23 +19,30 @@ import org.jetbrains.anko.*
  */
 class FloatWindowCalcApplication : FloatWindowApplication() {
 
-    private val tag = FloatWindowCalcApplication::class.java.name
+    //private val tag = FloatWindowCalcApplication::class.java.name
 
     class CalcUi: AnkoComponent<FloatWindowCalcApplication> {
 
         override fun createView(ui: AnkoContext<FloatWindowCalcApplication>) = with(ui) {
-            val buttonSize = 48
+            val buttonSize = 0
 
             gridLayout {
                 rowCount = 6
                 columnCount = 4
                 lparams {
-                    width = GridLayout.LayoutParams.MATCH_PARENT
-                    height = GridLayout.LayoutParams.MATCH_PARENT
+                    width = LinearLayout.LayoutParams.MATCH_PARENT
+                    height = LinearLayout.LayoutParams.MATCH_PARENT
+                    //useDefaultMargins = true
                 }
-
                 var rowIndex = 0
                 var columnIndex = 0
+
+                val initLayoutParams = fun(lparams :GridLayout.LayoutParams, width: Int, height: Int, rowIndex: Int, columnIndex: Int) {
+                    lparams.width = width
+                    lparams.height = height
+                    lparams.rowSpec = GridLayout.spec(rowIndex, GridLayout.FILL, 1f)
+                    lparams.columnSpec = GridLayout.spec(columnIndex, GridLayout.FILL, 1f)
+                }
 
                 textView("11+22+33+444444444444444") {
                     setTextColor(resources.getColor(android.R.color.primary_text_dark, null))
@@ -52,45 +59,37 @@ class FloatWindowCalcApplication : FloatWindowApplication() {
                         ellipsize = TextUtils.TruncateAt.START
                         setTextSize(TypedValue.COMPLEX_UNIT_SP, 32f)
                     }
+                    topPadding = dip(6)
+                    bottomPadding = dip(6)
+
                 }.lparams {
-                    width = GridLayout.LayoutParams.MATCH_PARENT
-                    height = dip(buttonSize)
-                    rowSpec = GridLayout.spec(rowIndex)
-                    columnSpec = GridLayout.spec(columnIndex, columnCount)
+                    width = buttonSize
+                    height = dip(60)
+                    rowSpec = GridLayout.spec(rowIndex, GridLayout.FILL)
+                    columnSpec = GridLayout.spec(columnIndex, columnCount, GridLayout.FILL, 1f)
                 }
                 rowIndex++
+                columnIndex = 0
 
                 button("AC") {
                     backgroundResource = R.drawable.flatbutton_gray
                 }.lparams {
-                    width = dip(buttonSize)
-                    height = dip(buttonSize)
-                    rowSpec = GridLayout.spec(rowIndex)
-                    columnSpec = GridLayout.spec(columnIndex++)
+                    initLayoutParams(this, buttonSize, buttonSize, rowIndex, columnIndex++)
                 }
                 button("+/-") {
                     backgroundResource = R.drawable.flatbutton_gray
                 }.lparams {
-                    width = dip(buttonSize)
-                    height = dip(buttonSize)
-                    rowSpec = GridLayout.spec(rowIndex)
-                    columnSpec = GridLayout.spec(columnIndex++)
+                    initLayoutParams(this, buttonSize, buttonSize, rowIndex, columnIndex++)
                 }
                 button("%") {
                     backgroundResource = R.drawable.flatbutton_gray
                 }.lparams {
-                    width = dip(buttonSize)
-                    height = dip(buttonSize)
-                    rowSpec = GridLayout.spec(rowIndex)
-                    columnSpec = GridLayout.spec(columnIndex++)
+                    initLayoutParams(this, buttonSize, buttonSize, rowIndex, columnIndex++)
                 }
                 button("÷") {
                     backgroundResource = R.drawable.flatbutton_accent
                 }.lparams {
-                    width = dip(buttonSize)
-                    height = dip(buttonSize)
-                    rowSpec = GridLayout.spec(rowIndex)
-                    columnSpec = GridLayout.spec(columnIndex++)
+                    initLayoutParams(this, buttonSize, buttonSize, rowIndex, columnIndex++)
                 }
                 rowIndex++
                 columnIndex = 0
@@ -98,34 +97,22 @@ class FloatWindowCalcApplication : FloatWindowApplication() {
                 button("1") {
                     backgroundResource = R.drawable.flatbutton_lightgray
                 }.lparams {
-                    width = dip(buttonSize)
-                    height = dip(buttonSize)
-                    rowSpec = GridLayout.spec(rowIndex)
-                    columnSpec = GridLayout.spec(columnIndex++)
+                    initLayoutParams(this, buttonSize, buttonSize, rowIndex, columnIndex++)
                 }
                 button("2") {
                     backgroundResource = R.drawable.flatbutton_lightgray
                 }.lparams {
-                    width = dip(buttonSize)
-                    height = dip(buttonSize)
-                    rowSpec = GridLayout.spec(rowIndex)
-                    columnSpec = GridLayout.spec(columnIndex++)
+                    initLayoutParams(this, buttonSize, buttonSize, rowIndex, columnIndex++)
                 }
                 button("3") {
                     backgroundResource = R.drawable.flatbutton_lightgray
                 }.lparams {
-                    width = dip(buttonSize)
-                    height = dip(buttonSize)
-                    rowSpec = GridLayout.spec(rowIndex)
-                    columnSpec = GridLayout.spec(columnIndex++)
+                    initLayoutParams(this, buttonSize, buttonSize, rowIndex, columnIndex++)
                 }
                 button("X") {
                     backgroundResource = R.drawable.flatbutton_accent
                 }.lparams {
-                    width = dip(buttonSize)
-                    height = dip(buttonSize)
-                    rowSpec = GridLayout.spec(rowIndex)
-                    columnSpec = GridLayout.spec(columnIndex++)
+                    initLayoutParams(this, buttonSize, buttonSize, rowIndex, columnIndex++)
                 }
                 rowIndex++
                 columnIndex = 0
@@ -133,34 +120,22 @@ class FloatWindowCalcApplication : FloatWindowApplication() {
                 button("4") {
                     backgroundResource = R.drawable.flatbutton_lightgray
                 }.lparams {
-                    width = dip(buttonSize)
-                    height = dip(buttonSize)
-                    rowSpec = GridLayout.spec(rowIndex)
-                    columnSpec = GridLayout.spec(columnIndex++)
+                    initLayoutParams(this, buttonSize, buttonSize, rowIndex, columnIndex++)
                 }
                 button("5") {
                     backgroundResource = R.drawable.flatbutton_lightgray
                 }.lparams {
-                    width = dip(buttonSize)
-                    height = dip(buttonSize)
-                    rowSpec = GridLayout.spec(rowIndex)
-                    columnSpec = GridLayout.spec(columnIndex++)
+                    initLayoutParams(this, buttonSize, buttonSize, rowIndex, columnIndex++)
                 }
                 button("6") {
                     backgroundResource = R.drawable.flatbutton_lightgray
                 }.lparams {
-                    width = dip(buttonSize)
-                    height = dip(buttonSize)
-                    rowSpec = GridLayout.spec(rowIndex)
-                    columnSpec = GridLayout.spec(columnIndex++)
+                    initLayoutParams(this, buttonSize, buttonSize, rowIndex, columnIndex++)
                 }
                 button("-") {
                     backgroundResource = R.drawable.flatbutton_accent
                 }.lparams {
-                    width = dip(buttonSize)
-                    height = dip(buttonSize)
-                    rowSpec = GridLayout.spec(rowIndex)
-                    columnSpec = GridLayout.spec(columnIndex++)
+                    initLayoutParams(this, buttonSize, buttonSize, rowIndex, columnIndex++)
                 }
                 rowIndex++
                 columnIndex = 0
@@ -168,34 +143,22 @@ class FloatWindowCalcApplication : FloatWindowApplication() {
                 button("7") {
                     backgroundResource = R.drawable.flatbutton_lightgray
                 }.lparams {
-                    width = dip(buttonSize)
-                    height = dip(buttonSize)
-                    rowSpec = GridLayout.spec(rowIndex)
-                    columnSpec = GridLayout.spec(columnIndex++)
+                    initLayoutParams(this, buttonSize, buttonSize, rowIndex, columnIndex++)
                 }
                 button("8") {
                     backgroundResource = R.drawable.flatbutton_lightgray
                 }.lparams {
-                    width = dip(buttonSize)
-                    height = dip(buttonSize)
-                    rowSpec = GridLayout.spec(rowIndex)
-                    columnSpec = GridLayout.spec(columnIndex++)
+                    initLayoutParams(this, buttonSize, buttonSize, rowIndex, columnIndex++)
                 }
                 button("9") {
                     backgroundResource = R.drawable.flatbutton_lightgray
                 }.lparams {
-                    width = dip(buttonSize)
-                    height = dip(buttonSize)
-                    rowSpec = GridLayout.spec(rowIndex)
-                    columnSpec = GridLayout.spec(columnIndex++)
+                    initLayoutParams(this, buttonSize, buttonSize, rowIndex, columnIndex++)
                 }
                 button("+") {
                     backgroundResource = R.drawable.flatbutton_accent
                 }.lparams {
-                    width = dip(buttonSize)
-                    height = dip(buttonSize)
-                    rowSpec = GridLayout.spec(rowIndex)
-                    columnSpec = GridLayout.spec(columnIndex++)
+                    initLayoutParams(this, buttonSize, buttonSize, rowIndex, columnIndex++)
                 }
                 rowIndex++
                 columnIndex = 0
@@ -203,28 +166,22 @@ class FloatWindowCalcApplication : FloatWindowApplication() {
                 button("0") {
                     backgroundResource = R.drawable.flatbutton_lightgray
                 }.lparams {
-                    width = dip(buttonSize*2)
-                    height = dip(buttonSize)
-                    rowSpec = GridLayout.spec(rowIndex)
-                    columnSpec = GridLayout.spec(columnIndex++, columnCount-2)
+                    width = buttonSize
+                    height = buttonSize
+                    rowSpec = GridLayout.spec(rowIndex, GridLayout.FILL, 1f)
+                    columnSpec = GridLayout.spec(columnIndex++, columnCount-2, GridLayout.FILL, 1f)
                 }
                 columnIndex++
 
                 button(".") {
                     backgroundResource = R.drawable.flatbutton_lightgray
                 }.lparams {
-                    width = dip(buttonSize)
-                    height = dip(buttonSize)
-                    rowSpec = GridLayout.spec(rowIndex)
-                    columnSpec = GridLayout.spec(columnIndex++)
+                    initLayoutParams(this, buttonSize, buttonSize, rowIndex, columnIndex++)
                 }
                 button("=") {
                     backgroundResource = R.drawable.flatbutton_accent
                 }.lparams {
-                    width = dip(buttonSize)
-                    height = dip(buttonSize)
-                    rowSpec = GridLayout.spec(rowIndex)
-                    columnSpec = GridLayout.spec(columnIndex++)
+                    initLayoutParams(this, buttonSize, buttonSize, rowIndex, columnIndex++)
                 }
             }
 //            verticalLayout {

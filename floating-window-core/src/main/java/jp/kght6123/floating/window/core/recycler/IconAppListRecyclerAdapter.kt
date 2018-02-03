@@ -14,6 +14,7 @@ import android.widget.TextView
 import jp.kght6123.floating.window.core.FloatWindowManager
 import jp.kght6123.floating.window.core.R
 import jp.kght6123.floating.window.framework.MultiFloatWindowConstants
+import jp.kght6123.floating.window.framework.MultiWindowMetaDataName
 
 
 /**
@@ -52,22 +53,22 @@ class IconAppListRecyclerAdapter(val context: Context, private val manager: Floa
     override fun onBindViewHolder(holder: ViewHolder?, position: Int) {
         val resolveInfo = resolveInfoAllList[position]
         holder?.thumbIconButton?.setOnClickListener {
+
+            // MetaDataのパラメータを取得する
+            val paramMap = MultiWindowMetaDataName.getParamMap(resolveInfo)
+
             // 選択されたアプリを開く（次インデックス）
             val nextIndex = manager.nextIndex()
             Log.d(tag, "nextIndex=$nextIndex")
 
             if(manager.factoryMap.containsKey(nextIndex)) {
                 Log.d(tag, "update=true")
-                manager.openWindow(nextIndex, resolveInfo.serviceInfo.packageName, resolveInfo.serviceInfo.name, true)
+                manager.openWindow(nextIndex, resolveInfo.serviceInfo.packageName, resolveInfo.serviceInfo.name, true, paramMap)
             } else {
                 Log.d(tag, "update=false")
-                manager.openWindow(nextIndex, resolveInfo.serviceInfo.packageName, resolveInfo.serviceInfo.name, false)
+                manager.openWindow(nextIndex, resolveInfo.serviceInfo.packageName, resolveInfo.serviceInfo.name, false, paramMap)
             }
             manager.factoryMap.getValue(nextIndex).start(null)
-
-            // FIXME 今後、MetaDataでフレームワークの動きを設定したい
-            //val bundle = resolveInfo.serviceInfo.metaData
-            //val value = getResources().getString(bundle.getInt("your.key"))
         }
         holder?.thumbLabel?.text = resolveInfo.loadLabel(packageManager)
 

@@ -310,15 +310,15 @@ class FloatWindowManager(val context: Context): MultiFloatWindowManagerUpdater {
         windowManager.addView(overlayView, getActiveParams())   // WindowManagerに追加
         windowManager.addView(controlLayer, ctrlIconParams)
     }
-    fun add(index: Int, miniMode: Boolean, x: Int?, y: Int?, theme: MultiFloatWindowConstants.Theme, anchor: MultiFloatWindowConstants.Anchor, initWidth: Int, initHeight: Int, initActive: Boolean, className: String): FloatWindowInfo {
-        Log.d(tag, "index=$index, miniMode=$miniMode, initActive=$initActive")
-        val overlayWindowInfo = FloatWindowInfo(context, this, index, miniMode, theme, anchor, initWidth, initHeight, className)
-        put(index, overlayWindowInfo, initActive)
-        moveFixed(index, x!!, y!!)
+    private fun add(index: Int, initSettings: FloatWindowApplication.MultiFloatWindowInitSettings, className: String): FloatWindowInfo {
+        Log.d(tag, "index=$index, miniMode=${initSettings.miniMode}, initActive=${initSettings.active}")
+        val overlayWindowInfo = FloatWindowInfo(context, this, index, initSettings, className)
+        put(index, overlayWindowInfo, initSettings.active)
+        moveFixed(index, initSettings.x, initSettings.y)
         return overlayWindowInfo
     }
-    private fun update(index: Int, miniMode: Boolean, theme: MultiFloatWindowConstants.Theme, anchor: MultiFloatWindowConstants.Anchor, initWidth: Int, initHeight: Int, initActive: Boolean, className: String): FloatWindowInfo {
-        val overlayInfo = FloatWindowInfo(context, this, index, miniMode, theme, anchor, initWidth, initHeight, className)
+    private fun update(index: Int, initSettings: FloatWindowApplication.MultiFloatWindowInitSettings, className: String): FloatWindowInfo {
+        val overlayInfo = FloatWindowInfo(context, this, index, initSettings, className)
 
         val overlayInfoOld = overlayWindowMap.getValue(index)
         overlayWindowMap.put(index, overlayInfo)  // 管理を上書き
@@ -329,7 +329,7 @@ class FloatWindowManager(val context: Context): MultiFloatWindowManagerUpdater {
             overlayView.removeView(overlayInfoOld.windowOutlineFrame)
             overlayView.addView(overlayInfo.windowOutlineFrame)
         }
-        if(initActive)
+        if(initSettings.active)
             changeActiveIndex(index)
 
         return overlayInfo
@@ -570,7 +570,7 @@ class FloatWindowManager(val context: Context): MultiFloatWindowManagerUpdater {
         fun onChangeAll()
     }
 
-    fun openWindow(windowIndex: Int, packageName: String, serviceClassName: String, update: Boolean) {
+    fun openWindow(windowIndex: Int, packageName: String, serviceClassName: String, update: Boolean, paramMap: Map<String, Any>) {
 
         val sharedContext = context.createPackageContext(packageName, Context.CONTEXT_INCLUDE_CODE or Context.CONTEXT_IGNORE_SECURITY)
         val classObj = Class.forName(serviceClassName, true, sharedContext.classLoader)
@@ -596,28 +596,18 @@ class FloatWindowManager(val context: Context): MultiFloatWindowManagerUpdater {
         factoryMap.put(windowIndex, factory)
 
         val initSettings = factory.createInitSettings(windowIndex)
+        initSettings.updateParamMap(paramMap)
+
         val info =
                 if(update)
                     update(
                             windowIndex,
-                            initSettings.miniMode,
-                            initSettings.theme,
-                            initSettings.anchor,
-                            initSettings.width,
-                            initSettings.height,
-                            initSettings.active,
+                            initSettings,
                             classObj.name)
                 else
                     add(
                             windowIndex,
-                            initSettings.miniMode,
-                            initSettings.x,
-                            initSettings.y,
-                            initSettings.theme,
-                            initSettings.anchor,
-                            initSettings.width,
-                            initSettings.height,
-                            initSettings.active,
+                            initSettings,
                             classObj.name)
 
         if(update) {
@@ -673,24 +663,12 @@ class FloatWindowManager(val context: Context): MultiFloatWindowManagerUpdater {
         val info = if(update)
             update(
                     windowIndex,
-                    initSettings.miniMode,
-                    initSettings.theme,
-                    initSettings.anchor,
-                    initSettings.width,
-                    initSettings.height,
-                    initSettings.active,
+                    initSettings,
                     appWidgetProviderInfo.provider.className)
         else
             add(
                     windowIndex,
-                    initSettings.miniMode,
-                    initSettings.x,
-                    initSettings.y,
-                    initSettings.theme,
-                    initSettings.anchor,
-                    initSettings.width,
-                    initSettings.height,
-                    initSettings.active,
+                    initSettings,
                     appWidgetProviderInfo.provider.className)
 
         if(update) {

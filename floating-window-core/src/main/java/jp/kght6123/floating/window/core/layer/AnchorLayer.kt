@@ -28,7 +28,7 @@ abstract class AnchorLayer(private val position: Position, private val info: Flo
     protected abstract fun getAnchorLayerId(): Int
     protected abstract fun getBorderWidth(): Int
     protected abstract fun updatePosition(x: Int, y: Int)
-    abstract fun updateBackgroundResource(resId: Int)
+    abstract fun updateBackgroundResource(resId: Int, alpha: Float)
     protected abstract fun updateStroke(event: MotionEvent)
 
     //private val borderWidth = UnitUtils.convertDp2Px(24f, info.context).toInt()

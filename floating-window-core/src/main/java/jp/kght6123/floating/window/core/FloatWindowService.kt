@@ -41,13 +41,13 @@ class FloatWindowService : Service() {
                         val openType = MultiWindowOpenType.values()[msg.arg2]
                         when (openType) {
                             MultiWindowOpenType.NEW -> {
-                                manager.openWindow(msg.arg1, packageName, serviceClassName,false)
+                                manager.openWindow(msg.arg1, packageName, serviceClassName,false, MultiWindowMetaDataName.getDefaultMap())
                             }
                             MultiWindowOpenType.UPDATE -> {
                                 if(manager.factoryMap.containsKey(msg.arg1))
-                                    manager.openWindow(msg.arg1, packageName, serviceClassName,true)
+                                    manager.openWindow(msg.arg1, packageName, serviceClassName,true, MultiWindowMetaDataName.getDefaultMap())
                                 else
-                                    manager.openWindow(msg.arg1, packageName, serviceClassName,false)
+                                    manager.openWindow(msg.arg1, packageName, serviceClassName,false, MultiWindowMetaDataName.getDefaultMap())
                             }
                         }
                         true

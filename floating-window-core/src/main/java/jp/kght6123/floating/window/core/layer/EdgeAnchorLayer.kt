@@ -11,10 +11,10 @@ import jp.kght6123.floating.window.framework.utils.UnitUtils
  * @copyright 2017/12/03 Hirotaka Koga
  * @license   http://www.apache.org/licenses/LICENSE-2.0 Apache-2.0
  */
-open class EdgeAnchorLayer(private val position: Position, private val info: FloatWindowInfo, private val fixedWidth: Int): AnchorLayer(position, info) {
+open class EdgeAnchorLayer(private val position: Position, private val info: FloatWindowInfo, private val fixedWidth: Int = 0, borderDpWidth: Float = info.initSettings.windowBorderDpWidth): AnchorLayer(position, info) {
 
     //private val tag = this.javaClass.name
-    private val borderWidth = UnitUtils.convertDp2Px(24f, info.context).toInt()
+    private val borderWidth = UnitUtils.convertDp2Px(borderDpWidth, info.context).toInt()
 
     override fun getAnchorLayoutResource(): Int {
         return R.layout.edge_layer
@@ -23,7 +23,7 @@ open class EdgeAnchorLayer(private val position: Position, private val info: Flo
         return R.id.anchor
     }
     override fun getBorderWidth(): Int {
-        return UnitUtils.convertDp2Px(24f, info.context).toInt()
+        return borderWidth
     }
     override fun updatePosition(x: Int, y: Int) {
         val params = info.getWindowLayoutParams()
@@ -125,7 +125,7 @@ open class EdgeAnchorLayer(private val position: Position, private val info: Flo
             }
         }
     }
-    override fun updateBackgroundResource(resId: Int) {
+    override fun updateBackgroundResource(resId: Int, alpha: Float) {
         anchorLayer.setBackgroundResource(resId)
     }
 }

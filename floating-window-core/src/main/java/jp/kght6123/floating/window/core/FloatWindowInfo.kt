@@ -12,6 +12,7 @@ import jp.kght6123.floating.window.core.layer.AnchorLayerGroup
 import jp.kght6123.floating.window.core.layer.EdgeAnchorLayerGroup
 import jp.kght6123.floating.window.core.layer.SinglePointAnchorLayerGroup
 import jp.kght6123.floating.window.core.utils.DisplayUtils
+import jp.kght6123.floating.window.framework.FloatWindowApplication
 import jp.kght6123.floating.window.framework.MultiFloatWindowConstants
 import jp.kght6123.floating.window.framework.utils.UnitUtils
 
@@ -26,12 +27,13 @@ class FloatWindowInfo(
         val context: Context,
         val manager: FloatWindowManager,
         val index: Int,
-        var miniMode: Boolean,
-        private val theme: MultiFloatWindowConstants.Theme,
-        anchor: MultiFloatWindowConstants.Anchor,
-        private val initWidth: Int,
-        private val initHeight: Int,
-        val name: String
+        val initSettings: FloatWindowApplication.MultiFloatWindowInitSettings,
+        val name: String,
+        var miniMode: Boolean = initSettings.miniMode,
+        private val theme: MultiFloatWindowConstants.Theme = initSettings.theme,
+        anchor: MultiFloatWindowConstants.Anchor = initSettings.anchor,
+        private val initWidth: Int = initSettings.width,
+        private val initHeight: Int = initSettings.height
 ) {
 
     // private val tag = this.javaClass.name
@@ -54,15 +56,24 @@ class FloatWindowInfo(
     }
 
     // ディスプレイの最大値を設定
-    var maxWidth: Int = defaultDisplaySize.x - 0
-    var maxHeight: Int = defaultDisplaySize.y - notificationBarSize
+    var maxWidth: Int =
+            if(initSettings.windowMaxWidth < 0f)
+                defaultDisplaySize.x - 0
+            else
+                UnitUtils.convertDp2Px(initSettings.windowMaxWidth, context).toInt()
+
+    var maxHeight: Int =
+            if(initSettings.windowMaxHeight < 0f)
+                defaultDisplaySize.y - notificationBarSize
+            else
+                UnitUtils.convertDp2Px(initSettings.windowMaxHeight, context).toInt()
 
     // ディスプレイの最小値を設定
-    var minWidth: Int = UnitUtils.convertDp2Px(150f, context).toInt()
-    var minHeight: Int = UnitUtils.convertDp2Px(150f, context).toInt()
+    var minWidth: Int = UnitUtils.convertDp2Px(initSettings.windowMinWidth, context).toInt()
+    var minHeight: Int = UnitUtils.convertDp2Px(initSettings.windowMinHeight, context).toInt()
 
     // リサイズ可・不可を設定
-    var resize: Boolean = true
+    var resize: Boolean = initSettings.windowResize
 
     private val miniModeFlags = WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN or
             WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH or

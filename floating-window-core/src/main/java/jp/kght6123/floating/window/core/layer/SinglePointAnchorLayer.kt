@@ -11,10 +11,10 @@ import jp.kght6123.floating.window.framework.utils.UnitUtils
  * @copyright 2017/12/03 Hirotaka Koga
  * @license   http://www.apache.org/licenses/LICENSE-2.0 Apache-2.0
  */
-class SinglePointAnchorLayer(private val position: Position, private val info: FloatWindowInfo): AnchorLayer(position, info) {
+class SinglePointAnchorLayer(private val position: Position, private val info: FloatWindowInfo, private val borderDpWidth: Float = info.initSettings.windowBorderDpWidth): AnchorLayer(position, info) {
 
     //private val tag = this.javaClass.name
-    private val borderWidth = UnitUtils.convertDp2Px(48f, info.context).toInt()
+    private val borderWidth = UnitUtils.convertDp2Px(borderDpWidth * 2, info.context).toInt()
 
     init {
         anchorLayerParams.width = borderWidth
@@ -27,7 +27,7 @@ class SinglePointAnchorLayer(private val position: Position, private val info: F
         return R.id.pointAnchor
     }
     override fun getBorderWidth(): Int {
-        return UnitUtils.convertDp2Px(24f, info.context).toInt()
+        return UnitUtils.convertDp2Px(borderDpWidth, info.context).toInt()
     }
     override fun updatePosition(x: Int, y: Int) {
         val params = info.getWindowLayoutParams()
@@ -67,7 +67,8 @@ class SinglePointAnchorLayer(private val position: Position, private val info: F
             }
         }
     }
-    override fun updateBackgroundResource(resId: Int) {
+
+    override fun updateBackgroundResource(resId: Int, alpha: Float) {
         anchorLayer.setBackgroundResource(resId)
     }
 }

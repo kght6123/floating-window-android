@@ -2,8 +2,6 @@ package jp.kght6123.floating.window.core.layer
 
 import android.view.MotionEvent
 import jp.kght6123.floating.window.core.FloatWindowInfo
-import jp.kght6123.floating.window.core.R
-import jp.kght6123.floating.window.framework.utils.UnitUtils
 
 /**
  *
@@ -11,7 +9,7 @@ import jp.kght6123.floating.window.framework.utils.UnitUtils
  * @copyright 2017/12/16 Hirotaka Koga
  * @license   http://www.apache.org/licenses/LICENSE-2.0 Apache-2.0
  */
-class SinglePointEdgeAnchorLayer(private val position: Position, private val info: FloatWindowInfo, private val fixedWidth: Int): EdgeAnchorLayer(position, info, fixedWidth) {
+class SinglePointEdgeAnchorLayer(private val position: Position, private val info: FloatWindowInfo, fixedWidth: Int): EdgeAnchorLayer(position, info, fixedWidth) {
 
     override fun updateStroke(event: MotionEvent) {
         when(this@SinglePointEdgeAnchorLayer.position){
