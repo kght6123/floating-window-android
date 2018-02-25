@@ -157,9 +157,6 @@ abstract class AnchorLayer(private val position: Position, private val info: Flo
                     }
                 }
 
-                val changeMaxSizeModeUpdater: ChangeSizeModeUpdater = ChangeSizeModeUpdater(info.maxWidth, info.maxHeight, info.notificationBarSize,-1)
-                val changeMinSizeModeUpdater: ChangeSizeModeUpdater = ChangeSizeModeUpdater(info.minWidth, info.minHeight,0,0)
-
                 override fun onDoubleTap(event: MotionEvent): Boolean {
                     Log.d(tag, "SimpleOnGestureListener onDoubleTap")
                     Log.d(tag, "SimpleOnGestureListener onDoubleTap ${info.strokeMode}")
@@ -170,11 +167,11 @@ abstract class AnchorLayer(private val position: Position, private val info: Flo
                         }
                         FloatWindowInfo.Stroke.TOP_LEFT, FloatWindowInfo.Stroke.TOP_RIGHT -> {
                             // 角のダブルタップで最大化
-                            changeMaxSizeModeUpdater.update()
+                            ChangeSizeModeUpdater(info.maxWidth, info.maxHeight, info.notificationBarSize,-1).update()
                         }
                         FloatWindowInfo.Stroke.BOTTOM_LEFT, FloatWindowInfo.Stroke.BOTTOM_RIGHT -> {
                             // 角のダブルタップで最小化
-                            changeMinSizeModeUpdater.update()
+                            ChangeSizeModeUpdater(info.minWidth, info.minHeight,0,0).update()
                         }
                         else -> {
                         }
@@ -368,7 +365,7 @@ abstract class AnchorLayer(private val position: Position, private val info: Flo
     fun updatePosition(x: Int, y: Int, update: Boolean) {
         updatePosition(x, y)
         if(update)
-            info.manager.windowManager.updateViewLayout(anchorLayer, anchorLayerParams)
+            updateAnchorLayoutParams()
     }
     fun add() {
         info.manager.windowManager.addView(anchorLayer, anchorLayerParams)
@@ -378,4 +375,8 @@ abstract class AnchorLayer(private val position: Position, private val info: Flo
     }
     fun getX() = anchorLayerParams.x
     fun getY() = anchorLayerParams.y
+
+    private fun updateAnchorLayoutParams() {
+        info.manager.windowManager.updateViewLayout(anchorLayer, anchorLayerParams)
+    }
 }

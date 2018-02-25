@@ -45,11 +45,10 @@ class FloatWindowManager(val context: Context): MultiFloatWindowManagerUpdater {
 
         overlayView.onDispatchTouchEventListener = object: View.OnTouchListener {
 
-            val TAG = this.javaClass.name
             val gestureDetector: GestureDetector = GestureDetector(context, object: GestureDetector.SimpleOnGestureListener() {
 
                 override fun onSingleTapUp(event: MotionEvent): Boolean {
-                    Log.d(TAG, "SimpleOnGestureListener onSingleTapUp")
+                    Log.d(tag, "overlayView SimpleOnGestureListener onSingleTapUp changeActiveEvent")
 
                     // 単純にタッチした時のみ、Active判定
                     changeActiveEvent(event)
@@ -61,14 +60,14 @@ class FloatWindowManager(val context: Context): MultiFloatWindowManagerUpdater {
             override fun onTouch(view: View, event: MotionEvent): Boolean {
                 when (event.action) {
                     MotionEvent.ACTION_OUTSIDE -> {
-                        Log.d(TAG, "onDispatchTouchEventListener onTouch MotionEvent.ACTION_OUTSIDE")
+                        Log.d(tag, "overlayView onDispatchTouchEventListener onTouch MotionEvent.ACTION_OUTSIDE changeActiveEvent")
                         changeActiveEvent(event)	// OUTSIDEの時もActive判定
                         return true
                     }
                 }
-                Log.d(TAG, "onDispatchTouchEventListener onTouch .action=${event.action}, .rawX,rawY=${event.rawX},${event.rawY} .x,y=${event.x},${event.y}")
-
+                Log.d(tag, "overlayView onDispatchTouchEventListener onTouch .action=${event.action}, .rawX,rawY=${event.rawX},${event.rawY} .x,y=${event.x},${event.y}")
                 gestureDetector.onTouchEvent(event)// ジェスチャー機能を使う
+
                 return false
             }
         }
@@ -194,12 +193,10 @@ class FloatWindowManager(val context: Context): MultiFloatWindowManagerUpdater {
 
         controlLayer.onDispatchTouchEventListener = object: View.OnTouchListener {
 
-            val TAG = this.javaClass.name
-
             val gestureDetector: GestureDetector = GestureDetector(context, object: GestureDetector.SimpleOnGestureListener() {
 
                 override fun onSingleTapConfirmed(event: MotionEvent?): Boolean {
-                    Log.d(TAG, "controlLayer SimpleOnGestureListener onSingleTapConfirmed")
+                    Log.d(tag, "controlLayer SimpleOnGestureListener onSingleTapConfirmed")
                     this@FloatWindowManager.changeForciblyActiveEvent()
                     return false
                 }
@@ -210,14 +207,14 @@ class FloatWindowManager(val context: Context): MultiFloatWindowManagerUpdater {
                 var initialY = 0
 
                 override fun onDown(e: MotionEvent?): Boolean {
-                    Log.d(TAG, "controlLayer SimpleOnGestureListener onDown")
+                    Log.d(tag, "controlLayer SimpleOnGestureListener onDown")
                     initialX = ctrlIconParams.x
                     initialY = ctrlIconParams.y
                     return false
                 }
 
                 override fun onLongPress(e: MotionEvent?) {
-                    Log.d(TAG, "controlLayer SimpleOnGestureListener onLongPress")
+                    Log.d(tag, "controlLayer SimpleOnGestureListener onLongPress")
                     lock.withLock {
                         mode = ControlViewMode.MINI_ICON
 
@@ -231,7 +228,7 @@ class FloatWindowManager(val context: Context): MultiFloatWindowManagerUpdater {
                 }
 
                 override fun onDoubleTapEvent(e: MotionEvent?): Boolean {
-                    Log.d(TAG, "controlLayer SimpleOnGestureListener onDoubleTapEvent")
+                    Log.d(tag, "controlLayer SimpleOnGestureListener onDoubleTapEvent")
                     lock.withLock {
                         mode = ControlViewMode.APP_LIST
 
@@ -250,7 +247,7 @@ class FloatWindowManager(val context: Context): MultiFloatWindowManagerUpdater {
                 }
 
                 override fun onScroll(e1: MotionEvent?, e2: MotionEvent?, distanceX: Float, distanceY: Float): Boolean {
-                    Log.d(TAG, "controlLayer SimpleOnGestureListener onScroll distanceX=$distanceX, distanceY=$distanceY")
+                    Log.d(tag, "controlLayer SimpleOnGestureListener onScroll distanceX=$distanceX, distanceY=$distanceY")
                     lock.withLock {
                         if (mode == ControlViewMode.MINI_ICON) {
                             ctrlIconParams.x = initialX + (e2!!.rawX - e1!!.rawX).toInt()
@@ -266,11 +263,11 @@ class FloatWindowManager(val context: Context): MultiFloatWindowManagerUpdater {
             override fun onTouch(view: View, event: MotionEvent): Boolean {
                 when (event.action) {
                     MotionEvent.ACTION_OUTSIDE -> {
-                        Log.d(TAG, "controlLayer onDispatchTouchEventListener onTouch MotionEvent.ACTION_OUTSIDE")
+                        Log.d(tag, "controlLayer onDispatchTouchEventListener onTouch MotionEvent.ACTION_OUTSIDE")
                         return false
                     }
                 }
-                Log.d(TAG, "controlLayer onDispatchTouchEventListener onTouch .action=${event.action}, .rawX,rawY=${event.rawX},${event.rawY} .x,y=${event.x},${event.y}")
+                Log.d(tag, "controlLayer onDispatchTouchEventListener onTouch .action=${event.action}, .rawX,rawY=${event.rawX},${event.rawY} .x,y=${event.x},${event.y}")
 
                 gestureDetector.onTouchEvent(event)// ジェスチャー機能を使う
                 return false
@@ -407,8 +404,9 @@ class FloatWindowManager(val context: Context): MultiFloatWindowManagerUpdater {
         }
     }
     fun changeActiveIndex(index: Int) {
-        val overlayInfo = overlayWindowMap[index]
+        Log.d(tag, "changeActiveIndex. index=$index")
 
+        val overlayInfo = overlayWindowMap[index]
         if(overlayInfo != null) {
             // 対象のViewを一番上へ移動する
             if(overlayInfo.miniMode) {
@@ -423,16 +421,19 @@ class FloatWindowManager(val context: Context): MultiFloatWindowManagerUpdater {
         }
     }
     private fun updateActive(index: Int) {
+        Log.d(tag, "updateActive. index=$index")
         val overlayInfo = overlayWindowMap[index]
         overlayInfo?.activeFlag = true
         overlayInfo?.let { onActive(index, it) }
     }
     private fun updateDeActive(index: Int) {
+        Log.d(tag, "updateDeActive. index=$index")
         val overlayInfo = overlayWindowMap[index]
         overlayInfo?.activeFlag = false
         overlayInfo?.let { onDeActive(index, it) }
     }
     private fun updateOtherDeActive(index: Int) {
+        Log.d(tag, "updateOtherDeActive. index=$index")
         overlayWindowMap.forEach { entry ->
             if(entry.key != index) {
                 entry.value.activeFlag = false
@@ -441,6 +442,7 @@ class FloatWindowManager(val context: Context): MultiFloatWindowManagerUpdater {
         }
     }
     fun changeForciblyActiveEvent() {
+        Log.d(tag, "changeForciblyActiveEvent.")
         if(!overlayWindowMap.isEmpty()) {
             overlayWindowMap.entries.reversed().forEach { (index, overlayInfo) ->
                 if(!overlayInfo.miniMode) {
@@ -458,6 +460,7 @@ class FloatWindowManager(val context: Context): MultiFloatWindowManagerUpdater {
         return windowInlineFrame?.drawingCache?.copy(windowInlineFrame.drawingCache.config, true)
     }
     fun changeActiveSeq(seq: Int) {
+        Log.d(tag, "changeActiveSeq. seq=$seq")
         getMultiFloatWindowInfo(seq)?.index?.let { changeActiveIndex(it) }
     }
     fun removeSeq(seq: Int) {
@@ -484,6 +487,8 @@ class FloatWindowManager(val context: Context): MultiFloatWindowManagerUpdater {
         }
         return null
     }
+
+    private var prevActiveIndex: Int = -2
     private fun changeActiveEvent(event: MotionEvent) :Boolean {
         var changeActiveIndex: Int = -2
         for ((overlayIndex, overlayInfo) in overlayWindowMap) {
@@ -491,23 +496,33 @@ class FloatWindowManager(val context: Context): MultiFloatWindowManagerUpdater {
                 val onTouch = overlayInfo.isOnTouchEvent(event)
                 if (!onTouch/* || changeActiveName != null*/) {
                     // タッチされていない、他をActive済
+                    Log.d(tag, "changeActiveEvent. 1-1 onTouch=$onTouch, overlayInfo.activeFlag=${overlayInfo.activeFlag}, overlayIndex=$overlayIndex")
+                    if (overlayInfo.activeFlag)
+                        prevActiveIndex = overlayIndex  // ActiveだったIndexを保持
                     updateDeActive(overlayIndex)
                 } else if (!overlayInfo.activeFlag) {
                     // タッチされ、Active以外、他をActiveにしていない
+                    Log.d(tag, "changeActiveEvent. 1-2 onTouch=$onTouch, overlayInfo.activeFlag=${overlayInfo.activeFlag}, overlayIndex=$overlayIndex")
                     changeActiveIndex = overlayIndex
                 } else if (overlayInfo.activeFlag) {
                     // タッチされ、Active、他をActiveにしていない
+                    Log.d(tag, "changeActiveEvent. 1-3 onTouch=$onTouch, overlayInfo.activeFlag=${overlayInfo.activeFlag}, overlayIndex=$overlayIndex")
                     changeActiveIndex = -1
                 }
             }
         }
         if(changeActiveIndex == -2) {
             // nullの時、何もタッチされてないので、全体をinActiveへ
+            Log.d(tag, "changeActiveEvent. 1-4 changeActiveIndex=$changeActiveIndex")
             windowManager.updateViewLayout(overlayView, getInActiveParams())
             onDeActiveAll()
+            if(prevActiveIndex != -2)
+                // 復帰のために、Anchorだけ表示する
+                overlayWindowMap[prevActiveIndex]?.addAnchor()
         }
         else if(changeActiveIndex != -1) {
             // 他のinActiveなウィンドウをタッチされた時、Activeへ
+            Log.d(tag, "changeActiveEvent. 1-5 changeActiveIndex=$changeActiveIndex")
             changeActiveIndex(changeActiveIndex)
             changeActiveOverlayView()
         }
@@ -529,6 +544,8 @@ class FloatWindowManager(val context: Context): MultiFloatWindowManagerUpdater {
     private var onDeActiveAllEvent: AllChangeActiveEventListener? = null
 
     private fun onActive(index: Int, info: FloatWindowInfo) {
+        Log.d(tag, "onActive. index=$index")
+
         if(mode == ControlViewMode.MINI_ICON)
             controlLayer.setBackgroundResource(R.drawable.shape_rounded_corners)
         else
@@ -540,6 +557,8 @@ class FloatWindowManager(val context: Context): MultiFloatWindowManagerUpdater {
         factoryMap[index]?.onActive()
     }
     private fun onDeActive(index: Int, info: FloatWindowInfo) {
+        Log.d(tag, "onDeActive. index=$index")
+
         if(mode == ControlViewMode.APP_LIST)
             cardAppListView.adapter?.notifyDataSetChanged()
 
@@ -549,6 +568,8 @@ class FloatWindowManager(val context: Context): MultiFloatWindowManagerUpdater {
         factoryMap[index]?.onDeActive()
     }
     private fun onDeActiveAll() {
+        Log.d(tag, "onDeActiveAll.")
+
         if(mode == ControlViewMode.MINI_ICON)
             controlLayer.setBackgroundResource(R.drawable.shape_rounded_corners_accent)
         else

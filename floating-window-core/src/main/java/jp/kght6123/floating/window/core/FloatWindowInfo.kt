@@ -36,7 +36,7 @@ class FloatWindowInfo(
         private val initHeight: Int = initSettings.height
 ) {
 
-    // private val tag = this.javaClass.name
+    private val tag = this.javaClass.name
 
     enum class Stroke {
         UNKNOWN, TOP, BOTTOM, LEFT, RIGHT, TOP_LEFT, TOP_RIGHT, BOTTOM_LEFT, BOTTOM_RIGHT, ALL
@@ -194,6 +194,16 @@ class FloatWindowInfo(
 
     val windowInlineFrame: ViewGroup by lazy { windowOutlineFrame.findViewById(R.id.windowInlineFrame) as ViewGroup }
     var activeFlag: Boolean = false
+        set(activeFlag) {
+            field = activeFlag
+            if(field) {
+                Log.d(tag, "setActiveFlag addAnchor")
+                this.addAnchor()
+            } else {
+                Log.d(tag, "setActiveFlag removeAnchor")
+                this.removeAnchor()
+            }
+        }
 
     private val anchorLayerGroup: AnchorLayerGroup
 
@@ -270,12 +280,14 @@ class FloatWindowInfo(
         this.windowOutlineFrame.layoutParams = params
     }
     fun removeAnchor() {
+        Log.d(tag, "removeAnchor")
         if(!miniMode) {
             anchorLayerGroup.remove()
         }
         updateAnchorColor(FloatWindowInfo.Stroke.UNKNOWN)  // 色を元に戻す
     }
     fun addAnchor() {
+        Log.d(tag, "addAnchor")
         if(!miniMode) {
             anchorLayerGroup.add()
         }

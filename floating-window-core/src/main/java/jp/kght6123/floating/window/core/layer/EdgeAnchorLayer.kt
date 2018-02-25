@@ -127,5 +127,6 @@ open class EdgeAnchorLayer(private val position: Position, private val info: Flo
     }
     override fun updateBackgroundResource(resId: Int, alpha: Float) {
         anchorLayer.setBackgroundResource(resId)
+        anchorLayerParams.alpha = alpha
     }
 }

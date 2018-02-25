@@ -70,5 +70,6 @@ class SinglePointAnchorLayer(private val position: Position, private val info: F
 
     override fun updateBackgroundResource(resId: Int, alpha: Float) {
         anchorLayer.setBackgroundResource(resId)
+        anchorLayerParams.alpha = alpha
     }
 }

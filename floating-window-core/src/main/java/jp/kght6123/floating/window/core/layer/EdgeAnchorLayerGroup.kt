@@ -1,5 +1,6 @@
 package jp.kght6123.floating.window.core.layer
 
+import android.util.Log
 import jp.kght6123.floating.window.core.FloatWindowInfo
 import jp.kght6123.floating.window.core.R
 
@@ -12,7 +13,9 @@ import jp.kght6123.floating.window.core.R
 class EdgeAnchorLayerGroup(
         private val info: FloatWindowInfo,
         private val windowBorderOpacity: Float = info.initSettings.windowBorderOpacity,
-        private val windowBorderTouchOpacity: Float = info.initSettings.windowBorderTouchOpacity) : AnchorLayerGroup {
+        private val windowBorderTouchOpacity: Float = info.initSettings.windowBorderTouchOpacity) : AnchorLayerGroup() {
+
+    private val tag = this.javaClass.name
 
     private val anchorLayerTop: AnchorLayer
             by lazy { EdgeAnchorLayer(AnchorLayer.Position.TOP, info) }
@@ -29,13 +32,16 @@ class EdgeAnchorLayerGroup(
         anchorLayerRight
         anchorLayerBottom
     }
-    override fun add() {
+    override fun onAdd(): Boolean {
+        Log.d(tag, "onAdd windowBorderOpacity=$windowBorderOpacity, windowBorderTouchOpacity=$windowBorderTouchOpacity")
         anchorLayerTop.add()
         anchorLayerBottom.add()
         anchorLayerLeft.add()
         anchorLayerRight.add()
+        return true
     }
     override fun onChangeStrokeMode(strokeMode: FloatWindowInfo.Stroke) {
+        Log.d(tag, "onChangeStrokeMode strokeMode=$strokeMode")
         when (strokeMode) {
             FloatWindowInfo.Stroke.TOP -> {
                 anchorLayerTop.updateBackgroundResource(R.color.float_window_anchor_color_resize, windowBorderTouchOpacity)
@@ -80,16 +86,19 @@ class EdgeAnchorLayerGroup(
         }
     }
     override fun onChangePosition(x: Int, y: Int, update: Boolean) {
+        Log.d(tag, "onChangeStrokeMode x=$x, y=$y, update=$update")
         anchorLayerTop.updatePosition(x, y, update)
         anchorLayerLeft.updatePosition(x, y, update)
         anchorLayerRight.updatePosition(x, y, update)
         anchorLayerBottom.updatePosition(x, y, update)
     }
-    override fun remove() {
+    override fun onRemove(): Boolean {
+        Log.d(tag, "onRemove windowBorderOpacity=$windowBorderOpacity, windowBorderTouchOpacity=$windowBorderTouchOpacity")
         anchorLayerTop.remove()
         anchorLayerBottom.remove()
         anchorLayerLeft.remove()
         anchorLayerRight.remove()
+        return true
     }
     override fun getX(): Int = anchorLayerTop.getX()
     override fun getY(): Int = anchorLayerTop.getY()
