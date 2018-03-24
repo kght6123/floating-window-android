@@ -5,10 +5,14 @@ import android.os.Build
 import android.text.TextUtils
 import android.util.TypedValue
 import android.view.View
+import android.widget.Button
 import android.widget.GridLayout
 import android.widget.ImageView
 import android.widget.LinearLayout
 import org.jetbrains.anko.*
+import org.jetbrains.anko.sdk25.coroutines.onClick
+import java.math.BigDecimal
+import java.text.DecimalFormat
 
 /**
  * サンプルプラグインアプリケーション
@@ -20,6 +24,15 @@ import org.jetbrains.anko.*
 class FloatWindowCalcApplication : FloatWindowApplication() {
 
     //private val tag = FloatWindowCalcApplication::class.java.name
+
+    enum class CalcType(val text: String, val calc: (BigDecimal, BigDecimal) -> BigDecimal) {
+        DIVIDE  ("%", fun(b1 :BigDecimal, b2 :BigDecimal) = b1.divide(b2)),
+        MULTIPLY("X", fun(b1 :BigDecimal, b2 :BigDecimal) = b1.multiply(b2)),
+        SUBTRACT("-", fun(b1 :BigDecimal, b2 :BigDecimal) = b1.subtract(b2)),
+        ADD     ("+", fun(b1 :BigDecimal, b2 :BigDecimal) = b1.plus(b2)),
+        UNKNOWN ( "", fun(b1 :BigDecimal, _:BigDecimal) = b1),
+        EQUAL   ("=", fun(b1 :BigDecimal, _:BigDecimal) = b1)
+    }
 
     class CalcUi: AnkoComponent<FloatWindowCalcApplication> {
 
@@ -36,6 +49,9 @@ class FloatWindowCalcApplication : FloatWindowApplication() {
                 }
                 var rowIndex = 0
                 var columnIndex = 0
+                var numberValueTemp = ""
+                var calcResult = BigDecimal(0)
+                var prevCalcType = CalcType.UNKNOWN
 
                 val initLayoutParams = fun(lparams :GridLayout.LayoutParams, width: Int, height: Int, rowIndex: Int, columnIndex: Int) {
                     lparams.width = width
@@ -44,7 +60,7 @@ class FloatWindowCalcApplication : FloatWindowApplication() {
                     lparams.columnSpec = GridLayout.spec(columnIndex, GridLayout.FILL, 1f)
                 }
 
-                textView("11+22+33+444444444444444") {
+                val calcView = textView("") {
                     setTextColor(resources.getColor(android.R.color.primary_text_dark, null))
 
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -71,8 +87,44 @@ class FloatWindowCalcApplication : FloatWindowApplication() {
                 rowIndex++
                 columnIndex = 0
 
+                fun clearAll() {
+                    prevCalcType = CalcType.UNKNOWN
+                    calcView.text = ""
+                    numberValueTemp = ""
+                    calcResult = BigDecimal(0)
+                }
+                fun updateCalcView(_button: Button, clear: Boolean = false) {
+                    calcView.text = if(prevCalcType != CalcType.EQUAL)
+                        "${calcView.text}${_button.text}"
+                    else {
+                        clearAll()
+                        _button.text
+                    }
+                    numberValueTemp = if(clear)
+                        ""
+                    else
+                        numberValueTemp + _button.text
+                }
+                fun executeCalc(_button: Button, calcType: CalcType) {
+                    if (numberValueTemp.isNotEmpty()) {
+                        calcResult = when (prevCalcType) {
+                            CalcType.UNKNOWN, CalcType.EQUAL -> {
+                                prevCalcType = CalcType.UNKNOWN // updateCalcViewでclearAllさせない
+                                BigDecimal(numberValueTemp)
+                            }
+                            else ->
+                                prevCalcType.calc(calcResult, BigDecimal(numberValueTemp))
+                        }
+                        updateCalcView(_button, true)
+                        prevCalcType = calcType
+                    }
+                }
+
                 button("AC") {
                     backgroundResource = R.drawable.flatbutton_gray
+                    onClick {
+                        clearAll()
+                    }
                 }.lparams {
                     initLayoutParams(this, buttonSize, buttonSize, rowIndex, columnIndex++)
                 }
@@ -86,8 +138,11 @@ class FloatWindowCalcApplication : FloatWindowApplication() {
                 }.lparams {
                     initLayoutParams(this, buttonSize, buttonSize, rowIndex, columnIndex++)
                 }
-                button("÷") {
+                button(CalcType.DIVIDE.text) {
                     backgroundResource = R.drawable.flatbutton_accent
+                    onClick {
+                        executeCalc(this@button, CalcType.DIVIDE)
+                    }
                 }.lparams {
                     initLayoutParams(this, buttonSize, buttonSize, rowIndex, columnIndex++)
                 }
@@ -96,21 +151,33 @@ class FloatWindowCalcApplication : FloatWindowApplication() {
 
                 button("1") {
                     backgroundResource = R.drawable.flatbutton_lightgray
+                    onClick {
+                        updateCalcView(this@button)
+                    }
                 }.lparams {
                     initLayoutParams(this, buttonSize, buttonSize, rowIndex, columnIndex++)
                 }
                 button("2") {
                     backgroundResource = R.drawable.flatbutton_lightgray
+                    onClick {
+                        updateCalcView(this@button)
+                    }
                 }.lparams {
                     initLayoutParams(this, buttonSize, buttonSize, rowIndex, columnIndex++)
                 }
                 button("3") {
                     backgroundResource = R.drawable.flatbutton_lightgray
+                    onClick {
+                        updateCalcView(this@button)
+                    }
                 }.lparams {
                     initLayoutParams(this, buttonSize, buttonSize, rowIndex, columnIndex++)
                 }
-                button("X") {
+                button(CalcType.MULTIPLY.text) {
                     backgroundResource = R.drawable.flatbutton_accent
+                    onClick {
+                        executeCalc(this@button, CalcType.MULTIPLY)
+                    }
                 }.lparams {
                     initLayoutParams(this, buttonSize, buttonSize, rowIndex, columnIndex++)
                 }
@@ -119,21 +186,33 @@ class FloatWindowCalcApplication : FloatWindowApplication() {
 
                 button("4") {
                     backgroundResource = R.drawable.flatbutton_lightgray
+                    onClick {
+                        updateCalcView(this@button)
+                    }
                 }.lparams {
                     initLayoutParams(this, buttonSize, buttonSize, rowIndex, columnIndex++)
                 }
                 button("5") {
                     backgroundResource = R.drawable.flatbutton_lightgray
+                    onClick {
+                        updateCalcView(this@button)
+                    }
                 }.lparams {
                     initLayoutParams(this, buttonSize, buttonSize, rowIndex, columnIndex++)
                 }
                 button("6") {
                     backgroundResource = R.drawable.flatbutton_lightgray
+                    onClick {
+                        updateCalcView(this@button)
+                    }
                 }.lparams {
                     initLayoutParams(this, buttonSize, buttonSize, rowIndex, columnIndex++)
                 }
-                button("-") {
+                button(CalcType.SUBTRACT.text) {
                     backgroundResource = R.drawable.flatbutton_accent
+                    onClick {
+                        executeCalc(this@button, CalcType.SUBTRACT)
+                    }
                 }.lparams {
                     initLayoutParams(this, buttonSize, buttonSize, rowIndex, columnIndex++)
                 }
@@ -142,21 +221,33 @@ class FloatWindowCalcApplication : FloatWindowApplication() {
 
                 button("7") {
                     backgroundResource = R.drawable.flatbutton_lightgray
+                    onClick {
+                        updateCalcView(this@button)
+                    }
                 }.lparams {
                     initLayoutParams(this, buttonSize, buttonSize, rowIndex, columnIndex++)
                 }
                 button("8") {
                     backgroundResource = R.drawable.flatbutton_lightgray
+                    onClick {
+                        updateCalcView(this@button)
+                    }
                 }.lparams {
                     initLayoutParams(this, buttonSize, buttonSize, rowIndex, columnIndex++)
                 }
                 button("9") {
                     backgroundResource = R.drawable.flatbutton_lightgray
+                    onClick {
+                        updateCalcView(this@button)
+                    }
                 }.lparams {
                     initLayoutParams(this, buttonSize, buttonSize, rowIndex, columnIndex++)
                 }
-                button("+") {
+                button(CalcType.ADD.text) {
                     backgroundResource = R.drawable.flatbutton_accent
+                    onClick {
+                        executeCalc(this@button, CalcType.ADD)
+                    }
                 }.lparams {
                     initLayoutParams(this, buttonSize, buttonSize, rowIndex, columnIndex++)
                 }
@@ -165,6 +256,9 @@ class FloatWindowCalcApplication : FloatWindowApplication() {
 
                 button("0") {
                     backgroundResource = R.drawable.flatbutton_lightgray
+                    onClick {
+                        updateCalcView(this@button)
+                    }
                 }.lparams {
                     width = buttonSize
                     height = buttonSize
@@ -175,11 +269,19 @@ class FloatWindowCalcApplication : FloatWindowApplication() {
 
                 button(".") {
                     backgroundResource = R.drawable.flatbutton_lightgray
+                    onClick {
+                        updateCalcView(this@button)
+                    }
                 }.lparams {
                     initLayoutParams(this, buttonSize, buttonSize, rowIndex, columnIndex++)
                 }
-                button("=") {
+                button(CalcType.EQUAL.text) {
                     backgroundResource = R.drawable.flatbutton_accent
+                    onClick {
+                        executeCalc(this@button, CalcType.EQUAL)
+                        calcView.text = DecimalFormat("#,###,###,###,##0.##########").format(calcResult.toDouble())
+                        numberValueTemp = calcResult.toPlainString()
+                    }
                 }.lparams {
                     initLayoutParams(this, buttonSize, buttonSize, rowIndex, columnIndex++)
                 }
