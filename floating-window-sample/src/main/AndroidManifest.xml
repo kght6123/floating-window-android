@@ -50,10 +50,10 @@
 		</activity> -->
 
 		<service android:name="jp.kght6123.floating.window.framework.FloatWindowBrowserApplication"
-			android:label="@string/app_name"
+			android:label="@string/browser_app_name"
 			android:enabled="true"
 			android:exported="true"
-			android:icon="@mipmap/ic_main_launcher">
+			android:icon="@drawable/ic_browser">
 			<intent-filter>
 				<action android:name="jp.kght6123.floating.window.core.intent.action.MAIN" />
 				<category android:name="jp.kght6123.floating.window.core.intent.category.LAUNCHER" />
@@ -67,7 +67,7 @@
 			android:label="@string/calc_app_name"
 			android:enabled="true"
 			android:exported="true"
-			android:icon="@mipmap/ic_main_launcher">
+			android:icon="@drawable/ic_calc">
 			<intent-filter>
 				<action android:name="jp.kght6123.floating.window.core.intent.action.MAIN" />
 				<category android:name="jp.kght6123.floating.window.core.intent.category.LAUNCHER" />

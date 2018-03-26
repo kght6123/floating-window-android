@@ -8,5 +8,6 @@
 <resources>
 	<string name="hello">Hello World!!</string>
 	<string name="app_name">FloatingWindowSample</string>
+	<string name="browser_app_name">Browser</string>
 	<string name="calc_app_name">Calc</string>
 </resources>

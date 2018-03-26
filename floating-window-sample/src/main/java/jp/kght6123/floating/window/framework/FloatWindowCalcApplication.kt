@@ -128,13 +128,20 @@ class FloatWindowCalcApplication : FloatWindowApplication() {
                 }.lparams {
                     initLayoutParams(this, buttonSize, buttonSize, rowIndex, columnIndex++)
                 }
-                button("+/-") {
+                button("C") {
                     backgroundResource = R.drawable.flatbutton_gray
+                    onClick {
+                        calcView.text = calcView.text.removeSuffix(numberValueTemp)
+                        numberValueTemp = ""
+                    }
                 }.lparams {
                     initLayoutParams(this, buttonSize, buttonSize, rowIndex, columnIndex++)
                 }
-                button("%") {
+                button(".") {
                     backgroundResource = R.drawable.flatbutton_gray
+                    onClick {
+                        updateCalcView(this@button)
+                    }
                 }.lparams {
                     initLayoutParams(this, buttonSize, buttonSize, rowIndex, columnIndex++)
                 }
@@ -267,7 +274,7 @@ class FloatWindowCalcApplication : FloatWindowApplication() {
                 }
                 columnIndex++
 
-                button(".") {
+                button("00") {
                     backgroundResource = R.drawable.flatbutton_lightgray
                     onClick {
                         updateCalcView(this@button)
