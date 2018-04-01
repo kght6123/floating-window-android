@@ -7,7 +7,7 @@ uploadArchives {
         // Mavenリポジトリを作成
         mavenDeployer {
             repository url: "file://$buildDir/../../../maven-repositories/android"
-            pom.version = "0.0.1"
+            pom.version = "0.0.2"
             pom.groupId = "jp.kght6123.floating.window"
             pom.artifactId = "floating-window-framework"
         }

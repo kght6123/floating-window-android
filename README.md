@@ -229,7 +229,7 @@ FrameworkライブラリはGitPagesの仮Mavenリポジトリで公開。
         ```
 
 ## **How to Build**
-このライブラリをクローンしてビルドする方法です。リポジトリをcloneして、AndroidStudioにインポートしてください。
+このライブラリをクローンしてビルドする方法です。リポジトリをcloneして、AndroidStudioにインポートしてください。
 
 ターミナルはAndroidStudioを使用しています
 
@@ -254,7 +254,9 @@ FrameworkライブラリはGitPagesの仮Mavenリポジトリで公開。
 
 * **FrameworkのMavenリポジトリ作成、Commit＆Push**
 
-    1. Mavenリポジトリ作成
+    `floating-window-framework/build.gradle`の`pom.version`のバージョンで作成される
+
+    1. Mavenリポジトリ作成＆更新
     ```zsh
     ./gradlew floating-window-framework:clean floating-window-framework:assembleRelease floating-window-framework:uploadArchives
     ```
