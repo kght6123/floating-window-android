@@ -356,8 +356,6 @@ abstract class FloatWindowApplication : Service() {
 
         override fun createInitSettings(arg: Int): MultiFloatWindowInitSettings {
             return MultiFloatWindowInitSettings(
-                    x = UnitUtils.convertDp2Px(50f, context.sharedContext).toInt(),
-                    y = UnitUtils.convertDp2Px(50f, context.sharedContext).toInt(),
                     width = appWidgetProviderInfo.initMinWidth(UnitUtils.convertDp2Px(160f, context.sharedContext).toInt()),
                     height = appWidgetProviderInfo.initMinHeight(UnitUtils.convertDp2Px(160f, context.sharedContext).toInt()),
                     theme = MultiFloatWindowConstants.Theme.Dark,

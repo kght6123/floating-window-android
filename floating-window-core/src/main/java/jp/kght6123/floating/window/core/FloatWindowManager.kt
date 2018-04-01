@@ -13,6 +13,7 @@ import android.view.*
 import android.widget.LinearLayout
 import jp.kght6123.floating.window.core.recycler.CardAppListRecyclerView
 import jp.kght6123.floating.window.core.recycler.IconAppListRecyclerView
+import jp.kght6123.floating.window.core.utils.DisplayUtils
 import jp.kght6123.floating.window.core.viewgroup.FloatWindowOverlayLayout
 import jp.kght6123.floating.window.framework.FloatWindowApplication
 import jp.kght6123.floating.window.framework.MultiFloatWindowConstants
@@ -311,7 +312,9 @@ class FloatWindowManager(val context: Context): MultiFloatWindowManagerUpdater {
         Log.d(tag, "index=$index, miniMode=${initSettings.miniMode}, initActive=${initSettings.active}")
         val overlayWindowInfo = FloatWindowInfo(context, this, index, initSettings, className)
         put(index, overlayWindowInfo, initSettings.active)
-        moveFixed(index, initSettings.x, initSettings.y)
+        moveFixed(index,
+                if (initSettings.x > 0) initSettings.x else (DisplayUtils.defaultDisplaySize(context).x - initSettings.width) / 2,
+                if (initSettings.y > 0) initSettings.y else (DisplayUtils.defaultDisplaySize(context).y - initSettings.height) / 2)
         return overlayWindowInfo
     }
     private fun update(index: Int, initSettings: FloatWindowApplication.MultiFloatWindowInitSettings, className: String): FloatWindowInfo {

@@ -380,12 +380,10 @@ class FloatWindowCalcApplication : FloatWindowApplication() {
         return object : MultiFloatWindowSettingsFactory(multiWindowContext) {
             override fun createInitSettings(arg: Int): MultiFloatWindowInitSettings {
                 return MultiFloatWindowInitSettings(
-                        getDimensionPixelSize(R.dimen.x),
-                        getDimensionPixelSize(R.dimen.y),
-                        getDimensionPixelSize(R.dimen.width),
-                        getDimensionPixelSize(R.dimen.height),
-                        MultiFloatWindowConstants.Theme.Dark,
-                        MultiFloatWindowConstants.Anchor.Edge
+                        width = getDimensionPixelSize(R.dimen.width),
+                        height = getDimensionPixelSize(R.dimen.height),
+                        theme = MultiFloatWindowConstants.Theme.Dark,
+                        anchor = MultiFloatWindowConstants.Anchor.Edge
                 )
             }
         }

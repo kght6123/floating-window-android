@@ -549,8 +549,6 @@ class SmallBrowserApplication : FloatWindowApplication() {
 		return object : MultiFloatWindowSettingsFactory(multiWindowContext) {
             override fun createInitSettings(arg: Int): MultiFloatWindowInitSettings {
 				return MultiFloatWindowInitSettings(
-                        x = getDimensionPixelSize(R.dimen.x),
-                        y = getDimensionPixelSize(R.dimen.y),
                         width = getDimensionPixelSize(R.dimen.width),
                         height = getDimensionPixelSize(R.dimen.height),
                         theme = MultiFloatWindowConstants.Theme.Light

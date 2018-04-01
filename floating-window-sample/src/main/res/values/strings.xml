@@ -10,4 +10,5 @@
 	<string name="app_name">FloatingWindowSample</string>
 	<string name="browser_app_name">Browser</string>
 	<string name="calc_app_name">Calc</string>
+	<string name="hello_app_name">Hello</string>
 </resources>

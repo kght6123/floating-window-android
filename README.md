@@ -1,5 +1,5 @@
 
-# **Floting Multiple Window Framework α1**
+# **Floting Multiple Window Framework α2**
 
 **現在は、テストが十分ではない実験的なリリースです。多くのバグを含む可能性があります。**
 
@@ -76,15 +76,6 @@ Coreアプリ（マルチウィンドウ機能）と、フレームワーク（�
 * アプリ追加について
     - フレームワーク必須
 
-## **Development environment**
-* Android
-    - Android Emulator 6.0〜8.0 
-    - Galaxy Note8
-
-* Develop Machine
-    - macOS High Sierra 10.13
-    - Android Studio 3.0
-
 ## **Install**
 現状はαリリースのため、Coreはデバッグ向けと署名なしAPKを公開し、
 FrameworkライブラリはGitPagesの仮Mavenリポジトリで公開。
@@ -106,51 +97,118 @@ FrameworkライブラリはGitPagesの仮Mavenリポジトリで公開。
     }
     ```
 
-## **Usage**
-全体像はsampleモジュールを参考にしてください。
-1. FloatWindowApplicationを実装するクラスを作成
-    1. `onCreateFactory(index: Int): MultiFloatWindowViewFactory`メソッドを実装
-        * MultiFloatWindowViewFactoryを実装し、クラスを初期化して返してください。
-        * 下記の４メソッドを実装します。
+## **Development environment**
+* Android
+    - Android Emulator 6.0〜8.0 
+    - Galaxy Note8
 
-        1. `createWindowView(arg: Int): View`メソッド
-            * `createContentView`でViewを生成し、Viewにイベントや初期値を設定して返してください。
-            * 引数のindexは0から始まる生成するウィンドウのインデックス番号です。
+* Develop Machine
+    - macOS High Sierra 10.13.3
+    - Android Studio 3.2 Canary 7
 
-        1. `createMinimizedView(arg: Int): View`メソッド
-            * ImageViewなどを生成し、ImageViewに最小化時のアイコン画像を設定して返してください。
-            * アイコン画像は75dp×75dpで表示されます。
+## **Application Sample**
+最小限のアプリケーション実装のサンプルと解説です
 
-        1. `start(intent: Intent?)`メソッドを実装
-            * 起動時に設定されたIntent情報を元に初期化する処理を実装してください。
+1. アプリケーションのメインクラスを作成
 
-        1. `update(intent: Intent?, index: Int, positionName: String)`メソッドを実装
-            * 更新時に設定されたIntent情報を元に初期化する処理を実装してください。
-            * positionNameはMultiWindowUpdatePositionの名称です。
-
-    1. `onCreateSettingsFactory(index: Int): MultiFloatWindowSettingsFactory`メソッドを実装
-        * MultiFloatWindowInitSettingsを初期化して、ウィンドウの初期設定（位置、サイズ）などを設定して返してください。
-        * `Theme`は`Light`または`Dark`です。
-        * `Anchor`は`Edge`または`SinglePoint`です。
-        ```kotlin
+    ```kotlin
+    class FloatWindowHelloApplication : FloatWindowApplication() {
+        /**
+        * Ankoでウィンドウのレイアウトを定義
+        */
+        class HelloUi: AnkoComponent<FloatWindowHelloApplication> {
+            override fun createView(ui: AnkoContext<FloatWindowHelloApplication>) = with(ui) {
+                verticalLayout {
+                    textView {
+                        text = "Hello, Floating Window!!"
+                    }
+                }
+            }
+        }
+        /**
+        * Ankoで最小化時のアイコンのレイアウトを定義
+        */
+        class HelloMiniUi: AnkoComponent<FloatWindowHelloApplication> {
+            override fun createView(ui: AnkoContext<FloatWindowHelloApplication>) = with(ui) {
+                imageView {
+                    imageResource = R.mipmap.ic_launcher
+                    isFocusableInTouchMode = true
+                    isFocusable = true
+                }
+            }
+        }
+        /**
+        * メインウィンドウのファクトリークラス（MultiFloatWindowViewFactory）を実装して返す。
+        */
+        override fun onCreateFactory(index: Int): MultiFloatWindowViewFactory {
+            return object : MultiFloatWindowViewFactory(multiWindowContext) {
+                /**
+                * メインウィンドウに表示するViewを生成し、Viewにイベントや初期値を設定して返してください。
+                * 引数のindexは、0から始まる生成するウィンドウの一意の番号です。
+                */
+                override fun createWindowView(arg: Int): View {
+                    return HelloUi().createView(AnkoContext.Companion.create(sharedContext!!, this@FloatWindowHelloApplication, setContentView = false))
+                }
+                /**
+                * ImageViewなどを生成し、ImageViewに最小化時のアイコン画像を設定して返してください。
+                * アイコン画像は75dp×75dpで表示されます。
+                */
+                override fun createMinimizedView(arg: Int): View {
+                    return HelloMiniUi().createView(AnkoContext.Companion.create(sharedContext!!, this@FloatWindowHelloApplication, setContentView = false))
+                }
+                /**
+                * 起動時に設定されたIntent情報を元に、初期化する処理を実装してください。
+                */
+                override fun start(intent: Intent?) {
+                    Toast.makeText(applicationContext, "start", Toast.LENGTH_SHORT).show()
+                }
+                /**
+                * 更新時に設定されたIntent情報を元に、初期化する処理を実装してください。
+                * positionNameはMultiWindowUpdatePositionの名称で、更新方法によって変化します。
+                */
+                override fun update(intent: Intent?, index: Int, positionName: String) {
+                    Toast.makeText(applicationContext, "update", Toast.LENGTH_SHORT).show()
+                }
+                /**
+                * ウィンドウのイベント発生時に実行されるイベントメソッドです。
+                */
+                override fun onActive() {
+                    Toast.makeText(applicationContext, "onActive", Toast.LENGTH_SHORT).show()
+                }
+                override fun onDeActive() {
+                    Toast.makeText(applicationContext, "onDeActive", Toast.LENGTH_SHORT).show()
+                }
+                override fun onDeActiveAll() {
+                    Toast.makeText(applicationContext, "onDeActiveAll", Toast.LENGTH_SHORT).show()
+                }
+                override fun onChangeMiniMode() {
+                    Toast.makeText(applicationContext, "onChangeMiniMode", Toast.LENGTH_SHORT).show()
+                }
+                override fun onChangeWindowMode() {
+                    Toast.makeText(applicationContext, "onChangeWindowMode", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+        /**
+        * ウィンドウの初期設定クラス（MultiFloatWindowInitSettings）のコンストラクタに値を設定して返してください。
+        */
         override fun onCreateSettingsFactory(index: Int): MultiFloatWindowSettingsFactory {
             return object : MultiFloatWindowSettingsFactory(multiWindowContext) {
                 override fun createInitSettings(arg: Int): MultiFloatWindowInitSettings {
                     return MultiFloatWindowInitSettings(
-                            getDimensionPixelSize(R.dimen.x),
-                            getDimensionPixelSize(R.dimen.y),
-                            getDimensionPixelSize(R.dimen.width),
-                            getDimensionPixelSize(R.dimen.height),
-                            MultiFloatWindowConstants.Theme.Light,
-                            MultiFloatWindowConstants.Anchor.Edge
+                            width = getDimensionPixelSize(R.dimen.width),// dp単位の指定を推奨
+                            height = getDimensionPixelSize(R.dimen.height),// dp単位の指定を推奨
+                            theme = MultiFloatWindowConstants.Theme.Light,// `Light`または`Dark`
+                            anchor = MultiFloatWindowConstants.Anchor.Edge// `Edge`または`SinglePoint`
                     )
                 }
             }
         }
-        ```
-
+    }
+    ```
 
 1. AndroidManifest.xmlの修正
+
     1. manifestタグに属性を追加
         * `android:sharedUserId="jp.kght6123"`
 
@@ -230,4 +288,4 @@ Licenceに「Apache License Version 2.0」を選択しており、修正いた�
 公開内容の詳細に関しては[**@kght6123**](https://twitter.com/kght6123)まで、お気軽にお問い合わせ下さい。
 
 ## **Copyright**
-**```Copyright (c) 2017 Hirotaka Koga```**
+**```Copyright (c) 2018 Hirotaka Koga```**
