@@ -1,6 +1,7 @@
 package jp.kght6123.floating.window.core.recycler
 
 import android.content.Context
+import android.support.annotation.NonNull
 import android.support.v7.widget.RecyclerView
 import android.util.Log
 import android.view.LayoutInflater
@@ -22,24 +23,24 @@ class CardAppListRecyclerAdapter(val context: Context, val manager: FloatWindowM
 
     val TAG = this.javaClass.name
 
-    override fun onCreateViewHolder(parent: ViewGroup?, viewType: Int): ViewHolder {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         return ViewHolder(LayoutInflater.from(context).inflate(R.layout.thumbnail_card, parent, false))
     }
 
-    override fun onBindViewHolder(holder: ViewHolder?, position: Int) {
+    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val bitmap = manager.getThumb(position)
-        holder?.thumbImageView?.setOnClickListener({
+        holder.thumbImageView.setOnClickListener({
             Log.d(TAG, "thumbImageView setOnClickListener onClick")
             manager.changeActiveSeq(position)
             notifyDataSetChanged()
         })
-        holder?.btnThumbClose?.setOnClickListener({
+        holder.btnThumbClose.setOnClickListener({
             Log.d(TAG, "btnThumbClose setOnClickListener onClick")
             manager.removeSeq(position)
             notifyDataSetChanged()
         })
-        holder?.thumbImageView?.setImageDrawable(null)  // 解放（BitmapをImageViewに設定するとき）
-        holder?.thumbImageView?.setImageBitmap(bitmap)
+        holder.thumbImageView.setImageDrawable(null)  // 解放（BitmapをImageViewに設定するとき）
+        holder.thumbImageView.setImageBitmap(bitmap)
     }
 
     override fun getItemCount(): Int {

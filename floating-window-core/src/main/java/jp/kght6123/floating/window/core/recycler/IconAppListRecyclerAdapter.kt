@@ -46,13 +46,13 @@ class IconAppListRecyclerAdapter(val context: Context, private val manager: Floa
             resolveInfoAllList.addAll(resolveInfoList)
         }
     }
-    override fun onCreateViewHolder(parent: ViewGroup?, viewType: Int): ViewHolder {
-        return ViewHolder(LayoutInflater.from(context).inflate(R.layout.thumbnail_icon, parent, false))
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+        return ViewHolder(thumbIconView = LayoutInflater.from(context).inflate(R.layout.thumbnail_icon, parent, false))
     }
 
-    override fun onBindViewHolder(holder: ViewHolder?, position: Int) {
+    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val resolveInfo = resolveInfoAllList[position]
-        holder?.thumbIconButton?.setOnClickListener {
+        holder.thumbIconButton.setOnClickListener {
 
             // MetaDataのパラメータを取得する
             val paramMap = MultiWindowMetaDataName.getParamMap(resolveInfo)
@@ -70,10 +70,10 @@ class IconAppListRecyclerAdapter(val context: Context, private val manager: Floa
             }
             manager.factoryMap.getValue(nextIndex).start(null)
         }
-        holder?.thumbLabel?.text = resolveInfo.loadLabel(packageManager)
+        holder.thumbLabel.text = resolveInfo.loadLabel(packageManager)
 
-        holder?.thumbIconButton?.setImageDrawable(null)  // 解放（BitmapをImageViewに設定するとき）
-        holder?.thumbIconButton?.setImageDrawable(resolveInfo.loadIcon(packageManager))
+        holder.thumbIconButton.setImageDrawable(null)  // 解放（BitmapをImageViewに設定するとき）
+        holder.thumbIconButton.setImageDrawable(resolveInfo.loadIcon(packageManager))
     }
 
     override fun getItemCount(): Int {
