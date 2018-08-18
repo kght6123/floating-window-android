@@ -53,7 +53,7 @@ Coreアプリ（マルチウィンドウ機能）と、フレームワーク（�
 
 ## **特徴**
 このフレームワークの基本的な特徴になります
-1. Xperia以外の端末で動作
+1. Xperiaも含め多数の端末で動作
 1. マルチウィンドウで動作（同じアプリを複数開ける）
 1. 片手操作への最適化（ウィンドウの拡大縮小、移動）
 1. 端末の領域外に移動しても、最小化しない
@@ -237,39 +237,23 @@ FrameworkライブラリはGitPagesの仮Mavenリポジトリで公開。
 
     1. 「floating-window-core」と「floating-window-sample」モジュールをデバッグまたは実行する
 
-* **Coreのapk作成、コピー**
+* **Coreのapkを作成し、コピー**
 
-    1. apk作成（署名なし）
+    署名なしでapkを作成し、downloadフォルダにコピーします
 
     ```zsh
-    ./gradlew floating-window-core:assemble
+    ./makeapk.sh
     ```
+
+* **FrameworkのMavenリポジトリを作成し、Commit＆Push**
+
+    `floating-window-framework/build.gradle`の`pom.version`のバージョンで作成し、
     
-    2. apkコピー
+    Mavenリポジトリへコミットします
 
     ```zsh
-    cp ./floating-window-core/build/outputs/apk/debug/floating-window-core-debug.apk ./download
-    cp ./floating-window-core/build/outputs/apk/release/floating-window-core-release-unsigned.apk ./download
+    ./updatemaven.sh "${comment}"
     ```
-
-* **FrameworkのMavenリポジトリ作成、Commit＆Push**
-
-    `floating-window-framework/build.gradle`の`pom.version`のバージョンで作成される
-
-    1. Mavenリポジトリ作成＆更新
-    ```zsh
-    ./gradlew floating-window-framework:clean floating-window-framework:assembleRelease floating-window-framework:uploadArchives
-    ```
-
-    2. Commit＆Push
-    ```zsh
-    cd ../maven-repositories
-    git add *
-    git commit -m '${comment}'
-    git push origin master
-    # git pull origin master
-    ```
-
 
 ## **Contribution**
 Licenceに「Apache License Version 2.0」を選択しており、修正いただいた場合は「Pull Request」をお願いします。
@@ -284,7 +268,7 @@ Licenceに「Apache License Version 2.0」を選択しており、修正いた�
 * [**Apache License Version 2.0, January 2004**](./LICENSE)
 
 ## **Author**
-* [**@kght6123**](https://twitter.com/kght6123)
+* **@kght6123** : [Twitter](https://twitter.com/kght6123), [Blog](https://kght6123.jp/blog/)
 
 ## **Contacts**
 公開内容の詳細に関しては[**@kght6123**](https://twitter.com/kght6123)まで、お気軽にお問い合わせ下さい。
