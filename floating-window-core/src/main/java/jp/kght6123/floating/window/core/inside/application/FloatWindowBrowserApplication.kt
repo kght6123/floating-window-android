@@ -1,4 +1,4 @@
-package jp.kght6123.floating.window.framework
+package jp.kght6123.floating.window.core.inside.application
 
 import android.content.Intent
 import android.graphics.Bitmap
@@ -8,6 +8,10 @@ import android.view.View
 import android.webkit.*
 import android.widget.ImageView
 import android.widget.Toast
+import jp.kght6123.floating.window.core.R
+import jp.kght6123.floating.window.framework.FloatWindowApplication
+import jp.kght6123.floating.window.framework.MultiFloatWindowConstants
+import jp.kght6123.floating.window.framework.MultiWindowUpdatePosition
 import java.util.*
 
 /**

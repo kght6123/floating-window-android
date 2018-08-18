@@ -9,4 +9,6 @@
     <string name="app_name">FloatWindowCore</string>
     <string name="app_thumb_desc">AppThumbImage</string>
     <string name="anchor_thumb_desc">Anchor</string>
+    <string name="browser_app_name">Browser</string>
+    <string name="calc_app_name">Calc</string>
 </resources>

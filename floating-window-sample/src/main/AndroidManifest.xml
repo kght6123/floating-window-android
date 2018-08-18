@@ -49,31 +49,6 @@
 			</intent-filter>
 		</activity> -->
 
-		<service android:name="jp.kght6123.floating.window.framework.FloatWindowBrowserApplication"
-			android:label="@string/browser_app_name"
-			android:enabled="true"
-			android:exported="true"
-			android:icon="@drawable/ic_browser">
-			<intent-filter>
-				<action android:name="jp.kght6123.floating.window.core.intent.action.MAIN" />
-				<category android:name="jp.kght6123.floating.window.core.intent.category.LAUNCHER" />
-			</intent-filter>
-			<meta-data android:name="WINDOW_MODE"            android:value="Edge" />
-			<meta-data android:name="WINDOW_BORDER_DP_WIDTH" android:value="24" />
-			<meta-data android:name="WINDOW_BORDER_OPACITY"  android:value="0.75" />
-		</service>
-
-		<service android:name="jp.kght6123.floating.window.framework.FloatWindowCalcApplication"
-			android:label="@string/calc_app_name"
-			android:enabled="true"
-			android:exported="true"
-			android:icon="@drawable/ic_calc">
-			<intent-filter>
-				<action android:name="jp.kght6123.floating.window.core.intent.action.MAIN" />
-				<category android:name="jp.kght6123.floating.window.core.intent.category.LAUNCHER" />
-			</intent-filter>
-		</service>
-
 		<service android:name="jp.kght6123.floating.window.framework.FloatWindowHelloApplication"
 			android:label="@string/hello_app_name"
 			android:enabled="true"

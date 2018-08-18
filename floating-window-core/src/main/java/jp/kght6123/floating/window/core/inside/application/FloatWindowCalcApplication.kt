@@ -1,4 +1,4 @@
-package jp.kght6123.floating.window.framework
+package jp.kght6123.floating.window.core.inside.application
 
 import android.content.Intent
 import android.os.Build
@@ -9,6 +9,10 @@ import android.widget.Button
 import android.widget.GridLayout
 import android.widget.ImageView
 import android.widget.LinearLayout
+import jp.kght6123.floating.window.core.R
+import jp.kght6123.floating.window.framework.FloatWindowApplication
+import jp.kght6123.floating.window.framework.MultiFloatWindowConstants
+import jp.kght6123.floating.window.framework.MultiWindowUpdatePosition
 import org.jetbrains.anko.*
 import org.jetbrains.anko.sdk25.coroutines.onClick
 import java.math.BigDecimal
