@@ -44,33 +44,14 @@ class FloatWindowManager(val context: Context): MultiFloatWindowManagerUpdater {
     private val overlayView: FloatWindowOverlayLayout by lazy {
         val overlayView = View.inflate(context, R.layout.window_overlay_layer, null) as FloatWindowOverlayLayout
 
-        overlayView.onDispatchTouchEventListener = object: View.OnTouchListener {
-
-            val gestureDetector: GestureDetector = GestureDetector(context, object: GestureDetector.SimpleOnGestureListener() {
-
-                override fun onSingleTapUp(event: MotionEvent): Boolean {
-                    Log.d(tag, "overlayView SimpleOnGestureListener onSingleTapUp changeActiveEvent")
-
-                    // 単純にタッチした時のみ、Active判定
-                    changeActiveEvent(event)
-                    //return super.onSingleTapUp(event)
-                    return true
+        overlayView.onDispatchTouchEventListener = View.OnTouchListener { _, event ->
+            when (event.action) {
+                MotionEvent.ACTION_DOWN -> {
+                    Log.d(tag, "overlayView onDispatchTouchEventListener onTouch MotionEvent.ACTION_DOWN changeActiveEvent. updateDeActive. _activeFlag")
+                    return@OnTouchListener changeActiveEvent(event)// Activeがある時のみ。伝搬を止める
                 }
-            })
-            @SuppressLint("ClickableViewAccessibility")
-            override fun onTouch(view: View, event: MotionEvent): Boolean {
-                when (event.action) {
-                    MotionEvent.ACTION_OUTSIDE -> {
-                        Log.d(tag, "overlayView onDispatchTouchEventListener onTouch MotionEvent.ACTION_OUTSIDE changeActiveEvent")
-                        changeActiveEvent(event)	// OUTSIDEの時もActive判定
-                        return true
-                    }
-                }
-                Log.d(tag, "overlayView onDispatchTouchEventListener onTouch .action=${event.action}, .rawX,rawY=${event.rawX},${event.rawY} .x,y=${event.x},${event.y}")
-                gestureDetector.onTouchEvent(event)// ジェスチャー機能を使う
-
-                return false
             }
+            false
         }
         overlayView
     }
@@ -383,6 +364,7 @@ class FloatWindowManager(val context: Context): MultiFloatWindowManagerUpdater {
         } else
             Log.d(tag, "remove is null. index=$index")
 
+        Log.d(tag, "remove. updateDeActive. index=$index, _activeFlag")
         updateDeActive(index)
     }
     fun changeMode(index: Int, miniMode: Boolean) {
@@ -402,12 +384,12 @@ class FloatWindowManager(val context: Context): MultiFloatWindowManagerUpdater {
         return if(indexList.isEmpty())
             (0 + 1)
         else {
-            Collections.reverse(indexList)
+            indexList.reverse()
             (indexList.first() + 1)
         }
     }
     fun changeActiveIndex(index: Int) {
-        Log.d(tag, "changeActiveIndex. index=$index")
+        Log.d(tag, "changeActiveIndex. index=$index") // TODO changeForciblyActiveEvent index=1 or 2
 
         val overlayInfo = overlayWindowMap[index]
         if(overlayInfo != null) {
@@ -419,19 +401,24 @@ class FloatWindowManager(val context: Context): MultiFloatWindowManagerUpdater {
                 overlayView.removeView(overlayInfo.windowOutlineFrame)
                 overlayView.addView(overlayInfo.windowOutlineFrame)
             }
+            Log.d(tag, "changeActiveIndex. updateActive. index=$index, _activeFlag")
             updateActive(index)  // 追加したWindowをActiveに
+
+            Log.d(tag, "changeActiveIndex. updateOtherDeActive. index!=$index, _activeFlag")
             updateOtherDeActive(index)  // 追加したWindow以外をDeActiveに
         }
     }
     private fun updateActive(index: Int) {
         Log.d(tag, "updateActive. index=$index")
         val overlayInfo = overlayWindowMap[index]
+        Log.d(tag, "updateActive. index=$index, _activeFlag=true")
         overlayInfo?.activeFlag = true
         overlayInfo?.let { onActive(index, it) }
     }
     private fun updateDeActive(index: Int) {
         Log.d(tag, "updateDeActive. index=$index")
         val overlayInfo = overlayWindowMap[index]
+        Log.d(tag, "updateDeActive. index=$index, _activeFlag=false")
         overlayInfo?.activeFlag = false
         overlayInfo?.let { onDeActive(index, it) }
     }
@@ -439,6 +426,7 @@ class FloatWindowManager(val context: Context): MultiFloatWindowManagerUpdater {
         Log.d(tag, "updateOtherDeActive. index=$index")
         overlayWindowMap.forEach { entry ->
             if(entry.key != index) {
+                Log.d(tag, "updateOtherDeActive. index=${entry.key}, _activeFlag=false")
                 entry.value.activeFlag = false
                 onDeActive(entry.key, entry.value)
             }
@@ -447,10 +435,13 @@ class FloatWindowManager(val context: Context): MultiFloatWindowManagerUpdater {
     fun changeForciblyActiveEvent() {
         Log.d(tag, "changeForciblyActiveEvent.")
         if(!overlayWindowMap.isEmpty()) {
-            overlayWindowMap.entries.reversed().forEach { (index, overlayInfo) ->
-                if(!overlayInfo.miniMode) {
-                    changeActiveIndex(index)
-                    changeActiveOverlayView()
+            run exit@ {
+                overlayWindowMap.entries.reversed().forEach { (index, overlayInfo) ->
+                    if(!overlayInfo.miniMode) {
+                        changeActiveIndex(index)
+                        changeActiveOverlayView()
+                        return@exit
+                    }
                 }
             }
         }
@@ -493,6 +484,7 @@ class FloatWindowManager(val context: Context): MultiFloatWindowManagerUpdater {
 
     private var prevActiveIndex: Int = -2
     private fun changeActiveEvent(event: MotionEvent) :Boolean {
+        val deActiveAll = isDeActiveAll()
         var changeActiveIndex: Int = -2
         for ((overlayIndex, overlayInfo) in overlayWindowMap) {
             if(!overlayInfo.miniMode) {
@@ -502,6 +494,8 @@ class FloatWindowManager(val context: Context): MultiFloatWindowManagerUpdater {
                     Log.d(tag, "changeActiveEvent. 1-1 onTouch=$onTouch, overlayInfo.activeFlag=${overlayInfo.activeFlag}, overlayIndex=$overlayIndex")
                     if (overlayInfo.activeFlag)
                         prevActiveIndex = overlayIndex  // ActiveだったIndexを保持
+
+                    Log.d(tag, "changeActiveEvent. updateDeActive. index=$overlayIndex, _activeFlag")
                     updateDeActive(overlayIndex)
                 } else if (!overlayInfo.activeFlag) {
                     // タッチされ、Active以外、他をActiveにしていない
@@ -514,22 +508,40 @@ class FloatWindowManager(val context: Context): MultiFloatWindowManagerUpdater {
                 }
             }
         }
-        if(changeActiveIndex == -2) {
-            // nullの時、何もタッチされてないので、全体をinActiveへ
-            Log.d(tag, "changeActiveEvent. 1-4 changeActiveIndex=$changeActiveIndex")
-            windowManager.updateViewLayout(overlayView, getInActiveParams())
-            onDeActiveAll()
-            if(prevActiveIndex != -2)
+        when {
+            changeActiveIndex == -2 && deActiveAll -> {
+                // すでに全体がinActive
+                return false
+            }
+            changeActiveIndex == -2 -> {
+                // nullの時、何もタッチされてないので、全体をinActiveへ
+                Log.d(tag, "changeActiveEvent. 1-4 changeActiveIndex=$changeActiveIndex")
+                windowManager.updateViewLayout(overlayView, getInActiveParams())
+                onDeActiveAll()
+                if(prevActiveIndex != -2)
                 // 復帰のために、Anchorだけ表示する
-                overlayWindowMap[prevActiveIndex]?.addAnchor()
+                    overlayWindowMap[prevActiveIndex]?.addAnchor()
+                return false
+            }
+            changeActiveIndex != -1 -> {
+                // 他のinActiveなウィンドウをタッチされた時、Activeへ
+                Log.d(tag, "changeActiveEvent. 1-5 changeActiveIndex=$changeActiveIndex")
+                changeActiveIndex(changeActiveIndex)
+                changeActiveOverlayView()
+                return true
+            }
+            else -> return true
         }
-        else if(changeActiveIndex != -1) {
-            // 他のinActiveなウィンドウをタッチされた時、Activeへ
-            Log.d(tag, "changeActiveEvent. 1-5 changeActiveIndex=$changeActiveIndex")
-            changeActiveIndex(changeActiveIndex)
-            changeActiveOverlayView()
-        }
-        return false
+    }
+    private fun isDeActiveAll() :Boolean {
+        if (overlayWindowMap.isEmpty())
+            return false // Mapが空のときは、全て非アクティブとしない
+
+        for ((_, overlayInfo) in overlayWindowMap)
+            if (overlayInfo.activeFlag)
+                return false
+
+        return true
     }
     fun changeActiveOverlayView() {
         windowManager.updateViewLayout(overlayView, getActiveParams())

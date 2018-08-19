@@ -195,12 +195,13 @@ class FloatWindowInfo(
     val windowInlineFrame: ViewGroup by lazy { windowOutlineFrame.findViewById(R.id.windowInlineFrame) as ViewGroup }
     var activeFlag: Boolean = false
         set(activeFlag) {
+            Log.d(tag, "set _activeFlag=$activeFlag")
             field = activeFlag
             if(field) {
-                Log.d(tag, "setActiveFlag addAnchor")
+                Log.d(tag, "set activeFlag addAnchor")
                 this.addAnchor()
             } else {
-                Log.d(tag, "setActiveFlag removeAnchor")
+                Log.d(tag, "set activeFlag removeAnchor")
                 this.removeAnchor()
             }
         }
