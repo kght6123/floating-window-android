@@ -8,8 +8,8 @@ android {
         applicationId "jp.kght6123.floating.window.sample"
         minSdkVersion 23
         targetSdkVersion 27
-        versionCode 2
-        versionName "1.1"
+        versionCode Integer.decode("$version_code")
+        versionName "$version_name"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         multiDexEnabled true
     }
@@ -36,7 +36,7 @@ android {
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    androidTestImplementation('com.android.support.test.espresso:espresso-core:3.0.1', {
+    androidTestImplementation("com.android.support.test.espresso:espresso-core:$espresso_core_version", {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
@@ -68,7 +68,7 @@ dependencies {
     implementation "org.jetbrains.anko:anko-support-v4-commons:$anko_version"// Support-v4 (only Anko Commons)
     implementation "org.jetbrains.anko:anko-support-v4:$anko_version"// Support-v4 (Anko Layouts)
 
-    testImplementation 'junit:junit:4.12'
+    testImplementation "junit:junit:$junit_version"
     implementation project(path: ':floating-window-framework')
 }
 repositories {

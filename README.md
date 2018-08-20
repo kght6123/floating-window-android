@@ -93,7 +93,7 @@ FrameworkライブラリはGitPagesの仮Mavenリポジトリで公開。
         maven { url 'http://kght6123.github.io/maven-repositories/android' }
     }
     dependencies {
-        compile 'jp.kght6123.floating.window:floating-window-framework:0.0.1'
+        compile 'jp.kght6123.floating.window:floating-window-framework:latest'
     }
     ```
 
