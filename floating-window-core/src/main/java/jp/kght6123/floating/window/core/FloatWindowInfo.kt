@@ -228,8 +228,8 @@ class FloatWindowInfo(
     }
     fun isOnTouchEvent(event: MotionEvent): Boolean {
         val params = getWindowLayoutParams()
-        return event.rawX in params.leftMargin..(params.leftMargin + params.width)
-                && event.rawY in params.topMargin..(params.topMargin + params.height)
+        return event.rawX as Int in params.leftMargin..(params.leftMargin + params.width)
+                && event.rawY as Int in params.topMargin..(params.topMargin + params.height)
     }
     fun updateAnchorColor(strokeMode: Stroke) {
 
