@@ -233,9 +233,16 @@ FrameworkライブラリはGitPagesの仮Mavenリポジトリで公開。
 
 ターミナルはAndroidStudioを使用しています
 
+* **Build**
+
+  1. floating-window-android を クローンして Android Studio に既存プロジェクトとしてインポートする
+  2. プロジェクトのKotlinのVersionとIDEのKotlinのVersionを合わせる
+
+  **`build.gradle`の4行目辺りのバージョンに合わせてKotlinをインストールするか、インストールされているKotlinのバージョンに`build.gradle`を書き換える。**
+
 * **Debug、Run**
 
-    1. 「floating-window-core」と「floating-window-sample」モジュールをデバッグまたは実行する
+  1. 「floating-window-core」と「floating-window-sample」モジュールをデバッグまたは実行する
 
 * **Coreのapkを作成し、コピー**
 
